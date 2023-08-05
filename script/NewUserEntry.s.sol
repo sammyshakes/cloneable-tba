@@ -18,6 +18,7 @@ contract NewUserEntry is Script {
 
     string public erc115BaseURI = vm.envString("ERC1155_BASE_URI");
 
+    // this script mints an erc721 token to the tronic address and mints 100 of each level of premium token to the tronic address
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY_TRONIC_ADMIN");
 

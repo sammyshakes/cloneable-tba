@@ -23,6 +23,7 @@ contract NewProjectEntry is Script {
     string public erc115FungibleURI2 = vm.envString("ERC1155_FUNGIBLE_URI_2");
     string public erc115FungibleURI3 = vm.envString("ERC1155_FUNGIBLE_URI_3");
 
+    // this script clones an erc1155 token for a partner
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY_TRONIC_ADMIN");
 

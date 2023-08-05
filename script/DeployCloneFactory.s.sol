@@ -7,6 +7,7 @@ import "forge-std/Test.sol";
 import "../src/CloneFactory.sol";
 import "../src/ERC721CloneableTBA.sol";
 
+//This script deploys the clone factory and initializes the erc721 token
 contract DeployCloneFactory is Script, Test {
     // Deployments
     CloneFactory public cloneFactory;
@@ -16,7 +17,8 @@ contract DeployCloneFactory is Script, Test {
     address public erc721Address = vm.envAddress("ERC721_CLONEABLE_ADDRESS");
     address public erc1155Address = vm.envAddress("ERC1155_CLONEABLE_ADDRESS");
     address public registryAddress = vm.envAddress("ERC6551_REGISTRY_ADDRESS");
-    address payable public tbaAddress = payable(vm.envAddress("TOKENBOUND_ACCOUNT_DEFAULT_IMPLEMENTATION_ADDRESS"));
+    address payable public tbaAddress =
+        payable(vm.envAddress("TOKENBOUND_ACCOUNT_DEFAULT_IMPLEMENTATION_ADDRESS"));
 
     string public baseURI = vm.envString("ERC721_BASE_URI");
 
