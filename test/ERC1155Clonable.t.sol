@@ -23,7 +23,8 @@ contract ERC1155CloneTest is Test {
     address public admin1 = address(0x5);
     address public tronicAdmin = address(0x6);
 
-    address payable public tbaAddress = payable(vm.envAddress("TOKENBOUND_ACCOUNT_DEFAULT_IMPLEMENTATION_ADDRESS"));
+    address payable public tbaAddress =
+        payable(vm.envAddress("TOKENBOUND_ACCOUNT_DEFAULT_IMPLEMENTATION_ADDRESS"));
 
     function setUp() public {
         tbaCloneable = IERC6551Account(tbaAddress);
@@ -35,7 +36,12 @@ contract ERC1155CloneTest is Test {
 
         //initialize erc721
         erc721cloneable.initialize(
-            tbaAddress, address(this), "Original721", "OR721", "http://example721.com/", address(this)
+            tbaAddress,
+            address(this),
+            "Original721",
+            "OR721",
+            "http://example721.com/",
+            address(this)
         );
     }
 
@@ -50,7 +56,8 @@ contract ERC1155CloneTest is Test {
 
     function testMintClone() public {
         vm.prank(tronicAdmin);
-        address cloneAddress = factory.cloneERC1155("http://example.com2/", admin1, "Clone1155", "CL1155");
+        address cloneAddress =
+            factory.cloneERC1155("http://example.com2/", admin1, "Clone1155", "CL1155");
 
         ERC1155Cloneable clone = ERC1155Cloneable(cloneAddress);
 

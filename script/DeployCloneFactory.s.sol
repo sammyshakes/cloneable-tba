@@ -30,7 +30,7 @@ contract DeployCloneFactory is Script, Test {
         vm.startBroadcast(deployerPrivateKey);
 
         //initialize erc721
-        erc721.initialize(tbaAddress, registryAddress, "TrcClub", "TRC", baseURI, tronicAddress);
+        erc721.initialize(tbaAddress, registryAddress, "TronClub", "TRNC", baseURI, tronicAddress);
 
         // deploy new clone factory with environment variables
         cloneFactory = new CloneFactory(

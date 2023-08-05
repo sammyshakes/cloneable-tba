@@ -23,16 +23,21 @@ contract CloneFactoryTest is Test {
     // new address for an unauthorized user
     address public unauthorizedUser = address(0x4);
 
-    address public tronicOwner = address(0x5);
+    // address public tronicOwner = address(0x5);
+    address public tronicOwner = vm.envAddress("TRONIC_ADMIN_ADDRESS");
 
     address public registryAddress = vm.envAddress("ERC6551_REGISTRY_ADDRESS");
     address payable public tbaAddress =
         payable(vm.envAddress("TOKENBOUND_ACCOUNT_DEFAULT_IMPLEMENTATION_ADDRESS"));
 
+    address public tbaAddressTokenID1 = vm.envAddress("TOKENBOUND_ACCOUNT_TOKENID_1");
+    address public erc721Address = vm.envAddress("ERC721_CLONEABLE_ADDRESS");
+    address public erc1155Address = vm.envAddress("ERC1155_CLONEABLE_ADDRESS");
+
     function setUp() public {
         vm.startPrank(tronicOwner);
-        erc721 = new ERC721CloneableTBA();
-        erc1155 = new ERC1155Cloneable();
+        erc721 = ERC721CloneableTBA(erc721Address);
+        erc1155 = ERC1155Cloneable(erc1155Address);
         account = IERC6551Account(tbaAddress);
         registry = IERC6551Registry(registryAddress);
 
@@ -51,6 +56,36 @@ contract CloneFactoryTest is Test {
         factory =
         new CloneFactory(tronicOwner, address(erc721), address(erc1155), registryAddress, tbaAddress);
         vm.stopPrank();
+    }
+
+    function testTransferERC1155PostDeploy() public {
+        uint256 tokenId = 1;
+        vm.prank(tronicOwner);
+        address clone1155Address =
+            factory.cloneERC1155("http://clone1155.com/", user1, "Clone1155", "CL1155");
+
+        // clone should exist
+        assertNotEq(clone1155Address, address(0));
+
+        // Check the clone has correct uri and admin
+        ERC1155Cloneable clonedERC1155 = ERC1155Cloneable(clone1155Address);
+
+        vm.prank(tronicOwner);
+        erc721.mint(user1, tokenId);
+        assertEq(erc721.ownerOf(tokenId), user1);
+
+        // clonedERC1155.mint(tbaAddressTokenID1, 1, 10);
+
+        // assertEq(clonedERC1155.balanceOf(tbaAddressTokenID1, 1), 10);
+
+        IERC6551Account account = IERC6551Account(payable(tbaAddressTokenID1));
+        bytes memory erc1155TransferCall =
+            abi.encodeWithSignature("mintFungible(address,uint256,uint256)", account, 1, 10, "");
+        vm.prank(tronicOwner);
+        account.execute(payable(address(clonedERC1155)), 0, erc1155TransferCall, 0);
+
+        assertEq(clonedERC1155.balanceOf(tbaAddressTokenID1, 1), 0);
+        assertEq(clonedERC1155.balanceOf(user1, 1), 10);
     }
 
     function testFactoryOwnership() public {

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.0;
 
 // Imports
 import "forge-std/Script.sol";
@@ -11,17 +11,17 @@ contract NewProjectEntry is Script {
     CloneFactory public cloneFactory;
     ERC721CloneableTBA public erc721;
 
-    string public name = "Partner Clone ERC1155";
-    string public symbol = "CL1155";
+    string public name = "Project X Clone ERC1155";
+    string public symbol = "PX1155";
 
     address public tronicAddress = vm.envAddress("TRONIC_ADMIN_ADDRESS");
     address public cloneFactoryAddress = vm.envAddress("CLONE_FACTORY_ADDRESS");
 
-    string public erc115BaseURI = vm.envString("ERC1155_BASE_URI");
+    string public erc115BaseURI = vm.envString("PROJECT_X_ERC1155_BASE_URI");
 
-    string public erc115FungibleURI1 = vm.envString("ERC1155_FUNGIBLE_URI_1");
-    string public erc115FungibleURI2 = vm.envString("ERC1155_FUNGIBLE_URI_2");
-    string public erc115FungibleURI3 = vm.envString("ERC1155_FUNGIBLE_URI_3");
+    string public erc115FungibleURI1 = vm.envString("PROJECT_X_FUNGIBLE_URI_1");
+    string public erc115FungibleURI2 = vm.envString("PROJECT_X_FUNGIBLE_URI_2");
+    string public erc115FungibleURI3 = vm.envString("PROJECT_X_FUNGIBLE_URI_3");
 
     // this script clones an erc1155 token for a partner
     function run() external {
