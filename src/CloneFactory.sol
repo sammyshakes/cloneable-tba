@@ -19,7 +19,7 @@ contract CloneFactory {
 
     uint256 private _numERC1155Clones;
     uint256 private _numERC721Clones;
-    
+
     mapping(uint256 => address) public erc1155Clones;
     mapping(uint256 => address) public erc721Clones;
 
@@ -64,11 +64,12 @@ contract CloneFactory {
         return _numERC721Clones;
     }
 
-    function cloneERC1155(string memory uri, address admin, string memory name, string memory symbol)
-        external
-        onlyTronicAdmin
-        returns (address erc1155cloneAddress)
-    {
+    function cloneERC1155(
+        string memory uri,
+        address admin,
+        string memory name,
+        string memory symbol
+    ) external onlyTronicAdmin returns (address erc1155cloneAddress) {
         erc1155cloneAddress = Clones.clone(address(erc1155implementation));
         ERC1155Cloneable erc1155clone = ERC1155Cloneable(erc1155cloneAddress);
         erc1155clone.initialize(uri, admin, name, symbol);
@@ -86,7 +87,7 @@ contract CloneFactory {
     {
         erc721CloneAddress = Clones.clone(address(erc721Implementation));
         ERC721CloneableTBA erc721Clone = ERC721CloneableTBA(erc721CloneAddress);
-        erc721Clone.initialize(payable(address(accountImplementation)), address(registry), name, symbol, uri, admin);
+        erc721Clone.initialize(accountImplementation, address(registry), name, symbol, uri, admin);
 
         // Emit event, store clone, etc
         erc721Clones[_numERC721Clones] = erc721CloneAddress;

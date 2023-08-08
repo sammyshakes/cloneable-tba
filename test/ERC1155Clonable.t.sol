@@ -34,6 +34,9 @@ contract ERC1155CloneTest is Test {
         factory =
         new CloneFactory(tronicAdmin, address(erc721cloneable), address(erc1155cloneable), address(tbaCloneable), tbaAddress);
 
+        //initialize erc1155
+        erc1155cloneable.initialize("http://example1155.com/", tbaAddress, "Original1155", "OR1155");
+
         //initialize erc721
         erc721cloneable.initialize(
             tbaAddress,

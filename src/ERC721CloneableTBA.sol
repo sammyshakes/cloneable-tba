@@ -3,13 +3,13 @@
 pragma solidity ^0.8.13;
 
 import "./interfaces/IERC6551Registry.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 
-contract ERC721CloneableTBA is ERC721Enumerable, Ownable, Initializable {
+contract ERC721CloneableTBA is ERC721Enumerable, Initializable {
     IERC6551Registry public registry;
     address public accountImplementation;
+    address public owner;
 
     mapping(address => bool) private _admins;
     string private _baseURI_;
@@ -20,7 +20,12 @@ contract ERC721CloneableTBA is ERC721Enumerable, Ownable, Initializable {
     // Token symbol
     string private _symbol;
 
-    constructor() ERC721("", "") Ownable() {}
+    constructor() ERC721("", "") Ownable {}
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Only the owner can call this function");
+        _;
+    }
 
     function initialize(
         address payable _accountImplementation,
@@ -34,6 +39,7 @@ contract ERC721CloneableTBA is ERC721Enumerable, Ownable, Initializable {
         registry = IERC6551Registry(_registry);
         _baseURI_ = uri;
         _admins[admin] = true;
+        owner = admin;
         _name = name_;
         _symbol = symbol_;
     }
@@ -100,7 +106,16 @@ contract ERC721CloneableTBA is ERC721Enumerable, Ownable, Initializable {
         return _admins[_admin];
     }
 
+    function updateImplementation(address payable _accountImplementation) external onlyOwner {
+        accountImplementation = _accountImplementation;
+    }
+
     function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
         return interfaceId == type(IERC721).interfaceId || super.supportsInterface(interfaceId);
+    }
+
+    function transferOwnership(address newOwner) public onlyOwner {
+        require(newOwner != address(0), "New owner address cannot be zero");
+        owner = newOwner;
     }
 }
