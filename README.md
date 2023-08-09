@@ -8,30 +8,30 @@
 - Cloneable ERC1155 Contract Template
 
 ```js
-forge script script/Deploy.s.sol:Deploy -vvvv --rpc-url sepolia --broadcast
+forge script script/Deploy.s.sol:Deploy -vvvv --rpc-url sepolia --broadcast --verify
 ```
 
 ```bash
 # testnet contract addresses
-TOKENBOUND_DEFAULT_ACCOUNT_ADDRESS=0x1a0E97Dae78590b7E967E725a5c848eD034f5510
-ERC721_CLONEABLE_ADDRESS=0x381BE1c4765AEe02Fc3cC86c700Ab1c4a30fc7c9
-ERC1155_CLONEABLE_ADDRESS=0xCa9F4A29Fc0076A9Fd643B549Fc760995b47E6f8
+TOKENBOUND_DEFAULT_ACCOUNT_ADDRESS=0x2d25602551487c3f3354dd80d76d54383a243358
 ERC6551_REGISTRY_ADDRESS=0x02101dfB77FDE026414827Fdc604ddAF224F0921
+ERC721_CLONEABLE_ADDRESS=0xFe7c64f016A6bD0D83e39D3382541b3d4058Ad15
+ERC1155_CLONEABLE_ADDRESS=0xFa2b9fCF23Ab80bDde6f567580f17e00eB22D5C1
 
 ```
 
-## Verify Contracts
+## Verify Contracts (If not successfully verified in previous step)
 
 ### Verfiy ERC721
 
 ```js
-forge verify-contract --chain-id 11155111 --watch 0x381BE1c4765AEe02Fc3cC86c700Ab1c4a30fc7c9 --etherscan-api-key goerli src/ERC721CloneableTBA.sol:ERC721CloneableTBA
+forge verify-contract --chain-id 11155111 --watch 0xFe7c64f016A6bD0D83e39D3382541b3d4058Ad15 --etherscan-api-key etherscan src/ERC721CloneableTBA.sol:ERC721CloneableTBA
 ```
 
 ### Verfiy ERC1155
 
 ```js
-forge verify-contract --chain-id 11155111 --watch 0xCa9F4A29Fc0076A9Fd643B549Fc760995b47E6f8 --etherscan-api-key goerli src/ERC1155Cloneable.sol:ERC1155Cloneable
+forge verify-contract --chain-id 11155111 --watch 0xFa2b9fCF23Ab80bDde6f567580f17e00eB22D5C1 --etherscan-api-key etherscan src/ERC1155Cloneable.sol:ERC1155Cloneable
 ```
 
 ## Deploy and verify CloneFactory.sol and initialize Tronic ERC721
@@ -40,18 +40,18 @@ forge verify-contract --chain-id 11155111 --watch 0xCa9F4A29Fc0076A9Fd643B549Fc7
 - Initializes Tronic Member Nft Contract
 
 ```js
-forge script script/DeployCloneFactory.s.sol:DeployCloneFactory -vvvv --rpc-url goerli --broadcast --verify
+forge script script/DeployCloneFactory.s.sol:DeployCloneFactory -vvvv --rpc-url sepolia --broadcast --verify
 ```
 
 ```bash
 # deployed clone factory address
-CLONE_FACTORY_ADDRESS=0xfFc708e5eE0e1c5643c131906f187f3A49f67976
+CLONE_FACTORY_ADDRESS=0xd3065Ed995ea1ad63f36caD3fB2539313E37EB3D
 ```
 
 ### Verify CloneFactory (only if verification fails in previous step)
 
 ```js
-forge verify-contract --chain-id 11155111 --watch 0xfFc708e5eE0e1c5643c131906f187f3A49f67976 --constructor-args $(cast abi-encode "constructor(address,address,address,address,address)" 0x42C7eF198f8aC9888E2B1b73e5B71f1D4535194A 0xe931e45265b58a77328B0c0bABcb6Af417c18154 0x1AEaFDcfb6b7E0322023FC58cf91B34D3076B21d 0xb6F028F59c95F09331776069ccd2bEf85b0C2b1E 0xCB732ebe48daaf08E9F7C3d14968a5F1E72A045A) --etherscan-api-key goerli src/CloneFactory.sol:CloneFactory
+forge verify-contract --chain-id 11155111 --watch 0xd3065Ed995ea1ad63f36caD3fB2539313E37EB3D --constructor-args $(cast abi-encode "constructor(address,address,address,address,address)" 0x42C7eF198f8aC9888E2B1b73e5B71f1D4535194A 0xFe7c64f016A6bD0D83e39D3382541b3d4058Ad15 0xFa2b9fCF23Ab80bDde6f567580f17e00eB22D5C1 0x02101dfB77FDE026414827Fdc604ddAF224F0921 0x2d25602551487c3f3354dd80d76d54383a243358) --etherscan-api-key etherscan src/CloneFactory.sol:CloneFactory
 ```
 
 ## Deploy New Project/Partner/Brand (Project X)
@@ -64,12 +64,12 @@ forge script script/NewProjectEntry.s.sol:NewProjectEntry -vvvv --rpc-url sepoli
 
 ```bash
 # project x cloned contracts
-PROJECT_X_CLONED_ERC721_ADDRESS=0x4ade2b208E780D5a8C60B3D5A4F9D8Bfa2760FB5
-PROJECT_X_CLONED_ERC1155_ADDRESS=0x119B25FCF4E418F4B11210bB89300B2bd4e750cb
+PROJECT_X_CLONED_ERC721_ADDRESS=0xeCcFD42a53045D704a7B97E74ab477bd748BA156
+PROJECT_X_CLONED_ERC1155_ADDRESS=0x81a71A6DC43395eae7e94df05bD6b54555EAc9c8
 
 # project y cloned contracts
-PROJECT_Y_CLONED_ERC721_ADDRESS=0x6D3aEC6195fc0106322e1d959ebAD8eaEc86122b
-PROJECT_Y_CLONED_ERC1155_ADDRESS=0xDc41aF1F0368f34dB6e07C2Ea76d8519E5e3004d
+PROJECT_Y_CLONED_ERC721_ADDRESS=0x0518b4D2EB57E51F71dc0e892a729d31413c6d6A
+PROJECT_Y_CLONED_ERC1155_ADDRESS=0x1b925f96973ecC0bc387E7e64BFCFFE59Bd17E0A
 ```
 
 ## New User Entry
@@ -83,14 +83,42 @@ forge script script/NewUserEntry.s.sol:NewUserEntry -vvvv --rpc-url sepolia --br
 
 ```bash
 # Tokenbound Account
-TOKENBOUND_ACCOUNT_TOKENID_1=0x9BD63Cb55B822785Cdc6aF5704f20425255C0c60
+TOKENBOUND_ACCOUNT_TOKENID_1=0x92a4148F4d957f4A6753AC143D32B5AF390214b3
 ```
 
-## New User Earns Rewards from Project X
+## New User Earns (PART 1) Project NFTs from Project X and Project Y
 
-- User receives 100 Project X Loyalty Tokens Level 1
-- User receives 100 Project X Loyalty Tokens Level 2
+- User receives NFT from Project X
+- User receives NFT from Project Y
+
+NOTE: This will create tokenbound accounts for each project nft
 
 ```bash
-forge script script/NewUserEarns.s.sol:NewUserEarns -vvvv --rpc-url goerli --broadcast
+forge script script/NewUserEarns1.s.sol:NewUserEarns1 -vvvv --rpc-url sepolia --broadcast
+```
+
+```bash
+# tokenbound accounts for project nfts
+PROJECT_X_TOKENBOUND_ACCOUNT_TOKENID_1=0xb067d2d42a94D43d5e2757fdE4fBE26eA20CA88A
+PROJECT_Y_TOKENBOUND_ACCOUNT_TOKENID_1=0xE163F1Ac494862C3a4Dc36528a2C12C1AA0D585d
+```
+
+## New User Earns (PART 2) Loyalty Rewards from Project X and Project Y
+
+- User receives 100 Project X Loyalty Tokens Level 1
+- User receives 50 Project X Loyalty Tokens Level 2
+- User receives 100 Project Y Loyalty Tokens Level 1
+- User receives 50 Project Y Loyalty Tokens Level 2
+
+```bash
+forge script script/NewUserEarns2.s.sol:NewUserEarns2 -vvvv --rpc-url sepolia --broadcast
+```
+
+## New User Earns (PART 3) Loyalty Rewards from Project X and TRONIC
+
+- User receives 25 Project X Loyalty Tokens Level 3
+- User receives 10 TRONIC Loyalty Tokens Level 1
+
+```bash
+forge script script/NewUserEarns3.s.sol:NewUserEarns3 -vvvv --rpc-url sepolia --broadcast
 ```

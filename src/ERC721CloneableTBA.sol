@@ -20,7 +20,7 @@ contract ERC721CloneableTBA is ERC721Enumerable, Initializable {
     // Token symbol
     string private _symbol;
 
-    constructor() ERC721("", "") Ownable {}
+    constructor() ERC721("", "") {}
 
     modifier onlyOwner() {
         require(msg.sender == owner, "Only the owner can call this function");
@@ -53,7 +53,7 @@ contract ERC721CloneableTBA is ERC721Enumerable, Initializable {
                 address(this),
                 tokenId,
                 0, // salt
-                "" // init data
+                abi.encodeWithSignature("initialize()") // init data
             )
         );
 

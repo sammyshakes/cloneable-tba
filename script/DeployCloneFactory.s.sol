@@ -24,6 +24,10 @@ contract DeployCloneFactory is Script, Test {
 
     string public baseURI = vm.envString("ERC721_BASE_URI");
     string public erc1155BaseURI = vm.envString("TRONIC_FUNGIBLE_BASE_URI");
+    string public tronicFungibleUri1 = vm.envString("TRONIC_FUNGIBLE_URI_1");
+    string public tronicFungibleUri2 = vm.envString("TRONIC_FUNGIBLE_URI_2");
+    string public tronicFungibleUri3 = vm.envString("TRONIC_FUNGIBLE_URI_3");
+    string public tronicFungibleUri4 = vm.envString("TRONIC_FUNGIBLE_URI_4");
 
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY_TRONIC_ADMIN");
@@ -36,7 +40,13 @@ contract DeployCloneFactory is Script, Test {
         //initialize erc721 for tronic member nfts
         erc721.initialize(tbaAddress, registryAddress, "TronClub", "TRNC", baseURI, tronicAddress);
         //initialize erc1155 for tronic loyalty points
-        erc1155.initialize(erc1155BaseURI, tbaAddress, "TRC CLUB POINTS", "TRCP");
+        erc1155.initialize(erc1155BaseURI, tronicAddress, "TRC CLUB POINTS", "TRCP");
+
+        //create fungible token types for tronic
+        erc1155.createFungibleType(1, tronicFungibleUri1);
+        erc1155.createFungibleType(2, tronicFungibleUri2);
+        erc1155.createFungibleType(3, tronicFungibleUri3);
+        erc1155.createFungibleType(4, tronicFungibleUri4);
 
         // deploy new clone factory with environment variables
         cloneFactory = new CloneFactory(

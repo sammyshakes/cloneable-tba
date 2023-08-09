@@ -10,8 +10,11 @@ contract NewProjectEntry is Script {
     CloneFactory public cloneFactory;
     ERC721CloneableTBA public erc721;
 
-    string public name = "Project X Clone ERC1155";
-    string public symbol = "PX1155";
+    string public nameX = "Project X Clone ERC1155";
+    string public symbolX = "PX1155";
+
+    string public nameY = "Project Y Clone ERC1155";
+    string public symbolY = "PY1155";
 
     // erc721 token uris
     string public erc721URIX = vm.envString("PROJECT_X_ERC721_BASE_URI");
@@ -47,13 +50,13 @@ contract NewProjectEntry is Script {
 
         //deploy partner x clone erc1155
         address erc1155cloneX =
-            cloneFactory.cloneERC1155(erc115BaseURIX, tronicAddress, name, symbol);
+            cloneFactory.cloneERC1155(erc115BaseURIX, tronicAddress, nameX, symbolX);
 
         //deploy partner y clone erc1155
         address erc1155cloneY =
-            cloneFactory.cloneERC1155(erc115BaseURIY, tronicAddress, name, symbol);
+            cloneFactory.cloneERC1155(erc115BaseURIY, tronicAddress, nameY, symbolY);
 
-        //create token types
+        //create fungible token types
         ERC1155Cloneable(erc1155cloneX).createFungibleType(1, erc115FungibleURI1X);
         ERC1155Cloneable(erc1155cloneX).createFungibleType(2, erc115FungibleURI2X);
         ERC1155Cloneable(erc1155cloneX).createFungibleType(3, erc115FungibleURI3X);
