@@ -6,17 +6,23 @@
 
 - Main Tronic Member Nft Contract (cloneable ERC721)
 - Cloneable ERC1155 Contract Template
+- Deploys `CloneFactory.sol`
+
+Verifies all contrcats on etherscan
 
 ```js
 forge script script/Deploy.s.sol:Deploy -vvvv --rpc-url sepolia --broadcast --verify
 ```
 
 ```bash
-# testnet contract addresses
+# tokenbound default contract addresses
 TOKENBOUND_DEFAULT_ACCOUNT_ADDRESS=0x2d25602551487c3f3354dd80d76d54383a243358
 ERC6551_REGISTRY_ADDRESS=0x02101dfB77FDE026414827Fdc604ddAF224F0921
-ERC721_CLONEABLE_ADDRESS=0xFe7c64f016A6bD0D83e39D3382541b3d4058Ad15
-ERC1155_CLONEABLE_ADDRESS=0xFa2b9fCF23Ab80bDde6f567580f17e00eB22D5C1
+
+# testnet deployed contract addresses
+ERC721_CLONEABLE_ADDRESS=0x90247B092feFf3AaB77dE4C9a232c983100c3b84
+ERC1155_CLONEABLE_ADDRESS=0x2759A615eF0f0888d70c70d5AAA0Eb22AA7Fa7F6
+CLONE_FACTORY_ADDRESS=0x27892e79C87Bfe6756c7A4A833838Eec5Fdb3D36
 
 ```
 
@@ -34,29 +40,28 @@ forge verify-contract --chain-id 11155111 --watch 0xFe7c64f016A6bD0D83e39D338254
 forge verify-contract --chain-id 11155111 --watch 0xFa2b9fCF23Ab80bDde6f567580f17e00eB22D5C1 --etherscan-api-key etherscan src/ERC1155Cloneable.sol:ERC1155Cloneable
 ```
 
-## Deploy and verify CloneFactory.sol and initialize Tronic ERC721
-
-- Deploys `CloneFactory.sol`
-- Initializes Tronic Member Nft Contract
-
-```js
-forge script script/DeployCloneFactory.s.sol:DeployCloneFactory -vvvv --rpc-url sepolia --broadcast --verify
-```
-
-```bash
-# deployed clone factory address
-CLONE_FACTORY_ADDRESS=0xd3065Ed995ea1ad63f36caD3fB2539313E37EB3D
-```
-
-### Verify CloneFactory (only if verification fails in previous step)
+### Verify CloneFactory
 
 ```js
 forge verify-contract --chain-id 11155111 --watch 0xd3065Ed995ea1ad63f36caD3fB2539313E37EB3D --constructor-args $(cast abi-encode "constructor(address,address,address,address,address)" 0x42C7eF198f8aC9888E2B1b73e5B71f1D4535194A 0xFe7c64f016A6bD0D83e39D3382541b3d4058Ad15 0xFa2b9fCF23Ab80bDde6f567580f17e00eB22D5C1 0x02101dfB77FDE026414827Fdc604ddAF224F0921 0x2d25602551487c3f3354dd80d76d54383a243358) --etherscan-api-key etherscan src/CloneFactory.sol:CloneFactory
 ```
 
+## initialize Tronic ERC721 and ERC1155
+
+- Initializes Tronic Member Nft Contract
+- Initializes Tronic ERC1155 Contract
+- Creates 4 Fungible Reward Tokens for Tronic
+
+```js
+forge script script/Initialize.s.sol:Initialize -vvvv --rpc-url sepolia --broadcast --verify
+```
+
 ## Deploy New Project/Partner/Brand (Project X)
 
-- Clones a partner ERC1155 to Project X
+- Clones a partner ERC721 and ERC1155 to Project X
+- Clones a partner ERC721 and ERC1155 to Project Y
+- Initializes both projects
+- creates fungible reward tokens for both projects
 
 ```bash
 forge script script/NewProjectEntry.s.sol:NewProjectEntry -vvvv --rpc-url sepolia --broadcast
@@ -83,7 +88,7 @@ forge script script/NewUserEntry.s.sol:NewUserEntry -vvvv --rpc-url sepolia --br
 
 ```bash
 # Tokenbound Account
-TOKENBOUND_ACCOUNT_TOKENID_1=0x92a4148F4d957f4A6753AC143D32B5AF390214b3
+TOKENBOUND_ACCOUNT_TOKENID_1=0x7618Ce5062b153306284B7267E66526Bf8DBB497
 ```
 
 ## New User Earns (PART 1) Project NFTs from Project X and Project Y
@@ -99,8 +104,8 @@ forge script script/NewUserEarns1.s.sol:NewUserEarns1 -vvvv --rpc-url sepolia --
 
 ```bash
 # tokenbound accounts for project nfts
-PROJECT_X_TOKENBOUND_ACCOUNT_TOKENID_1=0xb067d2d42a94D43d5e2757fdE4fBE26eA20CA88A
-PROJECT_Y_TOKENBOUND_ACCOUNT_TOKENID_1=0xE163F1Ac494862C3a4Dc36528a2C12C1AA0D585d
+PROJECT_X_TOKENBOUND_ACCOUNT_TOKENID_1=0xC03F52e87f41f8e2907e2410695ab59492f6aDEf
+PROJECT_Y_TOKENBOUND_ACCOUNT_TOKENID_1=0xCc2783D651199EE2D8A8Ed3Ebe26F57C4e5BD362
 ```
 
 ## New User Earns (PART 2) Loyalty Rewards from Project X and Project Y

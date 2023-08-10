@@ -61,4 +61,5 @@ interface IERC6551Account {
         returns (bytes memory);
 
     function owner() external view returns (address);
+    function isAuthorized(address caller) external view returns (bool);
 }

@@ -4,8 +4,6 @@ pragma solidity ^0.8.0;
 // Imports
 import "forge-std/Test.sol";
 import "../src/CloneFactory.sol";
-import "../src/ERC721CloneableTBA.sol";
-import "../src/ERC1155Cloneable.sol";
 import "../src/interfaces/IERC6551Registry.sol";
 import "../src/interfaces/IERC6551Account.sol";
 
@@ -14,6 +12,11 @@ contract TestnetTests is Test {
     ERC721CloneableTBA public erc721;
     ERC1155Cloneable public erc1155;
     IERC6551Account public account;
+    IERC6551Account public accountTba;
+    IERC6551Account public accountX;
+    IERC6551Account public accountY;
+    IERC6551Account public accountTronic;
+
     IERC6551Registry public registry;
 
     // set users
@@ -23,31 +26,90 @@ contract TestnetTests is Test {
     // new address for an unauthorized user
     address public unauthorizedUser = address(0x4);
 
-    // address public tronicOwner = address(0x5);
     address public tronicOwner = vm.envAddress("TRONIC_ADMIN_ADDRESS");
+    address public tbaOwner = vm.envAddress("TRONIC_ADMIN_ADDRESS");
 
-    address public registryAddress = vm.envAddress("ERC6551_REGISTRY_ADDRESS");
     address payable public tbaAddress =
         payable(vm.envAddress("TOKENBOUND_ACCOUNT_DEFAULT_IMPLEMENTATION_ADDRESS"));
+    address public registryAddress = vm.envAddress("ERC6551_REGISTRY_ADDRESS");
 
+    // deployed tronic contracts
     address public cloneFactoryAddress = vm.envAddress("CLONE_FACTORY_ADDRESS");
-    address public tbaAddressTokenID1 = vm.envAddress("TOKENBOUND_ACCOUNT_TOKENID_1");
     address public erc721Address = vm.envAddress("ERC721_CLONEABLE_ADDRESS");
     address public erc1155Address = vm.envAddress("ERC1155_CLONEABLE_ADDRESS");
 
+    // cloned project contracts
     address public cloned1155AddressX = vm.envAddress("PROJECT_X_CLONED_ERC1155_ADDRESS");
+    address public cloned1155AddressY = vm.envAddress("PROJECT_Y_CLONED_ERC1155_ADDRESS");
+    address public cloned721AddressX = vm.envAddress("PROJECT_X_CLONED_ERC721_ADDRESS");
+    address public cloned721AddressY = vm.envAddress("PROJECT_Y_CLONED_ERC721_ADDRESS");
+
+    // tokenbound accounts
+    address public tbaAddressTokenID1 = vm.envAddress("TOKENBOUND_ACCOUNT_TOKENID_1");
+    address public tbaAddressXTokenID1 = vm.envAddress("PROJECT_X_TOKENBOUND_ACCOUNT_TOKENID_1");
+    address public tbaAddressYTokenID1 = vm.envAddress("PROJECT_Y_TOKENBOUND_ACCOUNT_TOKENID_1");
 
     function setUp() public {
         vm.startPrank(tronicOwner);
         erc721 = ERC721CloneableTBA(erc721Address);
         erc1155 = ERC1155Cloneable(erc1155Address);
-        account = IERC6551Account(payable(tbaAddress));
         registry = IERC6551Registry(registryAddress);
+
+        account = IERC6551Account(payable(tbaAddress));
+        accountX = IERC6551Account(payable(tbaAddressXTokenID1));
+        accountY = IERC6551Account(payable(tbaAddressYTokenID1));
+        accountTronic = IERC6551Account(payable(tbaAddressTokenID1));
+        accountTba = IERC6551Account(payable(tbaAddressTokenID1));
 
         tbaAddress = payable(address(account));
 
         factory = CloneFactory(cloneFactoryAddress);
         vm.stopPrank();
+    }
+
+    function testTransferERC1155FromNestedAccount() public {
+        address nestedTbaAddress = tbaAddressXTokenID1;
+        IERC6551Account nestedTba = accountX;
+
+        (uint256 chainId, address tokenContractAddress, uint256 _tokenId) = accountTba.token();
+        console.log("chainId: ", chainId);
+        console.log("tokenContract: ", tokenContractAddress);
+        console.log("tokenId: ", _tokenId);
+
+        ERC721CloneableTBA tokenContract = ERC721CloneableTBA(tokenContractAddress); // Parent TBA ERC721 token contract
+        ERC721CloneableTBA clonedERC721X = ERC721CloneableTBA(cloned721AddressX); // Nested TBA ERC721 token contract
+        ERC1155Cloneable clonedERC1155X = ERC1155Cloneable(cloned1155AddressX); // assets owned by nested TBA
+
+        // Top level TBA is owned by tbaOwner (a random user),
+        assertEq(_tokenId, 1);
+        assertEq(tokenContract.ownerOf(_tokenId), tbaOwner);
+        assertEq(accountTba.owner(), tbaOwner);
+
+        // Top level TBA owns tokenId 1 on clonedERC721X (erc721), `nestedTbaAddress`
+        assertEq(clonedERC721X.ownerOf(1), address(accountTba));
+        assertEq(clonedERC1155X.balanceOf(nestedTbaAddress, 1), 100);
+        assertEq(nestedTba.owner(), address(accountTba)); //  parent TBA owns nested TBA
+
+        assertEq(nestedTba.owner(), address(accountTba)); //  parent TBA owns nested TBA
+
+        // construct SafeTransferCall for ERC1155
+        bytes memory erc1155TransferCall = abi.encodeWithSignature(
+            "safeTransferFrom(address,address,uint256,uint256,bytes)",
+            nestedTbaAddress,
+            user1,
+            1,
+            10,
+            ""
+        );
+
+        // construct execute call for nestedTbaAddress to execute erc1155TransferCall
+        bytes memory executeCall = abi.encodeWithSignature(
+            "execute(address,uint256,bytes,uint256)", cloned1155AddressX, 0, erc1155TransferCall, 0
+        );
+
+        //  this call fails: EVM Revert
+        vm.prank(tbaOwner);
+        accountTba.execute(nestedTbaAddress, 0, executeCall, 0);
     }
 
     function testTransferERC1155PostDeploy() public {
@@ -56,9 +118,7 @@ contract TestnetTests is Test {
         address accountCheck = registry.account(tbaAddress, 11_155_111, erc721Address, 1, 0);
         console.log("accountCheck: ", accountCheck);
 
-        account = IERC6551Account(payable(tbaAddressTokenID1));
-
-        (uint256 chainId, address tokenContract, uint256 _tokenId) = account.token();
+        (uint256 chainId, address tokenContract, uint256 _tokenId) = accountTronic.token();
         console.log("chainId: ", chainId);
         console.log("tokenContract: ", tokenContract);
         console.log("tokenId: ", _tokenId);
@@ -129,6 +189,9 @@ contract TestnetTests is Test {
     }
 
     function testCloneERC1155() public {
+        //get number of clones
+        uint256 numClones = factory.getNumERC1155Clones();
+
         vm.prank(tronicOwner);
         address clone1155Address =
             factory.cloneERC1155("http://clone1155.com/", user1, "Clone1155", "CL1155");
@@ -142,7 +205,7 @@ contract TestnetTests is Test {
         assertEq(clone1155.isAdmin(user1), true);
 
         // Check the clone can be retrieved using getERC1155Clone function
-        assertEq(factory.getERC1155Clone(0), clone1155Address);
+        assertEq(factory.getERC1155Clone(numClones), clone1155Address);
 
         //create token types
         vm.startPrank(user1);
@@ -157,6 +220,9 @@ contract TestnetTests is Test {
     }
 
     function testCloneERC721() public {
+        //get number of clones
+        uint256 numClones = factory.getNumERC721Clones();
+
         vm.prank(tronicOwner);
         address clone721Address =
             factory.cloneERC721("Clone721", "CL721", "http://clone721.com/", user2);
@@ -171,7 +237,7 @@ contract TestnetTests is Test {
         assertEq(clone721.isAdmin(user2), true);
 
         // Check the clone can be retrieved using getERC721Clone function
-        assertEq(factory.getERC721Clone(0), clone721Address);
+        assertEq(factory.getERC721Clone(numClones), clone721Address);
 
         console.log("clone721Address: ", clone721Address);
         // console clone's registry address

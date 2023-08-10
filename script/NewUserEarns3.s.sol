@@ -36,8 +36,8 @@ contract NewUserEarns3 is Script {
         //mint 25 level 3 premium tokens from project x to tbaAccountX address
         erc1155CloneX.mintFungible(tbaAccountX, 3, 25);
 
-        //mint 10 premium tronic tokens to tronic tbaAccount address
-        tronicERC1155.mintFungible(tbaAccount, 1, 10);
+        //mint 50 premium tronic tokens id: 2 to tronic tbaAccount address
+        tronicERC1155.mintFungible(tbaAccount, 2, 50);
 
         vm.stopBroadcast();
     }

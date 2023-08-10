@@ -48,22 +48,6 @@ contract CloneFactory {
         _;
     }
 
-    function getERC1155Clone(uint256 index) external view returns (address) {
-        return erc1155Clones[index];
-    }
-
-    function getERC721Clone(uint256 index) external view returns (address) {
-        return erc721Clones[index];
-    }
-
-    function getNumERC1155Clones() external view returns (uint256) {
-        return _numERC1155Clones;
-    }
-
-    function getNumERC721Clones() external view returns (uint256) {
-        return _numERC721Clones;
-    }
-
     function cloneERC1155(
         string memory uri,
         address admin,
@@ -94,6 +78,22 @@ contract CloneFactory {
         _numERC721Clones++;
 
         emit CloneCreated(erc721CloneAddress, uri);
+    }
+
+    function getERC1155Clone(uint256 index) external view returns (address) {
+        return erc1155Clones[index];
+    }
+
+    function getERC721Clone(uint256 index) external view returns (address) {
+        return erc721Clones[index];
+    }
+
+    function getNumERC1155Clones() external view returns (uint256) {
+        return _numERC1155Clones;
+    }
+
+    function getNumERC721Clones() external view returns (uint256) {
+        return _numERC721Clones;
     }
 
     function setTronicAdmin(address newAdmin) external onlyOwner {
