@@ -6,6 +6,8 @@ import "./interfaces/IERC6551Registry.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 
+/// @title ERC721CloneableTBA
+/// @notice A contract for managing ERC721 tokens with additional functionalities such as admin control.
 contract ERC721CloneableTBA is ERC721Enumerable, Initializable {
     IERC6551Registry public registry;
     address public accountImplementation;
@@ -20,13 +22,22 @@ contract ERC721CloneableTBA is ERC721Enumerable, Initializable {
     // Token symbol
     string private _symbol;
 
+    /// @notice Constructor initializes the ERC721 with empty name and symbol.
     constructor() ERC721("", "") {}
 
+    /// @dev Modifier to ensure only the owner can call certain functions.
     modifier onlyOwner() {
         require(msg.sender == owner, "Only the owner can call this function");
         _;
     }
 
+    /// @notice Initializes the contract with given parameters.
+    /// @param _accountImplementation Implementation of the account.
+    /// @param _registry Address of the registry contract.
+    /// @param name_ Name of the token.
+    /// @param symbol_ Symbol of the token.
+    /// @param uri Base URI of the token.
+    /// @param admin Address of the initial admin.
     function initialize(
         address payable _accountImplementation,
         address _registry,
@@ -44,6 +55,10 @@ contract ERC721CloneableTBA is ERC721Enumerable, Initializable {
         _symbol = symbol_;
     }
 
+    /// @notice Mints a new token.
+    /// @param to Address to mint the token to.
+    /// @param tokenId ID of the token to mint.
+    /// @return account The payable address of the created token account.
     function mint(address to, uint256 tokenId) public onlyAdmin returns (address payable account) {
         // Deploy token account
         account = payable(
@@ -61,59 +76,79 @@ contract ERC721CloneableTBA is ERC721Enumerable, Initializable {
         _mint(to, tokenId);
     }
 
+    /// @notice Burns a token with the given ID.
+    /// @param tokenId ID of the token to burn.
     function burn(uint256 tokenId) public onlyAdmin {
         _burn(tokenId);
     }
 
+    /// @notice Sets the base URI for the token.
+    /// @param uri The new base URI.
     function setBaseURI(string memory uri) external onlyOwner {
         _baseURI_ = uri;
     }
 
+    /// @dev Modifier to ensure only the admin can call certain functions.
     modifier onlyAdmin() {
         require(_admins[msg.sender], "Only admin");
         _;
     }
 
-    /**
-     * @dev See {IERC721Metadata-name}.
-     */
+    /// @notice Returns the name of the token.
+    /// @return The name of the token.
     function name() public view override returns (string memory) {
         return _name;
     }
 
-    /**
-     * @dev See {IERC721Metadata-symbol}.
-     */
+    /// @notice Returns the symbol of the token.
+    /// @return The symbol of the token.
     function symbol() public view override returns (string memory) {
         return _symbol;
     }
 
+    /// @notice Returns the URI for a given token ID.
+    /// @param _id The token ID.
+    /// @return The complete URI of the token.
     function tokenURI(uint256 _id) public view override returns (string memory) {
         require(_exists(_id), "Token does not exist");
 
         return string(abi.encodePacked(_baseURI_, Strings.toString(_id)));
     }
 
+    /// @notice Adds an admin.
+    /// @param _admin The address of the new admin.
     function addAdmin(address _admin) external onlyOwner {
         _admins[_admin] = true;
     }
 
+    /// @notice Removes an admin.
+    /// @param _admin The address of the admin to remove.
     function removeAdmin(address _admin) external onlyOwner {
         _admins[_admin] = false;
     }
 
+    /// @notice Checks if an address is an admin.
+    /// @param _admin The address to check.
+    /// @return True if the address is an admin, false otherwise.
     function isAdmin(address _admin) external view returns (bool) {
         return _admins[_admin];
     }
 
+    /// @notice Updates the implementation of the account.
+    /// @param _accountImplementation The new account implementation address.
     function updateImplementation(address payable _accountImplementation) external onlyOwner {
         accountImplementation = _accountImplementation;
     }
 
+    /// @notice Overrides the supportsInterface function to include support for IERC721.
+    /// @param interfaceId The interface ID to check for.
+    /// @return True if the interface is supported, false otherwise.
     function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
         return interfaceId == type(IERC721).interfaceId || super.supportsInterface(interfaceId);
     }
 
+    /// @notice Transfers ownership of the contract to a new owner.
+    /// @param newOwner The address of the new owner.
     function transferOwnership(address newOwner) public onlyOwner {
         require(newOwner != address(0), "New owner address cannot be zero");
         owner = newOwner;
