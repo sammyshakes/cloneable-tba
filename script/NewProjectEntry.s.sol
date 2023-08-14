@@ -42,28 +42,15 @@ contract NewProjectEntry is Script {
 
         vm.startBroadcast(deployerPrivateKey);
 
-        //deploy partner x clone erc721
-        cloneFactory.cloneERC721("Project X", "PRJX", erc721URIX, tronicAddress);
+        //deploy partner x
+        cloneFactory.deployPartner(
+            tronicAddress, "Project X", "PRJX", erc721URIX, nameX, symbolX, erc115BaseURIX
+        );
 
-        //deploy partner y clone erc721
-        cloneFactory.cloneERC721("Project Y", "PRJY", erc721URIY, tronicAddress);
-
-        //deploy partner x clone erc1155
-        address erc1155cloneX =
-            cloneFactory.cloneERC1155(erc115BaseURIX, tronicAddress, nameX, symbolX);
-
-        //deploy partner y clone erc1155
-        address erc1155cloneY =
-            cloneFactory.cloneERC1155(erc115BaseURIY, tronicAddress, nameY, symbolY);
-
-        //create fungible token types
-        ERC1155Cloneable(erc1155cloneX).createFungibleType(1, erc115FungibleURI1X);
-        ERC1155Cloneable(erc1155cloneX).createFungibleType(2, erc115FungibleURI2X);
-        ERC1155Cloneable(erc1155cloneX).createFungibleType(3, erc115FungibleURI3X);
-
-        ERC1155Cloneable(erc1155cloneY).createFungibleType(1, erc115FungibleURI1Y);
-        ERC1155Cloneable(erc1155cloneY).createFungibleType(2, erc115FungibleURI2Y);
-        ERC1155Cloneable(erc1155cloneY).createFungibleType(3, erc115FungibleURI3Y);
+        //deploy partner y
+        cloneFactory.deployPartner(
+            tronicAddress, "Project Y", "PRJY", erc721URIY, nameY, symbolY, erc115BaseURIY
+        );
 
         vm.stopBroadcast();
     }

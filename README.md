@@ -53,7 +53,7 @@ forge verify-contract --chain-id 11155111 --watch 0xd3065Ed995ea1ad63f36caD3fB25
 - Creates 4 Fungible Reward Tokens for Tronic
 
 ```js
-forge script script/Initialize.s.sol:Initialize -vvvv --rpc-url sepolia --broadcast --verify
+forge script script/Initialize.s.sol:Initialize -vvvv --rpc-url sepolia --broadcast
 ```
 
 ## Deploy New Project/Partner/Brand (Project X)

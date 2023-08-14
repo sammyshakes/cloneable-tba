@@ -10,6 +10,16 @@ import "@openzeppelin/contracts/proxy/Clones.sol";
 /// @notice A contract for cloning and managing ERC721 and ERC1155 contracts.
 contract CloneFactory {
     event CloneCreated(address clone, string name);
+    event PartnerContractsDeployed(
+        address indexed admin,
+        address indexed cloneERC721,
+        address indexed cloneERC1155,
+        string name721,
+        string symbol721,
+        string uri721,
+        string name1155,
+        string symbol1155
+    );
 
     IERC6551Registry public registry;
     ERC721CloneableTBA public erc721Implementation;
@@ -21,6 +31,12 @@ contract CloneFactory {
 
     uint256 private _numERC1155Clones;
     uint256 private _numERC721Clones;
+
+    // Mapping to track cloned contracts for a specific partner admin
+    mapping(address => address[]) public partnerAdminToContracts;
+
+    // Mapping to track the type of contract (ERC721 or ERC1155)
+    mapping(address => string) public contractToType;
 
     mapping(uint256 => address) public erc1155Clones;
     mapping(uint256 => address) public erc721Clones;
@@ -58,6 +74,30 @@ contract CloneFactory {
         _;
     }
 
+    function deployPartner(
+        address admin,
+        string memory name721,
+        string memory symbol721,
+        string memory uri721,
+        string memory name1155,
+        string memory symbol1155,
+        string memory uri1155
+    ) external onlyTronicAdmin returns (address clone721, address clone1155) {
+        clone721 = cloneERC721(name721, symbol721, uri721, admin);
+        clone1155 = cloneERC1155(uri1155, admin, name1155, symbol1155);
+
+        // Associate the cloned contracts with the partner admin
+        partnerAdminToContracts[admin].push(clone721);
+        partnerAdminToContracts[admin].push(clone1155);
+
+        contractToType[clone721] = "ERC721";
+        contractToType[clone1155] = "ERC1155";
+
+        emit PartnerContractsDeployed(
+            admin, clone721, clone1155, name721, symbol721, uri721, name1155, symbol1155
+        );
+    }
+
     /// @notice Clones the ERC1155 implementation and initializes it.
     /// @param uri The URI for the cloned contract.
     /// @param admin The address of the admin for the cloned contract.
@@ -69,7 +109,7 @@ contract CloneFactory {
         address admin,
         string memory name,
         string memory symbol
-    ) external onlyTronicAdmin returns (address erc1155cloneAddress) {
+    ) private returns (address erc1155cloneAddress) {
         erc1155cloneAddress = Clones.clone(address(erc1155implementation));
         ERC1155Cloneable erc1155clone = ERC1155Cloneable(erc1155cloneAddress);
         erc1155clone.initialize(uri, admin, name, symbol);
@@ -87,8 +127,7 @@ contract CloneFactory {
     /// @param admin The address of the admin for the cloned contract.
     /// @return erc721CloneAddress The address of the newly cloned ERC721 contract.
     function cloneERC721(string memory name, string memory symbol, string memory uri, address admin)
-        external
-        onlyTronicAdmin
+        private
         returns (address erc721CloneAddress)
     {
         erc721CloneAddress = Clones.clone(address(erc721Implementation));
