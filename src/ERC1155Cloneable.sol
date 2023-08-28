@@ -101,7 +101,7 @@ contract ERC1155Cloneable is ERC1155, Initializable {
         uint256[] memory ids,
         uint256[] memory amounts,
         bytes memory data
-    ) external onlyOwner {
+    ) external onlyAdmin {
         require(to != address(0), "ERC1155Cloneable: mint to the zero address");
 
         // Calling the internal _mintBatch function from ERC1155 contract
