@@ -106,14 +106,14 @@ contract ERC721CloneableTBA is ERC721Enumerable, Initializable {
         return _symbol;
     }
 
-    /// @notice Returns the URI for a given token ID.
-    /// @param _id The token ID.
-    /// @return The complete URI of the token.
-    function tokenURI(uint256 _id) public view override returns (string memory) {
-        require(_exists(_id), "Token does not exist");
+    // /// @notice Returns the URI for a given token ID.
+    // /// @param _id The token ID.
+    // /// @return The complete URI of the token.
+    // function tokenURI(uint256 _id) public view override returns (string memory) {
+    //     require(exists(_id), "Token does not exist");
 
-        return string(abi.encodePacked(_baseURI_, Strings.toString(_id)));
-    }
+    //     return string(abi.encodePacked(_baseURI_, Strings.toString(_id)));
+    // }
 
     /// @notice Adds an admin.
     /// @param _admin The address of the new admin.
@@ -144,7 +144,7 @@ contract ERC721CloneableTBA is ERC721Enumerable, Initializable {
     /// @param interfaceId The interface ID to check for.
     /// @return True if the interface is supported, false otherwise.
     function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
-        return interfaceId == type(IERC721).interfaceId || super.supportsInterface(interfaceId);
+        return interfaceId == type(ERC721).interfaceId || super.supportsInterface(interfaceId);
     }
 
     /// @notice Transfers ownership of the contract to a new owner.

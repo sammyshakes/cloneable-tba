@@ -73,6 +73,9 @@ contract CloneFactoryTest is Test {
         //get number of clones
         uint256 numClones = factory.getNumERC721Clones();
 
+        // assert that there are no clones
+        assertEq(numClones, 0);
+
         vm.prank(tronicOwner);
         (address clone721Address,) =
             factory.deployPartner(user2, "Clone721", "CL721", "http://clone721.com/", "", "", "");

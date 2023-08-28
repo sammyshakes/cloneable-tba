@@ -90,6 +90,24 @@ contract ERC1155Cloneable is ERC1155, Initializable {
         _mint(to, id, 1, "");
     }
 
+    /// @notice Mints multiple tokens to a specific address.
+    /// @param to Address to mint the tokens to.
+    /// @param ids IDs of the tokens to mint.
+    /// @param amounts Amounts of each token to mint.
+    /// @param data Additional data to include in the minting call.
+    /// @dev Requires that the token IDs and amounts arrays have matching lengths.
+    function mintBatch(
+        address to,
+        uint256[] memory ids,
+        uint256[] memory amounts,
+        bytes memory data
+    ) external onlyOwner {
+        require(to != address(0), "ERC1155Cloneable: mint to the zero address");
+
+        // Calling the internal _mintBatch function from ERC1155 contract
+        _mintBatch(to, ids, amounts, data);
+    }
+
     /// @notice Burns tokens from a specific address.
     /// @param account Address to burn tokens from.
     /// @param id ID of the token type to burn.
