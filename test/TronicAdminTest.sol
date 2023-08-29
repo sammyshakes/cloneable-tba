@@ -12,6 +12,17 @@ contract TronicAdminTest is Test {
     ERC1155Cloneable tronicERC1155;
     IERC6551Account tbaCloneable;
 
+    ERC721CloneableTBA partnerXERC721;
+    ERC1155Cloneable partnerXERC1155;
+    ERC721CloneableTBA partnerYERC721;
+    ERC1155Cloneable partnerYERC1155;
+
+    TronicAdmin.PartnerInfo partnerX;
+    TronicAdmin.PartnerInfo partnerY;
+
+    uint256 partnerIDX = 0;
+    uint256 partnerIDY = 1;
+
     // set users
     address public user1 = address(0x1);
     address public user2 = address(0x2);
@@ -78,16 +89,17 @@ contract TronicAdminTest is Test {
         );
 
         vm.stopPrank();
-    }
 
-    function testCreateFungibleType() public {
-        assertEq(tronicAdminContract.owner(), address(this));
-        assertEq(tronicAdminContract.partnerCounter(), 2);
-        console.log("tronicAdminContract address: ", address(tronicAdminContract));
-        console.log("tronicERC721 address: ", address(tronicERC721));
-        console.log("tronicERC1155 address: ", address(tronicERC1155));
-        console.log("tbaAddress: ", tbaAddress);
-        console.log("registryAddress: ", registryAddress);
+        partnerIDX = 0;
+        partnerIDY = 1;
+
+        partnerXERC721 = ERC721CloneableTBA(clone721AddressX);
+        partnerXERC1155 = ERC1155Cloneable(clone1155AddressX);
+        partnerYERC721 = ERC721CloneableTBA(clone721AddressY);
+        partnerYERC1155 = ERC1155Cloneable(clone1155AddressY);
+
+        partnerX = tronicAdminContract.getPartnerInfo(partnerIDX);
+        partnerY = tronicAdminContract.getPartnerInfo(partnerIDY);
     }
 
     function testInitialSetup() public {
@@ -98,6 +110,38 @@ contract TronicAdminTest is Test {
         console.log("tronicERC1155 address: ", address(tronicERC1155));
         console.log("tbaAddress: ", tbaAddress);
         console.log("registryAddress: ", registryAddress);
+        console.log("clone721AddressX: ", clone721AddressX);
+        console.log("clone1155AddressX: ", clone1155AddressX);
+        console.log("clone721AddressY: ", clone721AddressY);
+        console.log("clone1155AddressY: ", clone1155AddressY);
+
+        // check that the partner details are correctly set
+        assertEq(partnerX.erc721Address, clone721AddressX);
+        assertEq(partnerX.erc1155Address, clone1155AddressX);
+        assertEq(partnerX.partnerName, "SetupPartnerX");
+        assertEq(partnerY.erc721Address, clone721AddressY);
+        assertEq(partnerY.erc1155Address, clone1155AddressY);
+        assertEq(partnerY.partnerName, "SetupPartnerY");
+    }
+
+    function testAdminCreateFungibleType() public {
+        // Set up initial state
+        uint64 initialMaxSupply = 1000;
+        string memory initialUri = "http://example.com/token/";
+
+        // Action: Admin creates a fungible token type
+        vm.prank(address(tronicAdmin));
+        uint256 fungibleID =
+            tronicAdminContract.createFungibleTokenType(initialMaxSupply, initialUri, partnerIDX);
+
+        // Assertion: Verify that the new token type has the correct attributes
+        ERC1155Cloneable.FungibleTokenInfo memory tokenInfo =
+            partnerXERC1155.getFungibleTokenInfo(fungibleID);
+
+        assertEq(tokenInfo.maxSupply, initialMaxSupply, "Incorrect maxSupply");
+        assertEq(tokenInfo.uri, initialUri, "Incorrect URI");
+        assertEq(tokenInfo.totalMinted, 0, "Incorrect totalMinted");
+        assertEq(tokenInfo.totalBurned, 0, "Incorrect totalBurned");
     }
 
     function testDeployAndAddPartner() public {

@@ -138,6 +138,20 @@ contract TronicAdmin {
         delete partners[_partnerId];
     }
 
+    /// @notice Creates a new ERC1155 fungible token type for a partner.
+    /// @param maxSupply The maximum supply of the token type.
+    /// @param uri The URI for the token type.
+    /// @param partnerId The ID of the partner to create the token type for.
+    /// @return The ID of the newly created token type.
+    function createFungibleTokenType(uint256 maxSupply, string memory uri, uint256 partnerId)
+        external
+        onlyAdmin
+        returns (uint256)
+    {
+        PartnerInfo memory partner = partners[partnerId];
+        return ERC1155Cloneable(partner.erc1155Address).createFungibleType(uint64(maxSupply), uri);
+    }
+
     /// @notice Processes multiple minting operations for both ERC1155 and ERC721 tokens on behalf of partners.
     /// @param _partnerIds   Array of partner IDs corresponding to each minting operation.
     /// @param _tokenIds     2D array of token IDs to mint for each partner.
