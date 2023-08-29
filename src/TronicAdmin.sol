@@ -2,18 +2,9 @@
 
 pragma solidity ^0.8.13;
 
-interface IERC721CloneableTBA {
-    function mint(address to, uint256 tokenId) external returns (address payable);
-}
-
-interface IERC1155Cloneable {
-    function mintBatch(
-        address to,
-        uint256[] memory ids,
-        uint256[] memory amounts,
-        bytes memory data
-    ) external;
-}
+import "./ERC1155Cloneable.sol";
+import "./ERC721CloneableTBA.sol";
+import "@openzeppelin/contracts/proxy/Clones.sol";
 
 contract TronicAdmin {
     struct PartnerInfo {
@@ -27,14 +18,45 @@ contract TronicAdmin {
         ERC721
     }
 
-    // Mapping to store addresses of all partners' ERC-721 and ERC-1155 contracts using a generated ID
-    mapping(uint256 => PartnerInfo) public partners;
+    event PartnerAdded(
+        uint256 indexed partnerId,
+        address indexed erc721Address,
+        address indexed erc1155Address,
+        string partnerName
+    );
 
-    // Counter to generate unique IDs for partners
-    uint256 public partnerCounter = 0;
-
-    // The address of the Tronic owner/admin
     address public owner;
+    address payable public tbaAccountImplementation;
+
+    // Deployments
+    IERC6551Registry public registry;
+    ERC721CloneableTBA public tronicERC721;
+    ERC1155Cloneable public tronicERC1155;
+
+    uint256 public partnerCounter;
+    mapping(uint256 => PartnerInfo) public partners;
+    mapping(address => bool) private _admins;
+
+    /// @notice Constructs the CloneFactory contract.
+    /// @param _admin The address of the Tronic admin.
+    /// @param _tronicERC721 The address of the Tronic ERC721 implementation.
+    /// @param _tronicERC1155 The address of the Tronic ERC1155 implementation.
+    /// @param _registry The address of the registry contract.
+    /// @param _tbaAccountImplementation The address of the tokenbound account implementation.
+    constructor(
+        address _admin,
+        address _tronicERC721,
+        address _tronicERC1155,
+        address _registry,
+        address _tbaAccountImplementation
+    ) {
+        owner = msg.sender;
+        tronicERC1155 = ERC1155Cloneable(_tronicERC1155);
+        tronicERC721 = ERC721CloneableTBA(_tronicERC721);
+        registry = IERC6551Registry(_registry);
+        tbaAccountImplementation = payable(_tbaAccountImplementation);
+        _admins[_admin] = true;
+    }
 
     // Modifiers for access control
     modifier onlyOwner() {
@@ -42,31 +64,77 @@ contract TronicAdmin {
         _;
     }
 
-    // Constructor to set the initial owner/admin of Tronic
-    constructor() {
-        owner = msg.sender;
+    modifier onlyAdmin() {
+        require(_admins[msg.sender], "Only admin");
+        _;
     }
 
     function getPartnerInfo(uint256 partnerId) external view returns (PartnerInfo memory) {
         return partners[partnerId];
     }
 
-    // Function to add a new partner's ERC-721 and ERC-1155 contract addresses
-    function addPartnerContracts(
-        string memory _partnerName,
-        address _erc721Address,
-        address _erc1155Address
-    ) external onlyOwner {
-        partners[partnerCounter] = PartnerInfo({
-            erc721Address: _erc721Address,
-            erc1155Address: _erc1155Address,
-            partnerName: _partnerName
+    // Function to deploy partner contracts using CloneFactory and then associate them with a partner
+    function deployPartner(
+        string memory name721,
+        string memory symbol721,
+        string memory uri721,
+        string memory name1155,
+        string memory symbol1155,
+        string memory uri1155,
+        string memory partnerName
+    ) external onlyAdmin returns (address erc721Address, address erc1155Address) {
+        // Deploy the partner's contracts
+        erc721Address = deployPartnerERC721(name721, symbol721, uri721, address(this));
+        erc1155Address = deployPartnerERC1155(name1155, symbol1155, uri1155, address(this));
+
+        // Assign partner id and associate the deployed contracts with the partner
+        partners[partnerCounter++] = PartnerInfo({
+            erc721Address: erc721Address,
+            erc1155Address: erc1155Address,
+            partnerName: partnerName
         });
-        partnerCounter++;
+
+        emit PartnerAdded(partnerCounter - 1, erc721Address, erc1155Address, partnerName); // partnerCounter - 1 will give the last added partner's ID
+    }
+
+    /// @notice Clones the ERC721 implementation and initializes it.
+    /// @param name The name of the token.
+    /// @param symbol The symbol of the token.
+    /// @param uri The URI for the cloned contract.
+    /// @param admin The address of the admin for the cloned contract.
+    /// @return erc721CloneAddress The address of the newly cloned ERC721 contract.
+    function deployPartnerERC721(
+        string memory name,
+        string memory symbol,
+        string memory uri,
+        address admin
+    ) private returns (address erc721CloneAddress) {
+        erc721CloneAddress = Clones.clone(address(tronicERC721));
+        ERC721CloneableTBA erc721Clone = ERC721CloneableTBA(erc721CloneAddress);
+        erc721Clone.initialize(
+            tbaAccountImplementation, address(registry), name, symbol, uri, admin
+        );
+    }
+
+    /// @notice Clones the ERC1155 implementation and initializes it.
+    /// @param uri The URI for the cloned contract.
+    /// @param admin The address of the admin for the cloned contract.
+    /// @param name The name of the token.
+    /// @param symbol The symbol of the token.
+    /// @return erc1155cloneAddress The address of the newly cloned ERC1155 contract.
+    function deployPartnerERC1155(
+        string memory name,
+        string memory symbol,
+        string memory uri,
+        address admin
+    ) private returns (address erc1155cloneAddress) {
+        erc1155cloneAddress = Clones.clone(address(tronicERC1155));
+        ERC1155Cloneable erc1155clone = ERC1155Cloneable(erc1155cloneAddress);
+        erc1155clone.initialize(uri, admin, name, symbol);
     }
 
     // Function to remove a partner's contracts (considering the challenges of removing from a mapping)
-    function removePartner(uint256 _partnerId) external onlyOwner {
+    function removePartner(uint256 _partnerId) external onlyAdmin {
         delete partners[_partnerId];
     }
 
@@ -86,7 +154,7 @@ contract TronicAdmin {
         uint256[][] memory _amounts,
         address[] memory _recipients,
         TokenType[] memory _tokenTypes
-    ) external onlyOwner {
+    ) external onlyAdmin {
         require(
             _partnerIds.length == _tokenIds.length && _tokenIds.length == _amounts.length
                 && _amounts.length == _recipients.length && _recipients.length == _tokenTypes.length,
@@ -103,18 +171,60 @@ contract TronicAdmin {
                     "TokenIds and amounts arrays for a partner must have the same length"
                 );
 
-                // Using the IERC1155Cloneable interface, call the mintBatch function
-                IERC1155Cloneable(partner.erc1155Address).mintBatch(
+                // Call the mintBatch function
+                ERC1155Cloneable(partner.erc1155Address).mintBatch(
                     _recipients[i], _tokenIds[i], _amounts[i], ""
                 );
             } else if (_tokenTypes[i] == TokenType.ERC721) {
                 require(_tokenIds[i].length == 1, "ERC721 should have a single tokenId for minting");
                 require(_amounts[i][0] == 1, "ERC721 minting amount should be 1");
 
-                // Using the IERC721 interface, call the mint function
-                // Assuming your ERC721 implementation has a mint function with this signature
-                IERC721CloneableTBA(partner.erc721Address).mint(_recipients[i], _tokenIds[i][0]);
+                // Call the mint function
+                ERC721CloneableTBA(partner.erc721Address).mint(_recipients[i], _tokenIds[i][0]);
             }
         }
+    }
+
+    /// @notice Sets the ERC721 implementation address, callable only by the owner.
+    /// @param newImplementation The address of the new ERC721 implementation.
+    function setERC721Implementation(address newImplementation) external onlyOwner {
+        tronicERC721 = ERC721CloneableTBA(newImplementation);
+    }
+
+    /// @notice Sets the ERC1155 implementation address, callable only by the owner.
+    /// @param newImplementation The address of the new ERC1155 implementation.
+    function setERC1155Implementation(address newImplementation) external onlyOwner {
+        tronicERC1155 = ERC1155Cloneable(newImplementation);
+    }
+
+    /// @notice Sets the account implementation address, callable only by the owner.
+    /// @param newImplementation The address of the new account implementation.
+    function setAccountImplementation(address payable newImplementation) external onlyOwner {
+        tbaAccountImplementation = newImplementation;
+    }
+
+    /// @notice Sets the registry address, callable only by the owner.
+    /// @param newRegistry The address of the new registry.
+    function setRegistry(address newRegistry) external onlyOwner {
+        registry = IERC6551Registry(newRegistry);
+    }
+
+    /// @notice Adds an admin to the contract.
+    /// @param admin The address of the new admin.
+    function addAdmin(address admin) external onlyOwner {
+        _admins[admin] = true;
+    }
+
+    /// @notice Removes an admin from the contract.
+    /// @param admin The address of the admin to remove.
+    function removeAdmin(address admin) external onlyOwner {
+        _admins[admin] = false;
+    }
+
+    /// @notice Checks if an address is an admin of the contract.
+    /// @param admin The address to check.
+    /// @return True if the address is an admin, false otherwise.
+    function isAdmin(address admin) external view returns (bool) {
+        return _admins[admin];
     }
 }

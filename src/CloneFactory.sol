@@ -9,7 +9,6 @@ import "@openzeppelin/contracts/proxy/Clones.sol";
 /// @title CloneFactory
 /// @notice A contract for cloning and managing ERC721 and ERC1155 contracts.
 contract CloneFactory {
-    event CloneCreated(address clone, string name);
     event PartnerContractsDeployed(
         address indexed admin,
         address indexed cloneERC721,
@@ -116,8 +115,6 @@ contract CloneFactory {
 
         erc1155Clones[_numERC1155Clones] = erc1155cloneAddress;
         _numERC1155Clones++;
-
-        emit CloneCreated(erc1155cloneAddress, uri);
     }
 
     /// @notice Clones the ERC721 implementation and initializes it.
@@ -137,8 +134,6 @@ contract CloneFactory {
         // Emit event, store clone, etc
         erc721Clones[_numERC721Clones] = erc721CloneAddress;
         _numERC721Clones++;
-
-        emit CloneCreated(erc721CloneAddress, uri);
     }
 
     /// @notice Retrieves the address of a specific ERC1155 clone by its index.
