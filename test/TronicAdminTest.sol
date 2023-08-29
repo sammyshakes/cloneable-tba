@@ -88,10 +88,15 @@ contract TronicAdminTest is Test {
             "SetupPartnerY"
         );
 
-        vm.stopPrank();
+        // Set up initial state
+        uint64 initialMaxSupply = 1000;
+        string memory initialUriX = "http://setup-exampleX.com/token/";
+        string memory initialUriY = "http://setup-exampleY.com/token/";
 
-        partnerIDX = 0;
-        partnerIDY = 1;
+        tronicAdminContract.createFungibleTokenType(initialMaxSupply, initialUriX, partnerIDX);
+        tronicAdminContract.createFungibleTokenType(initialMaxSupply, initialUriY, partnerIDY);
+
+        vm.stopPrank();
 
         partnerXERC721 = ERC721CloneableTBA(clone721AddressX);
         partnerXERC1155 = ERC1155Cloneable(clone1155AddressX);
@@ -124,24 +129,65 @@ contract TronicAdminTest is Test {
         assertEq(partnerY.partnerName, "SetupPartnerY");
     }
 
-    function testAdminCreateFungibleType() public {
+    // function testBatchProcess() public {
+    //     // Define recipients, partners, tokenIds, amounts, and tokenTypes
+    //     address[] memory recipients = [user1, user2];
+    //     uint256[][] memory partnerIds = [[partnerIDX, partnerIDY], [partnerIDX]];
+    //     uint256[][][] memory tokenIds = [[[1, 2], [1, 2]], [[1]]];
+    //     uint256[][][] memory amounts = [[[10, 20], [50, 50]], [[5]]];
+    //     TronicAdmin.TokenType[][][] memory tokenTypes = [
+    //         [TokenType.ERC1155, TokenType.ERC1155],
+    //         [TokenType.ERC1155, TokenType.ERC1155],
+    //         [TokenType.ERC1155]
+    //     ];
+
+    //     // Action: Call batchProcess
+    //     tronicAdminContract.batchProcess(recipients, partnerIds, tokenIds, amounts, tokenTypes);
+
+    //     // Assertions (for simplicity, we'll just draft the assertions. The actual implementation might need to call other functions to get balances)
+    //     // For Alice
+    //     assertEq(tronicERC1155.balanceOf(alice, token1), 10, "Incorrect balance for Alice's token1");
+    //     assertEq(tronicERC1155.balanceOf(alice, token2), 20, "Incorrect balance for Alice's token2");
+    //     assert(tronicERC721.ownerOf(token3) == alice, "Alice does not own the minted ERC721 token");
+
+    //     // For Bob
+    //     assertEq(tronicERC1155.balanceOf(bob, token4), 5, "Incorrect balance for Bob's token4");
+    // }
+
+    function testCreateFungibleType() public {
         // Set up initial state
         uint64 initialMaxSupply = 1000;
-        string memory initialUri = "http://example.com/token/";
+        string memory initialUriX = "http://exampleX.com/token/";
+        string memory initialUriY = "http://exampleY.com/token/";
 
-        // Action: Admin creates a fungible token type
-        vm.prank(address(tronicAdmin));
-        uint256 fungibleID =
-            tronicAdminContract.createFungibleTokenType(initialMaxSupply, initialUri, partnerIDX);
+        // Admin creates a fungible token type for partnerX and partnerY
+        vm.startPrank(tronicAdmin);
+        uint256 fungibleIDX =
+            tronicAdminContract.createFungibleTokenType(initialMaxSupply, initialUriX, partnerIDX);
 
-        // Assertion: Verify that the new token type has the correct attributes
+        //create a new fungible token type for partnerY
+        uint256 fungibleIDY =
+            tronicAdminContract.createFungibleTokenType(initialMaxSupply, initialUriY, partnerIDY);
+
+        vm.stopPrank();
+
+        // Verify that the new token type has the correct attributes
         ERC1155Cloneable.FungibleTokenInfo memory tokenInfo =
-            partnerXERC1155.getFungibleTokenInfo(fungibleID);
+            partnerXERC1155.getFungibleTokenInfo(fungibleIDX);
 
         assertEq(tokenInfo.maxSupply, initialMaxSupply, "Incorrect maxSupply");
-        assertEq(tokenInfo.uri, initialUri, "Incorrect URI");
+        assertEq(tokenInfo.uri, initialUriX, "Incorrect URI");
         assertEq(tokenInfo.totalMinted, 0, "Incorrect totalMinted");
         assertEq(tokenInfo.totalBurned, 0, "Incorrect totalBurned");
+
+        // Verify that the new token type has the correct attributes
+        ERC1155Cloneable.FungibleTokenInfo memory tokenInfoY =
+            partnerYERC1155.getFungibleTokenInfo(fungibleIDY);
+
+        assertEq(tokenInfoY.maxSupply, initialMaxSupply, "Incorrect maxSupply");
+        assertEq(tokenInfoY.uri, initialUriY, "Incorrect URI");
+        assertEq(tokenInfoY.totalMinted, 0, "Incorrect totalMinted");
+        assertEq(tokenInfoY.totalBurned, 0, "Incorrect totalBurned");
     }
 
     function testDeployAndAddPartner() public {
