@@ -100,10 +100,7 @@ contract ERC1155Cloneable is ERC1155, Initializable {
     {
         require(_nftTypes[startingTokenId].maxMintable == 0, "Token type already exists");
         require(maxMintable > 0, "Max mintable must be greater than 0");
-        require(
-            startingTokenId >= _nextNFTMTypeMinStartId,
-            "Starting token ID must be greater than 10,000"
-        );
+        require(startingTokenId >= _nextNFTMTypeMinStartId, "Starting token ID must be >= 10,000");
 
         nftTypeId = _nftTypeCounter++;
 

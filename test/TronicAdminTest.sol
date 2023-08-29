@@ -190,6 +190,42 @@ contract TronicAdminTest is Test {
         assertEq(tokenInfoY.totalBurned, 0, "Incorrect totalBurned");
     }
 
+    function testCreateNonFungibleType() public {
+        // Set up initial state
+        string memory initialUriX = "http://exampleNFTX.com/token";
+        string memory initialUriY = "http://exampleNFTY.com/token";
+        uint256 maxMintable = 1000;
+
+        // Admin creates a non-fungible token type for partnerX and partnerY
+        vm.startPrank(tronicAdmin);
+        uint256 nonFungibleIDX = tronicAdminContract.createNonFungibleTokenType(
+            initialUriX, maxMintable, 10_000, partnerIDX
+        );
+
+        //create a new non-fungible token type for partnerY
+        uint256 nonFungibleIDY = tronicAdminContract.createNonFungibleTokenType(
+            initialUriY, maxMintable, 50_000, partnerIDY
+        );
+
+        vm.stopPrank();
+
+        // Verify that the new token type has the correct attributes
+        ERC1155Cloneable.NFTTokenInfo memory tokenInfo =
+            partnerXERC1155.getNFTTokenInfo(nonFungibleIDX);
+
+        assertEq(tokenInfo.baseURI, initialUriX, "Incorrect URI");
+        assertEq(tokenInfo.maxMintable, maxMintable, "Incorrect maxMintable");
+        assertEq(tokenInfo.nextIdToMint, 10_000, "Incorrect nextIdToMint");
+
+        // Verify that the new token type has the correct attributes
+        ERC1155Cloneable.NFTTokenInfo memory tokenInfoY =
+            partnerYERC1155.getNFTTokenInfo(nonFungibleIDY);
+
+        assertEq(tokenInfoY.baseURI, initialUriY, "Incorrect URI");
+        assertEq(tokenInfoY.maxMintable, maxMintable, "Incorrect maxMintable");
+        assertEq(tokenInfoY.nextIdToMint, 50_000, "Incorrect nextIdToMint");
+    }
+
     function testDeployAndAddPartner() public {
         // get partner count
         uint256 partnerCount = tronicAdminContract.partnerCounter();
