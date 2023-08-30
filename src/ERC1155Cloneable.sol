@@ -35,6 +35,7 @@ contract ERC1155Cloneable is ERC1155, Initializable {
     string public symbol;
     mapping(uint256 => FungibleTokenInfo) private _fungibleTokens;
     mapping(uint256 => NFTTokenInfo) private _nftTypes;
+    mapping(uint256 => address) public nftOwners;
     mapping(address => bool) private _admins;
 
     // Token ID => URI mapping for fungible tokens
@@ -164,18 +165,48 @@ contract ERC1155Cloneable is ERC1155, Initializable {
     /// @param to Address to mint the NFT to.
     /// @param typeId Type ID of the NFT.
     /// @dev Requires that the NFT type already exists.
-    function mintNFT(uint256 typeId, address to) external onlyTronicAdmin {
+    function mintNFT(uint256 typeId, address to)
+        external
+        onlyTronicAdmin
+        returns (uint256 tokenId)
+    {
         require(bytes(_nftTypes[typeId].baseURI).length > 0, "NFT type does not exist");
+
+        tokenId = _nftTypes[typeId].nextIdToMint;
         require(
-            _nftTypes[typeId].nextIdToMint
-                < _nftTypes[typeId].startingTokenId + _nftTypes[typeId].maxMintable,
+            tokenId < _nftTypes[typeId].startingTokenId + _nftTypes[typeId].maxMintable,
             "Exceeds max mintable for this NFT type"
         );
 
-        _mint(to, _nftTypes[typeId].nextIdToMint, 1, "");
+        _mint(to, tokenId, 1, "");
 
         // Update the next ID to be minted for this NFT type
         _nftTypes[typeId].nextIdToMint++;
+    }
+
+    function mintNFTs(uint256 typeId, address to, uint256 amount) external onlyTronicAdmin {
+        require(bytes(_nftTypes[typeId].baseURI).length > 0, "NFT type does not exist");
+
+        uint256[] memory tokenIds = new uint256[](amount);
+        uint256[] memory amounts = new uint256[](amount);
+
+        for (uint256 i = 0; i < amount; i++) {
+            uint256 tokenId = _nftTypes[typeId].nextIdToMint;
+            require(
+                tokenId < _nftTypes[typeId].startingTokenId + _nftTypes[typeId].maxMintable,
+                "Exceeds max mintable for this NFT type"
+            );
+
+            tokenIds[i] = tokenId;
+            amounts[i] = 1; // Each NFT has an amount of 1
+
+            nftOwners[tokenId] = to; // Update the owner of the NFT
+
+            // Update the next ID to be minted for this NFT type
+            _nftTypes[typeId].nextIdToMint++;
+        }
+
+        _mintBatch(to, tokenIds, amounts, "");
     }
 
     /// @notice Mints multiple tokens to a specific address.

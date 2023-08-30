@@ -170,6 +170,49 @@ contract TronicAdmin {
         );
     }
 
+    /// @notice Mints a new ERC721 token.
+    /// @param _recipient The address to mint the token to.
+    /// @param _tokenId The ID of the token to mint.
+    /// @param _partnerId The ID of the partner to mint the token for.
+    /// @return The address of the newly created token account.
+    function mintERC721(address _recipient, uint256 _tokenId, uint256 _partnerId)
+        external
+        onlyAdmin
+        returns (address payable)
+    {
+        PartnerInfo memory partner = partners[_partnerId];
+        return ERC721CloneableTBA(partner.erc721Address).mint(_recipient, _tokenId);
+    }
+
+    /// @notice Mints a new ERC1155 token.
+    /// @param _recipient The address to mint the token to.
+    /// @param _tokenId The ID of the token to mint.
+    /// @param _amount The amount of the token to mint.
+    /// @param _partnerId The ID of the partner to mint the token for.
+    function mintFungibleERC1155(
+        address _recipient,
+        uint256 _tokenId,
+        uint64 _amount,
+        uint256 _partnerId
+    ) external onlyAdmin {
+        PartnerInfo memory partner = partners[_partnerId];
+        ERC1155Cloneable(partner.erc1155Address).mintFungible(_recipient, _tokenId, _amount);
+    }
+
+    /// @notice Mints a new nonfungible ERC1155 token.
+    /// @param _recipient The address to mint the token to.
+    /// @param _typeId The ID of the token to mint.
+    /// @param _partnerId The ID of the partner to mint the token for.
+    /// @return The ID of the newly minted token.
+    function mintNonFungibleERC1155(address _recipient, uint256 _typeId, uint256 _partnerId)
+        external
+        onlyAdmin
+        returns (uint256)
+    {
+        PartnerInfo memory partner = partners[_partnerId];
+        return ERC1155Cloneable(partner.erc1155Address).mintNFT(_typeId, _recipient);
+    }
+
     /// @notice Processes multiple minting operations for both ERC1155 and ERC721 tokens on behalf of partners.
     /// @param _partnerIds   Array of partner IDs corresponding to each minting operation.
     /// @param _tokenIds     2D array of token IDs to mint for each partner.

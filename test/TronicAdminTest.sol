@@ -129,31 +129,6 @@ contract TronicAdminTest is Test {
         assertEq(partnerY.partnerName, "SetupPartnerY");
     }
 
-    // function testBatchProcess() public {
-    //     // Define recipients, partners, tokenIds, amounts, and tokenTypes
-    //     address[] memory recipients = [user1, user2];
-    //     uint256[][] memory partnerIds = [[partnerIDX, partnerIDY], [partnerIDX]];
-    //     uint256[][][] memory tokenIds = [[[1, 2], [1, 2]], [[1]]];
-    //     uint256[][][] memory amounts = [[[10, 20], [50, 50]], [[5]]];
-    //     TronicAdmin.TokenType[][][] memory tokenTypes = [
-    //         [TokenType.ERC1155, TokenType.ERC1155],
-    //         [TokenType.ERC1155, TokenType.ERC1155],
-    //         [TokenType.ERC1155]
-    //     ];
-
-    //     // Action: Call batchProcess
-    //     tronicAdminContract.batchProcess(recipients, partnerIds, tokenIds, amounts, tokenTypes);
-
-    //     // Assertions (for simplicity, we'll just draft the assertions. The actual implementation might need to call other functions to get balances)
-    //     // For Alice
-    //     assertEq(tronicERC1155.balanceOf(alice, token1), 10, "Incorrect balance for Alice's token1");
-    //     assertEq(tronicERC1155.balanceOf(alice, token2), 20, "Incorrect balance for Alice's token2");
-    //     assert(tronicERC721.ownerOf(token3) == alice, "Alice does not own the minted ERC721 token");
-
-    //     // For Bob
-    //     assertEq(tronicERC1155.balanceOf(bob, token4), 5, "Incorrect balance for Bob's token4");
-    // }
-
     function testCreateFungibleType() public {
         // Set up initial state
         uint64 initialMaxSupply = 1000;
@@ -188,6 +163,12 @@ contract TronicAdminTest is Test {
         assertEq(tokenInfoY.uri, initialUriY, "Incorrect URI");
         assertEq(tokenInfoY.totalMinted, 0, "Incorrect totalMinted");
         assertEq(tokenInfoY.totalBurned, 0, "Incorrect totalBurned");
+
+        // mint 100 tokens to user1
+        vm.prank(tronicAdmin);
+        tronicAdminContract.mintFungibleERC1155(user1, fungibleIDX, 100, partnerIDX);
+
+        assertEq(partnerXERC1155.balanceOf(user1, fungibleIDX), 100);
     }
 
     function testCreateNonFungibleType() public {
@@ -195,16 +176,17 @@ contract TronicAdminTest is Test {
         string memory initialUriX = "http://exampleNFTX.com/token";
         string memory initialUriY = "http://exampleNFTY.com/token";
         uint256 maxMintable = 1000;
+        uint256 startingId = 10_000;
 
         // Admin creates a non-fungible token type for partnerX and partnerY
         vm.startPrank(tronicAdmin);
         uint256 nonFungibleIDX = tronicAdminContract.createNonFungibleTokenType(
-            initialUriX, maxMintable, 10_000, partnerIDX
+            initialUriX, maxMintable, startingId, partnerIDX
         );
 
         //create a new non-fungible token type for partnerY
         uint256 nonFungibleIDY = tronicAdminContract.createNonFungibleTokenType(
-            initialUriY, maxMintable, 50_000, partnerIDY
+            initialUriY, maxMintable, startingId, partnerIDY
         );
 
         vm.stopPrank();
@@ -215,7 +197,7 @@ contract TronicAdminTest is Test {
 
         assertEq(tokenInfo.baseURI, initialUriX, "Incorrect URI");
         assertEq(tokenInfo.maxMintable, maxMintable, "Incorrect maxMintable");
-        assertEq(tokenInfo.nextIdToMint, 10_000, "Incorrect nextIdToMint");
+        assertEq(tokenInfo.nextIdToMint, startingId, "Incorrect nextIdToMint");
 
         // Verify that the new token type has the correct attributes
         ERC1155Cloneable.NFTTokenInfo memory tokenInfoY =
@@ -223,7 +205,15 @@ contract TronicAdminTest is Test {
 
         assertEq(tokenInfoY.baseURI, initialUriY, "Incorrect URI");
         assertEq(tokenInfoY.maxMintable, maxMintable, "Incorrect maxMintable");
-        assertEq(tokenInfoY.nextIdToMint, 50_000, "Incorrect nextIdToMint");
+        assertEq(tokenInfoY.nextIdToMint, startingId, "Incorrect nextIdToMint");
+
+        uint256 userBalanceBefore = partnerXERC1155.balanceOf(user1, startingId);
+
+        // mint a non-fungible token to user1
+        vm.prank(tronicAdmin);
+        tronicAdminContract.mintNonFungibleERC1155(user1, nonFungibleIDX, partnerIDX);
+
+        assertEq(partnerXERC1155.balanceOf(user1, startingId), userBalanceBefore + 1);
     }
 
     function testDeployAndAddPartner() public {
@@ -258,29 +248,27 @@ contract TronicAdminTest is Test {
     }
 
     // function testBatchProcess() public {
-    //     address recipient = address(this);
-    //     uint256[] memory partnerIds = new uint256[](1);
-    //     partnerIds[0] = 0;
+    //     // Define recipients, partners, tokenIds, amounts, and tokenTypes
+    //     address[] memory recipients = [user1, user2];
+    //     uint256[][] memory partnerIds = [[partnerIDX, partnerIDY], [partnerIDX]];
+    //     uint256[][][] memory tokenIds = [[[1, 2], [1, 2]], [[1]]];
+    //     uint256[][][] memory amounts = [[[10, 20], [50, 50]], [[5]]];
+    //     TronicAdmin.TokenType[][][] memory tokenTypes = [
+    //         [TokenType.ERC1155, TokenType.ERC1155],
+    //         [TokenType.ERC1155, TokenType.ERC1155],
+    //         [TokenType.ERC1155]
+    //     ];
 
-    //     uint256[][] memory tokenIds = new uint256[][](1);
-    //     tokenIds[0] = new uint256[](1);
-    //     tokenIds[0][0] = 1;
+    //     // Action: Call batchProcess
+    //     tronicAdminContract.batchProcess(recipients, partnerIds, tokenIds, amounts, tokenTypes);
 
-    //     uint256[][] memory amounts = new uint256[][](1);
-    //     amounts[0] = new uint256[](1);
-    //     amounts[0][0] = 1;
+    //     // Assertions (for simplicity, we'll just draft the assertions. The actual implementation might need to call other functions to get balances)
+    //     // For Alice
+    //     assertEq(tronicERC1155.balanceOf(alice, token1), 10, "Incorrect balance for Alice's token1");
+    //     assertEq(tronicERC1155.balanceOf(alice, token2), 20, "Incorrect balance for Alice's token2");
+    //     assert(tronicERC721.ownerOf(token3) == alice, "Alice does not own the minted ERC721 token");
 
-    //     address[] memory recipients = new address[](1);
-    //     recipients[0] = recipient;
-
-    //     TronicAdmin.TokenType[] memory tokenTypes = new TronicAdmin.TokenType[](1);
-    //     tokenTypes[0] = TronicAdmin.TokenType.ERC721;
-
-    //     vm.prank(tronicAdmin);
-    //     tronicAdminContract.batchProcess(partnerIds, tokenIds, amounts, recipients, tokenTypes);
-
-    //     // Here you can add assertions to check the result of batch processing
-    //     // For instance, verify if tokens were minted to the recipient
-    //     assertEq(tronicERC721.balanceOf(recipient), 1);
+    //     // For Bob
+    //     assertEq(tronicERC1155.balanceOf(bob, token4), 5, "Incorrect balance for Bob's token4");
     // }
 }
