@@ -83,6 +83,7 @@ contract TronicAdmin {
         string memory uri1155,
         string memory partnerName
     ) external onlyAdmin returns (address erc721Address, address erc1155Address) {
+        // Question: Will we know the TierIds beforehand?
         // Deploy the partner's contracts
         erc721Address = deployPartnerERC721(name721, symbol721, uri721, address(this));
         erc1155Address = deployPartnerERC1155(name1155, symbol1155, uri1155, address(this));
@@ -190,10 +191,10 @@ contract TronicAdmin {
     /// @param _amount The amount of the token to mint.
     /// @param _partnerId The ID of the partner to mint the token for.
     function mintFungibleERC1155(
+        uint256 _partnerId,
         address _recipient,
         uint256 _tokenId,
-        uint64 _amount,
-        uint256 _partnerId
+        uint64 _amount
     ) external onlyAdmin {
         PartnerInfo memory partner = partners[_partnerId];
         ERC1155Cloneable(partner.erc1155Address).mintFungible(_recipient, _tokenId, _amount);
@@ -203,14 +204,15 @@ contract TronicAdmin {
     /// @param _recipient The address to mint the token to.
     /// @param _typeId The ID of the token to mint.
     /// @param _partnerId The ID of the partner to mint the token for.
-    /// @return The ID of the newly minted token.
-    function mintNonFungibleERC1155(address _recipient, uint256 _typeId, uint256 _partnerId)
-        external
-        onlyAdmin
-        returns (uint256)
-    {
+    /// @param _amount The amount of the token to mint.
+    function mintNonFungibleERC1155(
+        uint256 _partnerId,
+        address _recipient,
+        uint256 _typeId,
+        uint256 _amount
+    ) external onlyAdmin {
         PartnerInfo memory partner = partners[_partnerId];
-        return ERC1155Cloneable(partner.erc1155Address).mintNFT(_typeId, _recipient);
+        ERC1155Cloneable(partner.erc1155Address).mintNFTs(_typeId, _recipient, _amount);
     }
 
     /// @notice Processes multiple minting operations for both ERC1155 and ERC721 tokens on behalf of partners.

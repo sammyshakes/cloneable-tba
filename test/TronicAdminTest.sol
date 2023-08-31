@@ -179,7 +179,7 @@ contract TronicAdminTest is Test {
 
         // mint 100 tokens to user1
         vm.prank(tronicAdmin);
-        tronicAdminContract.mintFungibleERC1155(user1, fungibleIDX, 100, partnerIDX);
+        tronicAdminContract.mintFungibleERC1155(partnerIDX, user1, fungibleIDX, 100);
 
         assertEq(partnerXERC1155.balanceOf(user1, fungibleIDX), 100);
     }
@@ -210,7 +210,7 @@ contract TronicAdminTest is Test {
 
         assertEq(tokenInfo.baseURI, initialUriX, "Incorrect URI");
         assertEq(tokenInfo.maxMintable, maxMintable, "Incorrect maxMintable");
-        assertEq(tokenInfo.nextIdToMint, startingId, "Incorrect nextIdToMint");
+        assertEq(tokenInfo.totalMinted, 0, "Incorrect totalMinted");
 
         // Verify that the new token type has the correct attributes
         ERC1155Cloneable.NFTTokenInfo memory tokenInfoY =
@@ -218,13 +218,13 @@ contract TronicAdminTest is Test {
 
         assertEq(tokenInfoY.baseURI, initialUriY, "Incorrect URI");
         assertEq(tokenInfoY.maxMintable, maxMintable, "Incorrect maxMintable");
-        assertEq(tokenInfoY.nextIdToMint, startingId, "Incorrect nextIdToMint");
+        assertEq(tokenInfoY.totalMinted, 0, "Incorrect totalMinted");
 
         uint256 userBalanceBefore = partnerXERC1155.balanceOf(user1, startingId);
 
         // mint a non-fungible token to user1
         vm.prank(tronicAdmin);
-        tronicAdminContract.mintNonFungibleERC1155(user1, nonFungibleIDX, partnerIDX);
+        tronicAdminContract.mintNonFungibleERC1155(partnerIDX, user1, nonFungibleIDX, 1);
 
         assertEq(partnerXERC1155.balanceOf(user1, startingId), userBalanceBefore + 1);
     }

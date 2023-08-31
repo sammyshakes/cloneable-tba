@@ -15,22 +15,28 @@ contract ERC721CloneableTBA is ERC721Enumerable, Initializable {
 
     mapping(uint256 => string) private tokenIdToMembershipTierId;
     mapping(address => bool) private _admins;
-    string private _baseURI_;
 
-    // Token name
+    // Token name, symbol and base uri
     string private _name;
-
-    // Token symbol
     string private _symbol;
-
-    /// @notice Constructor initializes the ERC721 with empty name and symbol.
-    constructor() ERC721("", "") {}
+    string private _baseURI_;
 
     /// @dev Modifier to ensure only the owner can call certain functions.
     modifier onlyOwner() {
         require(msg.sender == owner, "Only the owner can call this function");
         _;
     }
+
+    /// @dev Modifier to ensure only the admin can call certain functions.
+    modifier onlyAdmin() {
+        require(_admins[msg.sender], "Only admin");
+        _;
+    }
+
+    /// @notice Constructor initializes the ERC721 with empty name and symbol.
+    /// @dev The name and symbol can be set using the initialize function.
+    /// @dev The constructor is left empty because of the proxy pattern used.
+    constructor() ERC721("", "") {}
 
     /// @notice Initializes the contract with given parameters.
     /// @param _accountImplementation Implementation of the account.
@@ -98,12 +104,6 @@ contract ERC721CloneableTBA is ERC721Enumerable, Initializable {
     /// @param uri The new base URI.
     function setBaseURI(string memory uri) external onlyOwner {
         _baseURI_ = uri;
-    }
-
-    /// @dev Modifier to ensure only the admin can call certain functions.
-    modifier onlyAdmin() {
-        require(_admins[msg.sender], "Only admin");
-        _;
     }
 
     /// @notice Returns the name of the token.

@@ -22,13 +22,13 @@ contract ERC1155Cloneable is ERC1155, Initializable {
     struct NFTTokenInfo {
         string baseURI;
         uint64 startingTokenId;
-        uint64 nextIdToMint;
+        uint64 totalMinted;
         uint64 maxMintable;
     }
 
     address public owner;
     address public tronicAdmin;
-    uint256 private _nextNFTMTypeMinStartId = 100_000;
+    uint256 private _nextNFTTypeMinStartId = 100_000;
     uint256 private _tokenTypeCounter;
     string public name;
     string public symbol;
@@ -107,19 +107,19 @@ contract ERC1155Cloneable is ERC1155, Initializable {
     {
         require(_nftTypes[startingTokenId].maxMintable == 0, "Token type already exists");
         require(maxMintable > 0, "Max mintable must be greater than 0");
-        require(startingTokenId >= _nextNFTMTypeMinStartId, "Starting token ID must be >= 10,000");
+        require(startingTokenId >= _nextNFTTypeMinStartId, "Invalid Starting token ID");
 
         nftTypeId = _tokenTypeCounter++;
 
         _nftTypes[nftTypeId] = NFTTokenInfo({
             baseURI: baseURI,
             startingTokenId: startingTokenId,
-            nextIdToMint: startingTokenId,
+            totalMinted: 0,
             maxMintable: maxMintable
         });
 
-        //update nextNFTMTypeMinStartId
-        _nextNFTMTypeMinStartId += maxMintable;
+        //update nextNFTTypeMinStartId
+        _nextNFTTypeMinStartId += maxMintable;
     }
 
     /// @notice Creates a new fungible token type.
@@ -171,14 +171,10 @@ contract ERC1155Cloneable is ERC1155, Initializable {
     /// @param to Address to mint the NFT to.
     /// @param typeId Type ID of the NFT.
     /// @dev Requires that the NFT type already exists.
-    function mintNFT(uint256 typeId, address to)
-        external
-        onlyTronicAdmin
-        returns (uint256 tokenId)
-    {
+    function mintNFT(uint256 typeId, address to) external onlyTronicAdmin {
         require(bytes(_nftTypes[typeId].baseURI).length > 0, "NFT type does not exist");
-
-        tokenId = _nftTypes[typeId].nextIdToMint;
+        // Get the next token ID to mint, and increment the totalMinted count
+        uint256 tokenId = _nftTypes[typeId].startingTokenId + _nftTypes[typeId].totalMinted++;
         require(
             tokenId < _nftTypes[typeId].startingTokenId + _nftTypes[typeId].maxMintable,
             "Exceeds max mintable for this NFT type"
@@ -187,32 +183,34 @@ contract ERC1155Cloneable is ERC1155, Initializable {
         nftOwners[tokenId] = to; // Update the owner of the NFT
 
         _mint(to, tokenId, 1, "");
-
-        // Update the next ID to be minted for this NFT type
-        _nftTypes[typeId].nextIdToMint++;
     }
 
     function mintNFTs(uint256 typeId, address to, uint256 amount) external onlyTronicAdmin {
-        require(bytes(_nftTypes[typeId].baseURI).length > 0, "NFT type does not exist");
+        //get memory instance of NFT type
+        NFTTokenInfo memory nftType = _nftTypes[typeId];
+
+        require(bytes(nftType.baseURI).length > 0, "NFT type does not exist");
+        require(
+            nftType.totalMinted + amount <= nftType.startingTokenId + nftType.maxMintable,
+            "Exceeds max mintable for this NFT type"
+        );
 
         uint256[] memory tokenIds = new uint256[](amount);
         uint256[] memory amounts = new uint256[](amount);
+        uint256 _tokenId;
 
         for (uint256 i = 0; i < amount; i++) {
-            uint256 tokenId = _nftTypes[typeId].nextIdToMint;
-            require(
-                tokenId < _nftTypes[typeId].startingTokenId + _nftTypes[typeId].maxMintable,
-                "Exceeds max mintable for this NFT type"
-            );
+            // Get the next token ID to mint, and increment the totalMinted count
+            _tokenId = nftType.startingTokenId + nftType.totalMinted++;
 
-            tokenIds[i] = tokenId;
+            tokenIds[i] = _tokenId;
             amounts[i] = 1; // Each NFT has an amount of 1
 
-            nftOwners[tokenId] = to; // Update the owner of the NFT
-
-            // Update the next ID to be minted for this NFT type
-            _nftTypes[typeId].nextIdToMint++;
+            nftOwners[_tokenId] = to; // Update the owner of the NFT
         }
+
+        // update the struct with new totalMinted
+        _nftTypes[typeId] = nftType;
 
         _mintBatch(to, tokenIds, amounts, "");
     }
@@ -265,15 +263,15 @@ contract ERC1155Cloneable is ERC1155, Initializable {
             } else if (bytes(_nftTypes[typeIds[i]].baseURI).length > 0) {
                 // Check if it's a non-fungible token type
                 require(
-                    _nftTypes[typeIds[i]].nextIdToMint + amounts[i]
+                    _nftTypes[typeIds[i]].totalMinted + amounts[i]
                         <= _nftTypes[typeIds[i]].startingTokenId + _nftTypes[typeIds[i]].maxMintable,
                     "Exceeds max mintable for this NFT type"
                 );
 
-                idsToMint[i] = _nftTypes[typeIds[i]].nextIdToMint;
+                idsToMint[i] = _nftTypes[typeIds[i]].totalMinted;
 
-                // Increase the nextIdToMint for non-fungible tokens
-                _nftTypes[typeIds[i]].nextIdToMint += uint64(amounts[i]);
+                // Increase the totalMinted for non-fungible tokens
+                _nftTypes[typeIds[i]].totalMinted += uint64(amounts[i]);
             } else {
                 revert("Token type does not exist for some IDs");
             }
@@ -320,17 +318,17 @@ contract ERC1155Cloneable is ERC1155, Initializable {
                 } else if (bytes(_nftTypes[typeIds[recipientIndex][i]].baseURI).length > 0) {
                     // Check if it's a non-fungible token type
                     require(
-                        _nftTypes[typeIds[recipientIndex][i]].nextIdToMint
+                        _nftTypes[typeIds[recipientIndex][i]].totalMinted
                             + amounts[recipientIndex][i]
                             <= _nftTypes[typeIds[recipientIndex][i]].startingTokenId
                                 + _nftTypes[typeIds[recipientIndex][i]].maxMintable,
                         "Exceeds max mintable for this NFT type"
                     );
 
-                    idsToMint[i] = _nftTypes[typeIds[recipientIndex][i]].nextIdToMint;
+                    idsToMint[i] = _nftTypes[typeIds[recipientIndex][i]].totalMinted;
 
-                    // Increase the nextIdToMint for non-fungible tokens
-                    _nftTypes[typeIds[recipientIndex][i]].nextIdToMint +=
+                    // Increase the totalMinted for non-fungible tokens
+                    _nftTypes[typeIds[recipientIndex][i]].totalMinted +=
                         uint64(amounts[recipientIndex][i]);
                 } else {
                     revert("Token type does not exist for some IDs");
