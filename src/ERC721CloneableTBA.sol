@@ -13,7 +13,7 @@ contract ERC721CloneableTBA is ERC721Enumerable, Initializable {
     address public accountImplementation;
     address public owner;
 
-    mapping(uint256 => uint256) private membershipTier;
+    mapping(uint256 => string) private tokenIdToMembershipTierId;
     mapping(address => bool) private _admins;
     string private _baseURI_;
 
@@ -121,14 +121,15 @@ contract ERC721CloneableTBA is ERC721Enumerable, Initializable {
     /// @notice Retrieves the membership tier of a given token ID.
     /// @param tokenId The ID of the token.
     /// @return The membership tier of the token.
-    function getTier(uint256 tokenId) external view returns (uint256) {
-        return membershipTier[tokenId];
+    function getTier(uint256 tokenId) external view returns (string memory) {
+        return tokenIdToMembershipTierId[tokenId];
     }
 
     /// @notice Sets the membership tier of a given token ID.
     /// @param tokenId The ID of the token.
-    function setTier(uint256 tokenId, uint256 newTier) external onlyAdmin {
-        membershipTier[tokenId] = newTier;
+    /// @param newTierId The new membership tier ID.
+    function setTier(uint256 tokenId, string memory newTierId) external onlyAdmin {
+        tokenIdToMembershipTierId[tokenId] = newTierId;
     }
 
     // /// @notice Returns the URI for a given token ID.

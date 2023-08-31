@@ -160,8 +160,8 @@ contract TronicAdmin {
     /// @return nftTypeID The ID of the newly created token type.
     function createNonFungibleTokenType(
         string memory baseUri,
-        uint256 maxMintable,
-        uint256 startingTokenId,
+        uint64 maxMintable,
+        uint64 startingTokenId,
         uint256 partnerId
     ) external onlyAdmin returns (uint256 nftTypeID) {
         PartnerInfo memory partner = partners[partnerId];

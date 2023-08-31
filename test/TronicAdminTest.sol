@@ -188,8 +188,8 @@ contract TronicAdminTest is Test {
         // Set up initial state
         string memory initialUriX = "http://exampleNFTX.com/token";
         string memory initialUriY = "http://exampleNFTY.com/token";
-        uint256 maxMintable = 1000;
-        uint256 startingId = 10_000;
+        uint64 maxMintable = 1000;
+        uint64 startingId = 10_000;
 
         // Admin creates a non-fungible token type for partnerX and partnerY
         vm.startPrank(tronicAdmin);
