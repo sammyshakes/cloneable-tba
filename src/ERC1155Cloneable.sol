@@ -28,10 +28,8 @@ contract ERC1155Cloneable is ERC1155, Initializable {
 
     address public owner;
     address public tronicAdmin;
-    uint256 private _nextNFTMTypeMinStartId = 10_000;
-    uint256 private _nftTypeCounter = 1000; //start at 1000 to avoid with fungible token ids
+    uint256 private _nextNFTMTypeMinStartId = 100_000;
     uint256 private _tokenTypeCounter;
-    uint256 private _nextFungibleId;
     string public name;
     string public symbol;
     mapping(uint256 => FungibleTokenInfo) private _fungibleTokens;
@@ -111,7 +109,7 @@ contract ERC1155Cloneable is ERC1155, Initializable {
         require(maxMintable > 0, "Max mintable must be greater than 0");
         require(startingTokenId >= _nextNFTMTypeMinStartId, "Starting token ID must be >= 10,000");
 
-        nftTypeId = _nftTypeCounter++;
+        nftTypeId = _tokenTypeCounter++;
 
         _nftTypes[nftTypeId] = NFTTokenInfo({
             baseURI: baseURI,
@@ -135,7 +133,7 @@ contract ERC1155Cloneable is ERC1155, Initializable {
     {
         require(_maxSupply > 0, "Max supply must be greater than 0");
         // Increment the fungible token ID counter and set fungibleTokenId.
-        fungibleTokenId = ++_nextFungibleId;
+        fungibleTokenId = _tokenTypeCounter++;
         // Set Fungible Tokens struct for the new token ID.
         _fungibleTokens[fungibleTokenId] =
             FungibleTokenInfo({uri: _uri, maxSupply: _maxSupply, totalMinted: 0, totalBurned: 0});
@@ -362,7 +360,7 @@ contract ERC1155Cloneable is ERC1155, Initializable {
         }
 
         // Check if it's a non-fungible token type
-        for (uint256 typeId = 0; typeId < _nftTypeCounter; typeId++) {
+        for (uint256 typeId = 0; typeId < _tokenTypeCounter; typeId++) {
             if (
                 tokenId >= _nftTypes[typeId].startingTokenId
                     && tokenId < _nftTypes[typeId].startingTokenId + _nftTypes[typeId].maxMintable
