@@ -6,6 +6,41 @@ import "forge-std/Test.sol";
 import "../src/TronicAdmin.sol";
 import "../src/interfaces/IERC6551Account.sol";
 
+/// @dev Sets up the initial state for testing the TronicAdmin system
+/// @notice Deploys the core TronicAdmin, ERC721, and ERC1155 contracts
+/// @notice Creates user accounts, default partners, and initial token types
+/// @notice Should be called automatically by any contract inheriting TronicTestBase
+///
+/// Details:
+///
+/// - Deploys TronicAdmin and assigns roles
+///   - tronicAdminContract: The main TronicAdmin contract
+///   - tronicOwner: Owner account for TronicAdmin
+///   - tronicAdmin: Admin account for TronicAdmin
+///
+/// - Deploys TronicERC721 and TronicERC1155 implementations
+///   - tronicERC721: The Tronic ERC721 token contract
+///   - tronicERC1155: The Tronic ERC1155 token contract
+///
+/// - Initializes Tronic contracts and assigns admin
+///
+/// - Deploys mock TokenBoundAccount implementation
+///   - tbaAddress: Address of mock TBA implementation
+///   - tbaCloneable: Interface to mock TBA
+///
+/// - Creates user accounts
+///   - user1, user2, user3: Sample user accounts
+///   - unauthorizedUser: Unauthorized user account
+///
+/// - Deploys 2 sample partners
+///   - partnerX: Partner 0
+///   - partnerY: Partner 1
+///
+/// - Mints initial sample tokens
+///
+/// This provides a complete base environment for writing tests. Any contract
+/// inheriting this base will have access to the initialized contracts, accounts,
+/// and sample data to test against.
 contract TronicTestBase is Test {
     struct BatchMintOrder {
         uint256 partnerId;
@@ -39,6 +74,8 @@ contract TronicTestBase is Test {
     address public unauthorizedUser = address(0x4);
 
     address public tronicOwner = address(0x5);
+
+    //tronicAdmin will be some privatekey stored on backend
     address public tronicAdmin = address(0x6);
 
     address payable public tbaAddress =
@@ -52,43 +89,11 @@ contract TronicTestBase is Test {
     address public clone1155AddressY;
     address public user1TBA;
 
-    /// @dev Sets up the initial state for testing the TronicAdmin system
-    /// @notice Deploys the core TronicAdmin, ERC721, and ERC1155 contracts
-    /// @notice Creates user accounts, partners, and initial token types
-    /// @notice Should be called automatically by any contract inheriting TronicTestBase
-    ///
-    /// Details:
-    ///
-    /// - Deploys TronicAdmin and assigns roles
-    ///   - tronicAdminContract: The main TronicAdmin contract
-    ///   - tronicOwner: Owner account for TronicAdmin
-    ///   - tronicAdmin: Admin account for TronicAdmin
-    ///
-    /// - Deploys TronicERC721 and TronicERC1155 implementations
-    ///   - tronicERC721: The Tronic ERC721 token contract
-    ///   - tronicERC1155: The Tronic ERC1155 token contract
-    ///
-    /// - Initializes Tronic contracts and assigns admin
-    ///
-    /// - Deploys mock TokenBoundAccount implementation
-    ///   - tbaAddress: Address of mock TBA implementation
-    ///   - tbaCloneable: Interface to mock TBA
-    ///
-    /// - Creates user accounts
-    ///   - user1, user2, user3: Sample user accounts
-    ///   - unauthorizedUser: Unauthorized user account
-    ///
-    /// - Deploys 2 sample partners
-    ///   - partnerX: Partner 0
-    ///   - partnerY: Partner 1
-    ///
-    /// - Mints initial sample tokens
-    ///
-    /// This provides a complete base environment for writing tests. Any contract
-    /// inheriting this base will have access to the initialized contracts, accounts,
-    /// and sample data to test against.
     function setUp() public {
         tbaCloneable = IERC6551Account(tbaAddress);
+
+        //deploy tronic contracts
+        vm.startPrank(tronicOwner);
         tronicERC721 = new ERC721CloneableTBA();
         tronicERC1155 = new ERC1155Cloneable();
 
@@ -99,6 +104,8 @@ contract TronicTestBase is Test {
         tronicERC1155.initialize(
             "http://example1155.com/", address(tronicAdminContract), "Original1155", "OR1155"
         );
+
+        vm.stopPrank();
 
         //initialize tronicERC721
         tronicERC721.initialize(

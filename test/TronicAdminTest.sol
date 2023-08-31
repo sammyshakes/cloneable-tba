@@ -6,7 +6,7 @@ import "./TronicTestBase.sol";
 
 contract TronicAdminTest is TronicTestBase {
     function testInitialSetup() public {
-        assertEq(tronicAdminContract.owner(), address(this));
+        assertEq(tronicAdminContract.owner(), tronicOwner);
         assertEq(tronicAdminContract.partnerCounter(), 2);
         console.log("tronicAdminContract address: ", address(tronicAdminContract));
         console.log("tronicERC721 address: ", address(tronicERC721));
@@ -25,6 +25,12 @@ contract TronicAdminTest is TronicTestBase {
         assertEq(partnerY.erc721Address, clone721AddressY);
         assertEq(partnerY.erc1155Address, clone1155AddressY);
         assertEq(partnerY.partnerName, "SetupPartnerY");
+
+        //assert that TronicAdmin Contract is the owner of partner erc721 and erc1155 token contracts
+        assertEq(address(tronicAdminContract), partnerXERC721.owner());
+        assertEq(address(tronicAdminContract), partnerXERC1155.owner());
+        assertEq(address(tronicAdminContract), partnerYERC721.owner());
+        assertEq(address(tronicAdminContract), partnerYERC1155.owner());
     }
 
     function testCreateFungibleType() public {

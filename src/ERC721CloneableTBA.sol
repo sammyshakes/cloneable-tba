@@ -55,11 +55,12 @@ contract ERC721CloneableTBA is ERC721Enumerable, Initializable {
     ) external initializer {
         accountImplementation = _accountImplementation;
         registry = IERC6551Registry(_registry);
-        _baseURI_ = uri;
+        owner = msg.sender;
         _admins[admin] = true;
-        owner = admin;
+        _admins[msg.sender] = true;
         _name = name_;
         _symbol = symbol_;
+        _baseURI_ = uri;
     }
 
     /// @notice Mints a new token.
