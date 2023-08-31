@@ -5,6 +5,7 @@ pragma solidity ^0.8.13;
 import "forge-std/Test.sol";
 import "../src/CloneFactory.sol";
 import "../src/interfaces/IERC6551Account.sol";
+// import "./ERC1155Cloneable.sol";
 
 contract ERC1155CloneTest is Test {
     CloneFactory public factory;
@@ -93,16 +94,6 @@ contract ERC1155CloneTest is Test {
         // transfer tokens from user1 to user2
         vm.prank(user1);
         clone.safeTransferFrom(user1, user2, 1, 1, "");
-    }
-
-    // Test admin roles
-    function testAdminRoles() public {
-        vm.prank(tronicAdmin);
-        (, address erc1155CloneAddress) = factory.deployPartner(admin1, "", "", "", "", "", "");
-
-        ERC1155Cloneable cloneContract = ERC1155Cloneable(erc1155CloneAddress);
-
-        assertEq(cloneContract.isAdmin(admin1), true);
     }
 
     // Test new token types
@@ -196,35 +187,4 @@ contract ERC1155CloneTest is Test {
         clone1155.safeTransferFrom(user1, user2, 1, 1, "");
         vm.stopPrank();
     }
-
-    // // Mint ERC721 token
-    // function testMintBurnERC721() public {
-    //     address clone = factory.cloneERC721("Name", "SYM", "http://example.com/", admin1);
-
-    //     vm.startPrank(admin1);
-    //     ERC721CloneableTBA(clone).mint(user1, 1);
-
-    //     assertEq(ERC721CloneableTBA(clone).ownerOf(1), user1);
-
-    //     ERC721CloneableTBA(clone).burn(1);
-
-    //     vm.expectRevert();
-    //     ERC721CloneableTBA(clone).ownerOf(1);
-    //     vm.stopPrank();
-    // }
-
-    // // Test ERC721 approvals
-    // function testERC721Approve() public {
-    //     address clone = factory.cloneERC721("Name", "SYM", "http://example.com/", admin1);
-
-    //     vm.prank(admin1);
-    //     ERC721CloneableTBA(clone).mint(user1, 1);
-
-    //     vm.prank(user1);
-    //     ERC721CloneableTBA(clone).approve(user2, 1);
-
-    //     assertEq(ERC721CloneableTBA(clone).getApproved(1), user2);
-
-    //     // Test approval
-    // }
 }

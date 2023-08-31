@@ -21,20 +21,22 @@ contract ERC1155Cloneable is ERC1155, Initializable {
 
     struct NFTTokenInfo {
         string baseURI;
-        uint256 startingTokenId;
-        uint256 nextIdToMint;
-        uint256 maxMintable;
+        uint64 startingTokenId;
+        uint64 nextIdToMint;
+        uint64 maxMintable;
     }
 
     address public owner;
     address public tronicAdmin;
     uint256 private _nextNFTMTypeMinStartId = 10_000;
     uint256 private _nftTypeCounter = 1000; //start at 1000 to avoid with fungible token ids
+    uint256 private _tokenTypeCounter;
     uint256 private _nextFungibleId;
     string public name;
     string public symbol;
     mapping(uint256 => FungibleTokenInfo) private _fungibleTokens;
     mapping(uint256 => NFTTokenInfo) private _nftTypes;
+    mapping(uint256 => uint256) public nftLevels;
     mapping(uint256 => address) public nftOwners;
     mapping(address => bool) private _admins;
 
@@ -52,7 +54,7 @@ contract ERC1155Cloneable is ERC1155, Initializable {
 
     /// @dev Modifier to ensure only an admin can call certain functions.
     modifier onlyAdmin() {
-        require(_admins[msg.sender], "Only admin");
+        require(_admins[msg.sender] || msg.sender == tronicAdmin, "Only Admin");
         _;
     }
 
@@ -81,10 +83,16 @@ contract ERC1155Cloneable is ERC1155, Initializable {
         symbol = _symbol;
     }
 
+    /// @notice Gets the information of a fungible token type.
+    /// @param id The ID of the token type.
+    /// @return The information of the token type.
     function getFungibleTokenInfo(uint256 id) external view returns (FungibleTokenInfo memory) {
         return _fungibleTokens[id];
     }
 
+    /// @notice Gets the information of a non-fungible token (NFT) type.
+    /// @param id The ID of the token type.
+    /// @return The information of the token type.
     function getNFTTokenInfo(uint256 id) external view returns (NFTTokenInfo memory) {
         return _nftTypes[id];
     }
@@ -94,7 +102,7 @@ contract ERC1155Cloneable is ERC1155, Initializable {
     /// @param maxMintable Max mintable for the NFT type.
     /// @param startingTokenId The starting token ID for the NFT type.
     /// @dev Only callable by admin.
-    function createNFTType(string memory baseURI, uint256 maxMintable, uint256 startingTokenId)
+    function createNFTType(string memory baseURI, uint64 maxMintable, uint64 startingTokenId)
         external
         onlyTronicAdmin
         returns (uint256 nftTypeId)
@@ -147,7 +155,7 @@ contract ERC1155Cloneable is ERC1155, Initializable {
     /// @param id ID of the fungible token type.
     /// @param amount The amount of tokens to mint.
     /// @dev Requires that the token type exists and minting amount does not exceed max supply.
-    function mintFungible(address to, uint256 id, uint64 amount) public onlyTronicAdmin {
+    function mintFungible(address to, uint256 id, uint64 amount) external onlyTronicAdmin {
         FungibleTokenInfo memory token = _fungibleTokens[id];
         require(bytes(token.uri).length > 0, "Token type does not exist");
 
@@ -178,6 +186,8 @@ contract ERC1155Cloneable is ERC1155, Initializable {
             "Exceeds max mintable for this NFT type"
         );
 
+        nftOwners[tokenId] = to; // Update the owner of the NFT
+
         _mint(to, tokenId, 1, "");
 
         // Update the next ID to be minted for this NFT type
@@ -207,6 +217,21 @@ contract ERC1155Cloneable is ERC1155, Initializable {
         }
 
         _mintBatch(to, tokenIds, amounts, "");
+    }
+
+    /// @notice Sets the level of a specific token ID.
+    /// @param tokenId The ID of the token.
+    /// @param level The level to set.
+    /// @dev Only callable by admin.
+    function setLevel(uint256 tokenId, uint256 level) external onlyTronicAdmin {
+        nftLevels[tokenId] = level;
+    }
+
+    /// @notice Gets the level of a specific token ID.
+    /// @param tokenId The ID of the token.
+    /// @return The level of the token.
+    function getLevel(uint256 tokenId) external view returns (uint256) {
+        return nftLevels[tokenId];
     }
 
     /// @notice Mints multiple tokens to a specific address.
@@ -250,13 +275,72 @@ contract ERC1155Cloneable is ERC1155, Initializable {
                 idsToMint[i] = _nftTypes[typeIds[i]].nextIdToMint;
 
                 // Increase the nextIdToMint for non-fungible tokens
-                _nftTypes[typeIds[i]].nextIdToMint += amounts[i];
+                _nftTypes[typeIds[i]].nextIdToMint += uint64(amounts[i]);
             } else {
                 revert("Token type does not exist for some IDs");
             }
         }
 
         _mintBatch(to, idsToMint, amounts, data);
+    }
+
+    function mintBatchToMultiple(
+        address[] memory tos,
+        uint256[][] memory typeIds,
+        uint256[][] memory amounts,
+        bytes[] memory data
+    ) external onlyTronicAdmin {
+        require(tos.length == typeIds.length, "Mismatch in array lengths");
+        require(tos.length == amounts.length, "Mismatch in array lengths");
+        require(tos.length == data.length, "Mismatch in array lengths");
+
+        for (uint256 recipientIndex = 0; recipientIndex < tos.length; recipientIndex++) {
+            address to = tos[recipientIndex];
+            require(to != address(0), "ERC1155Cloneable: mint to the zero address");
+            require(
+                typeIds[recipientIndex].length == amounts[recipientIndex].length,
+                "Mismatch between typeIds and amounts length"
+            );
+
+            uint256[] memory idsToMint = new uint256[](typeIds[recipientIndex].length);
+
+            for (uint256 i = 0; i < typeIds[recipientIndex].length; i++) {
+                // Check if it's a fungible token type
+                if (bytes(_fungibleTokens[typeIds[recipientIndex][i]].uri).length > 0) {
+                    require(
+                        _fungibleTokens[typeIds[recipientIndex][i]].totalMinted
+                            + amounts[recipientIndex][i]
+                            <= _fungibleTokens[typeIds[recipientIndex][i]].maxSupply,
+                        "Exceeds max supply for some IDs"
+                    );
+
+                    // Increase the totalMinted count for fungible tokens
+                    _fungibleTokens[typeIds[recipientIndex][i]].totalMinted +=
+                        uint64(amounts[recipientIndex][i]);
+
+                    idsToMint[i] = typeIds[recipientIndex][i];
+                } else if (bytes(_nftTypes[typeIds[recipientIndex][i]].baseURI).length > 0) {
+                    // Check if it's a non-fungible token type
+                    require(
+                        _nftTypes[typeIds[recipientIndex][i]].nextIdToMint
+                            + amounts[recipientIndex][i]
+                            <= _nftTypes[typeIds[recipientIndex][i]].startingTokenId
+                                + _nftTypes[typeIds[recipientIndex][i]].maxMintable,
+                        "Exceeds max mintable for this NFT type"
+                    );
+
+                    idsToMint[i] = _nftTypes[typeIds[recipientIndex][i]].nextIdToMint;
+
+                    // Increase the nextIdToMint for non-fungible tokens
+                    _nftTypes[typeIds[recipientIndex][i]].nextIdToMint +=
+                        uint64(amounts[recipientIndex][i]);
+                } else {
+                    revert("Token type does not exist for some IDs");
+                }
+            }
+
+            _mintBatch(to, idsToMint, amounts[recipientIndex], data[recipientIndex]);
+        }
     }
 
     /// @notice Burns tokens from a specific address.

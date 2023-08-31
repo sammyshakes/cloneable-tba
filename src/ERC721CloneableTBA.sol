@@ -59,10 +59,14 @@ contract ERC721CloneableTBA is ERC721Enumerable, Initializable {
     /// @notice Mints a new token.
     /// @param to Address to mint the token to.
     /// @param tokenId ID of the token to mint.
-    /// @return account The payable address of the created token account.
-    function mint(address to, uint256 tokenId) public onlyAdmin returns (address payable account) {
+    /// @return tbaAccount The payable address of the created tokenbound account.
+    function mint(address to, uint256 tokenId)
+        public
+        onlyAdmin
+        returns (address payable tbaAccount)
+    {
         // Deploy token account
-        account = payable(
+        tbaAccount = payable(
             registry.createAccount(
                 accountImplementation,
                 block.chainid,
@@ -75,6 +79,13 @@ contract ERC721CloneableTBA is ERC721Enumerable, Initializable {
 
         // Mint token
         _mint(to, tokenId);
+    }
+
+    /// @notice Retrieves the tokenbound account of a given token ID.
+    /// @param tokenId The ID of the token.
+    /// @return The address of the tokenbound account.
+    function getTbaAccount(uint256 tokenId) external view returns (address) {
+        return registry.account(accountImplementation, block.chainid, address(this), tokenId, 0);
     }
 
     /// @notice Burns a token with the given ID.
@@ -114,10 +125,10 @@ contract ERC721CloneableTBA is ERC721Enumerable, Initializable {
         return membershipTier[tokenId];
     }
 
-    /// @notice Increments the membership tier of a given token ID by 1.
+    /// @notice Sets the membership tier of a given token ID.
     /// @param tokenId The ID of the token.
-    function incrementTier(uint256 tokenId) external onlyAdmin {
-        membershipTier[tokenId]++;
+    function setTier(uint256 tokenId, uint256 newTier) external onlyAdmin {
+        membershipTier[tokenId] = newTier;
     }
 
     // /// @notice Returns the URI for a given token ID.

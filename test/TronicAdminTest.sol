@@ -7,6 +7,14 @@ import "../src/TronicAdmin.sol";
 import "../src/interfaces/IERC6551Account.sol";
 
 contract TronicAdminTest is Test {
+    struct BatchMintOrder {
+        uint256 partnerId;
+        address[] recipients;
+        uint256[][] tokenIds;
+        uint256[][] amounts;
+        TronicAdmin.TokenType[] tokenTypes;
+    }
+
     TronicAdmin tronicAdminContract;
     ERC721CloneableTBA tronicERC721;
     ERC1155Cloneable tronicERC1155;
@@ -42,6 +50,7 @@ contract TronicAdminTest is Test {
     address public clone1155AddressX;
     address public clone721AddressY;
     address public clone1155AddressY;
+    address public user1TBA;
 
     function setUp() public {
         tbaCloneable = IERC6551Account(tbaAddress);
@@ -97,6 +106,10 @@ contract TronicAdminTest is Test {
         tronicAdminContract.createFungibleTokenType(initialMaxSupply, initialUriY, partnerIDY);
 
         vm.stopPrank();
+
+        vm.prank(address(tronicAdminContract));
+        //mint tronic erc721cloneabletba membership nft to user1
+        user1TBA = tronicERC721.mint(user1, 1);
 
         partnerXERC721 = ERC721CloneableTBA(clone721AddressX);
         partnerXERC1155 = ERC1155Cloneable(clone1155AddressX);
@@ -247,28 +260,153 @@ contract TronicAdminTest is Test {
         // TODO: check that PartnerAdded event was emitted
     }
 
-    // function testBatchProcess() public {
-    //     // Define recipients, partners, tokenIds, amounts, and tokenTypes
-    //     address[] memory recipients = [user1, user2];
-    //     uint256[][] memory partnerIds = [[partnerIDX, partnerIDY], [partnerIDX]];
-    //     uint256[][][] memory tokenIds = [[[1, 2], [1, 2]], [[1]]];
-    //     uint256[][][] memory amounts = [[[10, 20], [50, 50]], [[5]]];
-    //     TronicAdmin.TokenType[][][] memory tokenTypes = [
-    //         [TokenType.ERC1155, TokenType.ERC1155],
-    //         [TokenType.ERC1155, TokenType.ERC1155],
-    //         [TokenType.ERC1155]
-    //     ];
+    // test getAccount function from ERC721CloneableTBA
+    function testGetAccount() public {
+        // get the token bound account
+        address account = tronicERC721.getTbaAccount(1);
 
-    //     // Action: Call batchProcess
-    //     tronicAdminContract.batchProcess(recipients, partnerIds, tokenIds, amounts, tokenTypes);
+        // check that the account is correct
+        assertEq(account, user1TBA);
+    }
 
-    //     // Assertions (for simplicity, we'll just draft the assertions. The actual implementation might need to call other functions to get balances)
-    //     // For Alice
-    //     assertEq(tronicERC1155.balanceOf(alice, token1), 10, "Incorrect balance for Alice's token1");
-    //     assertEq(tronicERC1155.balanceOf(alice, token2), 20, "Incorrect balance for Alice's token2");
-    //     assert(tronicERC721.ownerOf(token3) == alice, "Alice does not own the minted ERC721 token");
+    // function testBatchProcessMinting() public {
+    //     setUp();
 
-    //     // For Bob
-    //     assertEq(tronicERC1155.balanceOf(bob, token4), 5, "Incorrect balance for Bob's token4");
+    //     uint256[] memory partnerIds = new uint256[](2);
+    //     partnerIds[0] = partnerIDX;
+    //     partnerIds[1] = partnerIDY;
+
+    //     // Set up recipients
+    //     address[] memory recipients1 = new address[](2);
+    //     recipients1[0] = user1;
+    //     recipients1[1] = user2;
+    //     address[] memory recipients2 = new address[](2);
+    //     recipients2[0] = user2;
+    //     recipients2[1] = user3;
+    //     address[][] memory recipients = new address[][](2);
+    //     recipients[0] = recipients1;
+    //     recipients[1] = recipients2;
+    //     uint256[][][] memory tokenIds1 = new uint256[][][](2);
+    //     uint256[][][] memory tokenIds2 = new uint256[][][](2);
+
+    //     uint256[] memory erc721TokenIdsForUser1 = new uint256[](1);
+    //     erc721TokenIdsForUser1[0] = 1;
+    //     uint256[] memory erc721TokenIdsForUser2 = new uint256[](1);
+    //     erc721TokenIdsForUser2[0] = 2;
+    //     uint256[] memory erc1155TokenIdsForUser1 = new uint256[](2);
+    //     erc1155TokenIdsForUser1[0] = 3;
+    //     erc1155TokenIdsForUser1[1] = 4;
+    //     uint256[] memory erc1155TokenIdsForUser2 = new uint256[](2);
+    //     erc1155TokenIdsForUser2[0] = 5;
+    //     erc1155TokenIdsForUser2[1] = 6;
+
+    //     tokenIds1[0] = [erc721TokenIdsForUser1, erc1155TokenIdsForUser1];
+    //     tokenIds1[1] = [erc721TokenIdsForUser2, erc1155TokenIdsForUser2];
+
+    //     tokenIds2[0] = [erc721TokenIdsForUser2, erc1155TokenIdsForUser2];
+    //     tokenIds2[1] = [erc721TokenIdsForUser1, erc1155TokenIdsForUser1];
+
+    //     uint256[][][][] memory tokenIds = new uint256[][][][](2);
+    //     tokenIds[0] = tokenIds1;
+    //     tokenIds[1] = tokenIds2;
+
+    //     // Similar structure for amounts
+    //     uint256[][][] memory amounts1 = new uint256[][][](2);
+    //     uint256[][][] memory amounts2 = new uint256[][][](2);
+
+    //     uint256[] memory erc721AmountsForUser1 = new uint256[](1);
+    //     erc721AmountsForUser1[0] = 1;
+    //     uint256[] memory erc721AmountsForUser2 = new uint256[](1);
+    //     erc721AmountsForUser2[0] = 1;
+    //     uint256[] memory erc1155AmountsForUser1 = new uint256[](2);
+    //     erc1155AmountsForUser1[0] = 1;
+    //     erc1155AmountsForUser1[1] = 2;
+    //     uint256[] memory erc1155AmountsForUser2 = new uint256[](2);
+    //     erc1155AmountsForUser2[0] = 2;
+    //     erc1155AmountsForUser2[1] = 3;
+
+    //     amounts1[0] = [erc721AmountsForUser1, erc1155AmountsForUser1];
+    //     amounts1[1] = [erc721AmountsForUser2, erc1155AmountsForUser2];
+
+    //     amounts2[0] = [erc721AmountsForUser2, erc1155AmountsForUser2];
+    //     amounts2[1] = [erc721AmountsForUser1, erc1155AmountsForUser1];
+
+    //     uint256[][][][] memory amounts = new uint256[][][][](2);
+    //     amounts[0] = amounts1;
+    //     amounts[1] = amounts2;
+
+    //     // For tokenTypes
+    //     TronicAdmin.TokenType[][] memory tokenTypes1 = new TronicAdmin.TokenType[][](2);
+    //     TronicAdmin.TokenType[][] memory tokenTypes2 = new TronicAdmin.TokenType[][](2);
+
+    //     tokenTypes1[0][0] = [TronicAdmin.TokenType.ERC721, TronicAdmin.TokenType.ERC1155];
+    //     tokenTypes1[1] = [TronicAdmin.TokenType.ERC721, TronicAdmin.TokenType.ERC1155];
+
+    //     tokenTypes2[0] = [TronicAdmin.TokenType.ERC721, TronicAdmin.TokenType.ERC1155];
+    //     tokenTypes2[1] = [TronicAdmin.TokenType.ERC721, TronicAdmin.TokenType.ERC1155];
+
+    //     TronicAdmin.TokenType[][][] memory tokenTypes = new TronicAdmin.TokenType[][][](2);
+    //     tokenTypes[0] = tokenTypes1;
+    //     tokenTypes[1] = tokenTypes2;
+
+    //     tronicAdminContract.batchProcess(partnerIds, recipients, tokenIds, amounts, tokenTypes);
+
+    //     // Assertions to validate correct minting
+    //     assertEq(partnerXERC721.ownerOf(1), user1);
+    //     assertEq(partnerXERC1155.balanceOf(user2, 3), 1);
+    //     assertEq(partnerXERC1155.balanceOf(user2, 4), 2);
+    //     assertEq(partnerYERC721.ownerOf(7), user2);
+    //     assertEq(partnerYERC1155.balanceOf(user3, 9), 2);
+    //     // ... Add more assertions as needed
+    // }
+
+    // struct BatchMintOrder {
+    //     uint256 partnerId;
+    //     address[] recipients;
+    //     uint256[][] tokenIds;
+    //     uint256[][] amounts;
+    //     TronicAdmin.TokenType[] tokenTypes;
+    // }
+
+    // function convertBatchMintOrdersToParameters(BatchMintOrder[] memory orders)
+    //     public
+    //     pure
+    //     returns (
+    //         uint256[] memory partnerIds,
+    //         address[][] memory recipients,
+    //         uint256[][][][] memory tokenIds,
+    //         uint256[][][][] memory amounts,
+    //         TronicAdmin.TokenType[][][] memory tokenTypes
+    //     )
+    // {
+    //     partnerIds = new uint256[](orders.length);
+    //     recipients = new address[][](orders.length);
+    //     tokenIds = new uint256[][][][](orders.length);
+    //     amounts = new uint256[][][][](orders.length);
+    //     tokenTypes = new TronicAdmin.TokenType[][][](orders.length);
+
+    //     for (uint256 i = 0; i < orders.length; i++) {
+    //         partnerIds[i] = orders[i].partnerId;
+
+    //         recipients[i] = orders[i].recipients;
+
+    //         // Adjusting for the 3D structure
+    //         tokenIds[i] = new uint256[][][](orders[i].recipients.length);
+    //         for (uint256 j = 0; j < orders[i].recipients.length; j++) {
+    //             tokenIds[i][j] = [orders[i].tokenIds[j]];
+    //         }
+
+    //         amounts[i] = new uint256[][][](orders[i].recipients.length);
+    //         for (uint256 j = 0; j < orders[i].recipients.length; j++) {
+    //             amounts[i][j] = [orders[i].amounts[j]];
+    //         }
+
+    //         tokenTypes[i] = new TronicAdmin.TokenType[][](orders[i].recipients.length);
+    //         for (uint256 j = 0; j < orders[i].recipients.length; j++) {
+    //             tokenTypes[i][j] = [orders[i].tokenTypes[j]];
+    //         }
+    //     }
+
+    //     return (partnerIds, recipients, tokenIds, amounts, tokenTypes);
     // }
 }

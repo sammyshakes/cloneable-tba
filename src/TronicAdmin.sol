@@ -215,60 +215,45 @@ contract TronicAdmin {
 
     /// @notice Processes multiple minting operations for both ERC1155 and ERC721 tokens on behalf of partners.
     /// @param _partnerIds   Array of partner IDs corresponding to each minting operation.
-    /// @param _tokenIds     2D array of token IDs to mint for each partner.
+    /// @param _recipients   2D array of recipient addresses for each minting operation.
+    /// @param _tokenIds     4D array of token IDs to mint for each partner.
     ///                      For ERC1155, it could be multiple IDs, and for ERC721, it should contain a single ID.
-    /// @param _amounts      2D array of token amounts to mint for each partner.
+    /// @param _amounts      4D array of token amounts to mint for each partner.
     ///                      For ERC1155, it represents the quantities of each token ID, and for ERC721, it should be either [1] (to mint) or [0] (to skip).
-    /// @param _recipients   Array of recipient addresses for each minting operation.
-    /// @param _tokenTypes   Array specifying the type of each token (either ERC1155 or ERC721) to determine the minting logic.
+    /// @param _tokenTypes   3D array specifying the type of each token (either ERC1155 or ERC721) to determine the minting logic.
     /// @dev Requires that all input arrays have matching lengths.
     ///      For ERC721 minting, the inner arrays of _tokenIds and _amounts should have a length of 1.
     function batchProcess(
-        address[] memory _recipients,
-        uint256[][] memory _partnerIds,
-        uint256[][][] memory _tokenIds,
-        uint256[][][] memory _amounts,
-        TokenType[][] memory _tokenTypes
-    ) external onlyAdmin {
+        uint256[] memory _partnerIds,
+        address[][] memory _recipients,
+        uint256[][][][] memory _tokenIds,
+        uint256[][][][] memory _amounts,
+        TokenType[][][] memory _tokenTypes
+    ) external {
         require(
             _partnerIds.length == _tokenIds.length && _tokenIds.length == _amounts.length
                 && _amounts.length == _recipients.length && _recipients.length == _tokenTypes.length,
             "Outer arrays must have the same length"
         );
 
-        for (uint256 i = 0; i < _recipients.length; i++) {
-            require(
-                _partnerIds[i].length == _tokenIds[i].length
-                    && _tokenIds[i].length == _amounts[i].length
-                    && _amounts[i].length == _tokenTypes[i].length,
-                "Inner arrays for a recipient must have the same length"
-            );
+        // i = partnerId, j = recipient, k = token
+        // Loop through each partner
+        for (uint256 i = 0; i < _partnerIds.length; i++) {
+            PartnerInfo memory partner = partners[_partnerIds[i]];
 
-            for (uint256 j = 0; j < _partnerIds[i].length; j++) {
-                PartnerInfo memory partner = partners[_partnerIds[i][j]];
+            for (uint256 j = 0; j < _recipients[i].length; j++) {
+                address recipient = _recipients[i][j];
 
-                if (_tokenTypes[i][j] == TokenType.ERC1155) {
-                    // Check if the tokenIds and amounts for this partner have the same length
-                    require(
-                        _tokenIds[i][j].length == _amounts[i][j].length,
-                        "TokenIds and amounts arrays for a partner must have the same length"
-                    );
-
-                    // Call the mintBatch function
-                    ERC1155Cloneable(partner.erc1155Address).mintBatch(
-                        _recipients[i], _tokenIds[i][j], _amounts[i][j], ""
-                    );
-                } else if (_tokenTypes[i][j] == TokenType.ERC721) {
-                    require(
-                        _tokenIds[i][j].length == 1,
-                        "ERC721 should have a single tokenId for minting"
-                    );
-                    require(_amounts[i][j][0] == 1, "ERC721 minting amount should be 1");
-
-                    // Call the mint function
-                    ERC721CloneableTBA(partner.erc721Address).mint(
-                        _recipients[i], _tokenIds[i][j][0]
-                    );
+                for (uint256 k = 0; k < _tokenTypes[i][j].length; k++) {
+                    if (_tokenTypes[i][j][k] == TokenType.ERC1155) {
+                        ERC1155Cloneable(partner.erc1155Address).mintBatch(
+                            recipient, _tokenIds[i][j][k], _amounts[i][j][k], ""
+                        );
+                    } else if (_tokenTypes[i][j][k] == TokenType.ERC721) {
+                        ERC721CloneableTBA(partner.erc721Address).mint(
+                            recipient, _tokenIds[i][j][k][0]
+                        );
+                    }
                 }
             }
         }
