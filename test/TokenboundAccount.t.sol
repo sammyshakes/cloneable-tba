@@ -2,80 +2,38 @@
 pragma solidity ^0.8.13;
 
 // Imports
-import "forge-std/Test.sol";
-import "../src/ERC721CloneableTBA.sol";
-import "../src/ERC1155Cloneable.sol";
-import "../src/interfaces/IERC6551Registry.sol";
-import "../src/interfaces/IERC6551Account.sol";
+import "./TronicTestBase.sol";
 
-contract TokenboundAccountTest is Test {
-    IERC6551Account public account;
-    ERC721CloneableTBA public token;
-    ERC1155Cloneable public brandERC1155;
-    IERC6551Registry public registry;
-
-    address public registryAddress = vm.envAddress("ERC6551_REGISTRY_ADDRESS");
-    address payable public tbaAddress = payable(vm.envAddress("TOKENBOUND_ACCOUNT_DEFAULT_IMPLEMENTATION_ADDRESS"));
-
-    // set users
-    address public user1 = address(0x1);
-    address public user2 = address(0x2);
-    address public user3 = address(0x3);
-
-    function setUp() public {
-        account = IERC6551Account(tbaAddress);
-        registry = IERC6551Registry(registryAddress);
-        token = new ERC721CloneableTBA();
-        brandERC1155 = new ERC1155Cloneable();
-
-        // initialize erc721
-        token.initialize(
-            payable(address(account)),
-            address(registry),
-            "Original721",
-            "OR721",
-            "http://example721.com/",
-            address(this)
-        );
-    }
-
+contract TokenboundAccountTest is TronicTestBase {
     function testMintingToken() public {
-        console.log("SETUP - tokenbound account address: ", address(account));
-        console.log("SETUP - clonable erc721 token address: ", address(token));
-        console.log("SETUP - erc1155 token address: ", address(brandERC1155));
-        console.log("SETUP - registry address: ", address(registry));
+        console.log("SETUP - tokenbound account address: ", tbaAddress);
+        console.log("SETUP - Tronic erc721 token address: ", address(tronicERC721));
+        console.log("SETUP - Tronic erc1155 token address: ", address(tronicERC1155));
+        console.log("SETUP - registry address: ", registryAddress);
 
         // Mint test token
-        address tba = token.mint(address(this), 1);
-        console.log("SETUP - tokenbound account created: ", tba);
-        // Account should own token
-        // assertEq(token.ownerOf(1), address(this));
-        console.log("token owner: ", token.ownerOf(1));
-
+        vm.prank(address(tronicAdminContract));
+        //tokenid 1 was already minted in the setup function
+        uint256 tokenId = 2;
+        address tba = tronicERC721.mint(user1, tokenId);
+        console.log("tokenbound account created: ", tba);
+        assertEq(tronicERC721.ownerOf(tokenId), user1);
         //deployed tba
         IERC6551Account tbaAccount = IERC6551Account(payable(address(tba)));
-        // console.log("tbaAccount owner: ", tbaAccount.owner());
+
+        // user1 should own tokenbound account
+        assertEq(tbaAccount.owner(), user1);
+
+        console.log("token owner: ", tronicERC721.ownerOf(tokenId));
+        console.log("tbaAccount owner: ", tbaAccount.owner());
 
         //transfer token to another user
-        token.transferFrom(address(this), user1, 1);
+        vm.prank(user1);
+        tronicERC721.transferFrom(user1, user2, tokenId);
 
-        //user1 should own token
-        assertEq(token.ownerOf(1), user1);
-
-        //user1 should also control tba
-        // assertEq(tbaAccount.owner(), user1);
-    }
-
-    function testOwningERC1155Token() public {
-        // Mint test token and grant tba to user1
-        address tba = token.mint(user1, 1);
-        IERC6551Account tbaAccount = IERC6551Account(payable(address(tba)));
-
-        // verify tba == address(tbaAccount)
-        assertEq(tba, address(tbaAccount));
-
-        // verify user1 owns token
-        assertEq(token.ownerOf(1), user1);
+        //user1 should own token and therefore control tba
+        assertEq(tronicERC721.ownerOf(tokenId), user2);
+        assertEq(tbaAccount.owner(), user2);
     }
 
     // function testProjectEntry() public {

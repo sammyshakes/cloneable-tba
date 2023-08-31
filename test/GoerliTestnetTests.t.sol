@@ -7,7 +7,7 @@ import "../src/CloneFactory.sol";
 import "../src/interfaces/IERC6551Registry.sol";
 import "../src/interfaces/IERC6551Account.sol";
 
-contract TestnetTests is Test {
+contract GoerliTestnetTests is Test {
     CloneFactory public factory;
     ERC721CloneableTBA public erc721;
     ERC1155Cloneable public erc1155;
