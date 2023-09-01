@@ -74,7 +74,16 @@ contract TronicAdmin {
         return partners[partnerId];
     }
 
-    // Function to deploy partner contracts using CloneFactory and then associate them with a partner
+    /// @notice Deploys a new partner's contracts.
+    /// @param name721 The name of the ERC721 token.
+    /// @param symbol721 The symbol of the ERC721 token.
+    /// @param uri721 The URI for the ERC721 token.
+    /// @param name1155 The name of the ERC1155 token.
+    /// @param symbol1155 The symbol of the ERC1155 token.
+    /// @param uri1155 The URI for the ERC1155 token.
+    /// @param partnerName The name of the partner.
+    /// @return erc721Address The address of the deployed ERC721 contract.
+    /// @return erc1155Address The address of the deployed ERC1155 contract.
     function deployPartner(
         string memory name721,
         string memory symbol721,

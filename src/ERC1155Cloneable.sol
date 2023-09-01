@@ -179,6 +179,12 @@ contract ERC1155Cloneable is ERC1155, Initializable {
         _mint(to, tokenId, 1, "");
     }
 
+    /// @notice Mints multiple non-fungible tokens (NFTs) to a specific address.
+    /// @param typeId Type ID of the NFT.
+    /// @param to Address to mint the NFTs to.
+    /// @param amount The amount of NFTs to mint.
+    /// @dev Requires that the NFT type already exists.
+    /// @dev Requires that the amount does not exceed the max mintable for the NFT type.
     function mintNFTs(uint256 typeId, address to, uint256 amount) external onlyAdmin {
         //get memory instance of NFT type
         NFTTokenInfo memory nftType = _nftTypes[typeId];
@@ -274,6 +280,12 @@ contract ERC1155Cloneable is ERC1155, Initializable {
         _mintBatch(to, idsToMint, amounts, data);
     }
 
+    /// @notice Mints multiple tokens to multiple addresses.
+    /// @param tos Addresses to mint the tokens to.
+    /// @param typeIds Type IDs of the tokens to mint.
+    /// @param amounts Amounts of each token to mint.
+    /// @param data Additional data to include in the minting call.
+    /// @dev Requires that the tos, token type IDs, and amounts arrays have matching lengths.
     function mintBatchToMultiple(
         address[] memory tos,
         uint256[][] memory typeIds,
