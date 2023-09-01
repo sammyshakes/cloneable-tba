@@ -3,12 +3,14 @@ pragma solidity ^0.8.0;
 
 // Imports
 import "forge-std/Test.sol";
-import "../src/CloneFactory.sol";
-import "../src/interfaces/IERC6551Registry.sol";
+import "../src/TronicAdmin.sol";
 import "../src/interfaces/IERC6551Account.sol";
+//import mocks
+import "../src/mocks/MockERC721.sol";
+import "../src/mocks/MockERC1155.sol";
 
-contract GoerliTestnetTests is Test {
-    CloneFactory public factory;
+contract TestnetTests is Test {
+    TronicAdmin public tronicAdminContract;
     ERC721CloneableTBA public erc721;
     ERC1155Cloneable public erc1155;
     IERC6551Account public account;
@@ -18,6 +20,11 @@ contract GoerliTestnetTests is Test {
     IERC6551Account public accountTronic;
 
     IERC6551Registry public registry;
+
+    //mocks
+    MockERC721 public dummyERC721 = new MockERC721();
+    MockERC1155 public dummyERC1155 = new MockERC1155();
+    MockERC721 public tokenCollection = new MockERC721();
 
     // set users
     address public user1 = address(0x1);
@@ -34,20 +41,20 @@ contract GoerliTestnetTests is Test {
     address public registryAddress = vm.envAddress("ERC6551_REGISTRY_ADDRESS");
 
     // deployed tronic contracts
-    address public cloneFactoryAddress = vm.envAddress("CLONE_FACTORY_ADDRESS");
-    address public erc721Address = vm.envAddress("ERC721_CLONEABLE_ADDRESS");
-    address public erc1155Address = vm.envAddress("ERC1155_CLONEABLE_ADDRESS");
+    address public tronicAdminContractAddress = vm.envAddress("TRONIC_ADMIN_CONTRACT_ADDRESS");
+    address public erc721Address = vm.envAddress("TRONIC_MEMBER_ERC721_ADDRESS");
+    address public erc1155Address = vm.envAddress("TRONIC_REWARDS_ERC1155_ADDRESS");
 
     // cloned project contracts
-    address public cloned1155AddressX = vm.envAddress("PROJECT_X_CLONED_ERC1155_ADDRESS");
-    address public cloned1155AddressY = vm.envAddress("PROJECT_Y_CLONED_ERC1155_ADDRESS");
-    address public cloned721AddressX = vm.envAddress("PROJECT_X_CLONED_ERC721_ADDRESS");
-    address public cloned721AddressY = vm.envAddress("PROJECT_Y_CLONED_ERC721_ADDRESS");
+    address public cloned1155AddressX = vm.envAddress("PARTNER_X_CLONED_ERC1155_ADDRESS");
+    address public cloned1155AddressY = vm.envAddress("PARTNER_Y_CLONED_ERC1155_ADDRESS");
+    address public cloned721AddressX = vm.envAddress("PARTNER_X_CLONED_ERC721_ADDRESS");
+    address public cloned721AddressY = vm.envAddress("PARTNER_Y_CLONED_ERC721_ADDRESS");
 
     // tokenbound accounts
     address public tbaAddressTokenID1 = vm.envAddress("TOKENBOUND_ACCOUNT_TOKENID_1");
-    address public tbaAddressXTokenID1 = vm.envAddress("PROJECT_X_TOKENBOUND_ACCOUNT_TOKENID_1");
-    address public tbaAddressYTokenID1 = vm.envAddress("PROJECT_Y_TOKENBOUND_ACCOUNT_TOKENID_1");
+    address public tbaAddressXTokenID1 = vm.envAddress("PARTNER_X_TOKENBOUND_ACCOUNT_TOKENID_1");
+    address public tbaAddressYTokenID1 = vm.envAddress("PARTNER_Y_TOKENBOUND_ACCOUNT_TOKENID_1");
 
     function setUp() public {
         vm.startPrank(tronicOwner);
@@ -63,7 +70,7 @@ contract GoerliTestnetTests is Test {
 
         tbaAddress = payable(address(account));
 
-        factory = CloneFactory(cloneFactoryAddress);
+        tronicAdminContract = TronicAdmin(tronicAdminContractAddress);
         vm.stopPrank();
     }
 
@@ -87,12 +94,31 @@ contract GoerliTestnetTests is Test {
 
         // Top level TBA owns tokenId 1 on clonedERC721X (erc721), `nestedTbaAddress`
         assertEq(clonedERC721X.ownerOf(1), address(accountTba));
+        assertEq(nestedTba.owner(), address(accountTba)); //  parent TBA owns nested TBA
+        assertEq(tbaAddressTokenID1, address(accountTba));
+
+        // construct SafeTransferCall for ERC721
+        bytes memory erc721TransferCall = abi.encodeWithSignature(
+            "safeTransferFrom(address,address,uint256,bytes)", tbaAddressTokenID1, user1, 1, ""
+        );
+
+        vm.prank(tbaOwner);
+        accountTba.executeCall(cloned721AddressX, 0, erc721TransferCall);
+
+        // verify that user 1 now owns token
+        assertEq(clonedERC721X.ownerOf(1), user1);
+
+        // transfer token back to tbaAddressTokenID1
+        vm.prank(user1);
+        clonedERC721X.safeTransferFrom(user1, tbaAddressTokenID1, 1, "");
+
+        // verify that tbaAddressTokenID1 now owns token
+        assertEq(clonedERC721X.ownerOf(1), tbaAddressTokenID1);
+
+        //ERC1155
         assertEq(clonedERC1155X.balanceOf(nestedTbaAddress, 1), 100);
-        assertEq(nestedTba.owner(), address(accountTba)); //  parent TBA owns nested TBA
 
-        assertEq(nestedTba.owner(), address(accountTba)); //  parent TBA owns nested TBA
-
-        // construct SafeTransferCall for ERC1155
+        // construct SafeTransferCall for nested ERC1155
         bytes memory erc1155TransferCall = abi.encodeWithSignature(
             "safeTransferFrom(address,address,uint256,uint256,bytes)",
             nestedTbaAddress,
@@ -104,12 +130,47 @@ contract GoerliTestnetTests is Test {
 
         // construct execute call for nestedTbaAddress to execute erc1155TransferCall
         bytes memory executeCall = abi.encodeWithSignature(
-            "execute(address,uint256,bytes,uint256)", cloned1155AddressX, 0, erc1155TransferCall, 0
+            "executeCall(address,uint256,bytes)", cloned1155AddressX, 0, erc1155TransferCall
         );
 
-        //  this call fails: EVM Revert
         vm.prank(tbaOwner);
-        accountTba.execute(nestedTbaAddress, 0, executeCall, 0);
+        accountTba.executeCall(nestedTbaAddress, 0, executeCall);
+
+        // verify that user 1 now owns 10 of token 1
+        assertEq(clonedERC1155X.balanceOf(user1, 1), 10);
+        assertEq(clonedERC1155X.balanceOf(nestedTbaAddress, 1), 90);
+
+        // approve user 2 to transfer 5 of token 1
+        address[] memory approved = new address[](1);
+        approved[0] = user2;
+        bool[] memory approvedValues = new bool[](1);
+        approvedValues[0] = true;
+
+        vm.prank(tbaOwner);
+        accountTba.setPermissions(approved, approvedValues);
+
+        vm.prank(user2);
+        accountTba.executeCall(nestedTbaAddress, 0, executeCall);
+    }
+
+    function testTransferERC721PostDeploy() public {
+        address accountAddress = tbaAddressTokenID1;
+
+        dummyERC721.mint(accountAddress, 1);
+
+        assertEq(dummyERC721.balanceOf(accountAddress), 1);
+        assertEq(dummyERC721.ownerOf(1), accountAddress);
+        assertEq(accountTba.owner(), tbaOwner);
+
+        bytes memory erc721TransferCall = abi.encodeWithSignature(
+            "safeTransferFrom(address,address,uint256)", accountAddress, user1, 1
+        );
+        vm.prank(tbaOwner);
+        accountTba.executeCall(payable(address(dummyERC721)), 0, erc721TransferCall);
+
+        assertEq(dummyERC721.balanceOf(accountAddress), 0);
+        assertEq(dummyERC721.balanceOf(user1), 1);
+        assertEq(dummyERC721.ownerOf(1), user1);
     }
 
     function testTransferERC1155PostDeploy() public {
@@ -172,21 +233,17 @@ contract GoerliTestnetTests is Test {
         // account.execute(cloned1155Address, 0, erc1155TransferCall, 0);
     }
 
-    function testFactoryOwnership() public {
-        assertEq(factory.tronicAdmin(), tronicOwner);
-    }
+    // function testChangeFactoryOwnership() public {
+    //     vm.prank(tronicOwner);
+    //     // Change tronicAdmin to user1
+    //     factory.setTronicAdmin(user1);
+    //     assertEq(factory.tronicAdmin(), user1);
 
-    function testChangeFactoryOwnership() public {
-        vm.prank(tronicOwner);
-        // Change tronicAdmin to user1
-        factory.setTronicAdmin(user1);
-        assertEq(factory.tronicAdmin(), user1);
-
-        // Try to change tronicAdmin from a non-admin address should fail
-        vm.expectRevert();
-        vm.prank(user2);
-        factory.setTronicAdmin(user2);
-    }
+    //     // Try to change tronicAdmin from a non-admin address should fail
+    //     vm.expectRevert();
+    //     vm.prank(user2);
+    //     factory.setTronicAdmin(user2);
+    // }
 
     function testUnauthorizedCloning() public {
         // Prank the VM to make the unauthorized user the msg.sender
@@ -194,14 +251,14 @@ contract GoerliTestnetTests is Test {
 
         // Expect the cloneERC1155 function to be reverted due to unauthorized access
         vm.expectRevert();
-        factory.deployPartner(
-            unauthorizedUser, "", "", "", "Clone1155", "CL1155", "http://unauthorized1155.com/"
+        tronicAdminContract.deployPartner(
+            "", "", "", "Clone1155", "CL1155", "http://unauthorized1155.com/", "Name1"
         );
 
         // Expect the cloneERC721 function to be reverted due to unauthorized access
         vm.expectRevert();
-        factory.deployPartner(
-            user2, "Unauthorized721", "UN721", "http://unauthorized721.com/", "", "", ""
+        tronicAdminContract.deployPartner(
+            "Unauthorized721", "UN721", "http://unauthorized721.com/", "", "", "", "Name2"
         );
     }
 }

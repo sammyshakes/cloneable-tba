@@ -55,11 +55,13 @@ interface IERC6551Account {
         view
         returns (bytes4 magicValue);
 
-    function execute(address to, uint256 value, bytes calldata data, uint256 operation)
+    function executeCall(address to, uint256 value, bytes calldata data)
         external
         payable
         returns (bytes memory);
 
     function owner() external view returns (address);
     function isAuthorized(address caller) external view returns (bool);
+
+    function setPermissions(address[] calldata callers, bool[] calldata _permissions) external;
 }

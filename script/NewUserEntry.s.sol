@@ -20,7 +20,7 @@ contract NewUserEntry is Script {
     // increment this for each new token
     uint256 public tokenId = 1;
 
-    // this script mints an erc721 token to the tronic address
+    // this script mints an erc721 token to the user address
     function run() external {
         erc721 = ERC721CloneableTBA(erc721Address);
         tronicERC1155 = ERC1155Cloneable(erc1155Address);

@@ -27,10 +27,10 @@ contract TronicAdminTest is TronicTestBase {
         assertEq(partnerY.partnerName, "SetupPartnerY");
 
         //assert that TronicAdmin Contract is the owner of partner erc721 and erc1155 token contracts
-        assertEq(address(tronicAdminContract), partnerXERC721.owner());
-        assertEq(address(tronicAdminContract), partnerXERC1155.owner());
-        assertEq(address(tronicAdminContract), partnerYERC721.owner());
-        assertEq(address(tronicAdminContract), partnerYERC1155.owner());
+        assertEq(tronicAdmin, partnerXERC721.owner());
+        assertEq(tronicAdmin, partnerXERC1155.owner());
+        assertEq(tronicAdmin, partnerYERC721.owner());
+        assertEq(tronicAdmin, partnerYERC1155.owner());
     }
 
     function testCreateFungibleType() public {
