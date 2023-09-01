@@ -78,6 +78,8 @@ contract TronicTestBase is Test {
     //tronicAdmin will be some privatekey stored on backend
     address public tronicAdmin = address(0x6);
 
+    address public partnerAdmin = address(0x7);
+
     address payable public tbaAddress =
         payable(vm.envAddress("TOKENBOUND_ACCOUNT_DEFAULT_IMPLEMENTATION_ADDRESS"));
 

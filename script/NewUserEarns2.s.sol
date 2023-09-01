@@ -11,12 +11,12 @@ contract NewUserEarns2 is Script {
     ERC1155Cloneable public erc1155CloneY;
 
     address payable public tbaAccountX =
-        payable(vm.envAddress("PROJECT_X_TOKENBOUND_ACCOUNT_TOKENID_1"));
+        payable(vm.envAddress("PARTNER_X_TOKENBOUND_ACCOUNT_TOKENID_1"));
     address payable public tbaAccountY =
-        payable(vm.envAddress("PROJECT_Y_TOKENBOUND_ACCOUNT_TOKENID_1"));
+        payable(vm.envAddress("PARTNER_Y_TOKENBOUND_ACCOUNT_TOKENID_1"));
 
-    address public clonedERC1155AddressX = vm.envAddress("PROJECT_X_CLONED_ERC1155_ADDRESS");
-    address public clonedERC1155AddressY = vm.envAddress("PROJECT_Y_CLONED_ERC1155_ADDRESS");
+    address public clonedERC1155AddressX = vm.envAddress("PARTNER_X_CLONED_ERC1155_ADDRESS");
+    address public clonedERC1155AddressY = vm.envAddress("PARTNER_Y_CLONED_ERC1155_ADDRESS");
 
     // this script mints 100 of each level of premium token to the tokenbound project addresses
     function run() external {

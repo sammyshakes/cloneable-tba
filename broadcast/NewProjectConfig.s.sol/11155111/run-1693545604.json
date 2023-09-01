@@ -1,0 +1,157 @@
+{
+  "transactions": [
+    {
+      "hash": "0x3443194ef312a5093116e25a76a9406e88ba1c741cbf5f8b2f2e3e652e33e37c",
+      "transactionType": "CALL",
+      "contractName": "ERC1155Cloneable",
+      "contractAddress": "0x88CDb8f97854F4a389F3482667d57f2B8a223812",
+      "function": "createFungibleType(uint64,string):(uint256)",
+      "arguments": [
+        "1000000",
+        "https://ipfs.io/ipfs/QmdFRfXc7gmqYv61ywsFdWkUuVktccZ1jkH8eNUBsyCBPf/1"
+      ],
+      "transaction": {
+        "type": "0x02",
+        "from": "0x42c7ef198f8ac9888e2b1b73e5b71f1d4535194a",
+        "to": "0x88cdb8f97854f4a389f3482667d57f2b8a223812",
+        "gas": "0x39f2f",
+        "value": "0x0",
+        "data": "0x2dfb9ff000000000000000000000000000000000000000000000000000000000000f42400000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000004568747470733a2f2f697066732e696f2f697066732f516d64465266586337676d71597636317977734664576b5575566b7463635a316a6b4838654e55427379434250662f31000000000000000000000000000000000000000000000000000000",
+        "nonce": "0x83",
+        "accessList": []
+      },
+      "additionalContracts": [],
+      "isFixedGasLimit": false
+    },
+    {
+      "hash": "0xcfdaffa73c8a8955ecb8b8fb29396493c66bc8b0df1e63c175f4a4381855a0c0",
+      "transactionType": "CALL",
+      "contractName": "ERC1155Cloneable",
+      "contractAddress": "0x88CDb8f97854F4a389F3482667d57f2B8a223812",
+      "function": "createFungibleType(uint64,string):(uint256)",
+      "arguments": [
+        "500000",
+        "https://ipfs.io/ipfs/QmdFRfXc7gmqYv61ywsFdWkUuVktccZ1jkH8eNUBsyCBPf/2"
+      ],
+      "transaction": {
+        "type": "0x02",
+        "from": "0x42c7ef198f8ac9888e2b1b73e5b71f1d4535194a",
+        "to": "0x88cdb8f97854f4a389f3482667d57f2b8a223812",
+        "gas": "0x30f68",
+        "value": "0x0",
+        "data": "0x2dfb9ff0000000000000000000000000000000000000000000000000000000000007a1200000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000004568747470733a2f2f697066732e696f2f697066732f516d64465266586337676d71597636317977734664576b5575566b7463635a316a6b4838654e55427379434250662f32000000000000000000000000000000000000000000000000000000",
+        "nonce": "0x84",
+        "accessList": []
+      },
+      "additionalContracts": [],
+      "isFixedGasLimit": false
+    },
+    {
+      "hash": "0x1c2cd455cae64bf9bb171488469a36502d5e9a5125074ebf09f7ee320854c4c7",
+      "transactionType": "CALL",
+      "contractName": "ERC1155Cloneable",
+      "contractAddress": "0x88CDb8f97854F4a389F3482667d57f2B8a223812",
+      "function": "createFungibleType(uint64,string):(uint256)",
+      "arguments": [
+        "250000",
+        "https://ipfs.io/ipfs/QmdFRfXc7gmqYv61ywsFdWkUuVktccZ1jkH8eNUBsyCBPf/3"
+      ],
+      "transaction": {
+        "type": "0x02",
+        "from": "0x42c7ef198f8ac9888e2b1b73e5b71f1d4535194a",
+        "to": "0x88cdb8f97854f4a389f3482667d57f2b8a223812",
+        "gas": "0x30f68",
+        "value": "0x0",
+        "data": "0x2dfb9ff0000000000000000000000000000000000000000000000000000000000003d0900000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000004568747470733a2f2f697066732e696f2f697066732f516d64465266586337676d71597636317977734664576b5575566b7463635a316a6b4838654e55427379434250662f33000000000000000000000000000000000000000000000000000000",
+        "nonce": "0x85",
+        "accessList": []
+      },
+      "additionalContracts": [],
+      "isFixedGasLimit": false
+    },
+    {
+      "hash": "0x495a1576c219de9429a190abe6c3a22bc6a911dd84a90ff6bd7e6dcb7a08f4d8",
+      "transactionType": "CALL",
+      "contractName": "ERC1155Cloneable",
+      "contractAddress": "0x7c7f0b8dF108DC8C867016C3b203037d44409C30",
+      "function": "createFungibleType(uint64,string):(uint256)",
+      "arguments": [
+        "10000000",
+        "https://ipfs.io/ipfs/QmUU9wdedSCtrZFs5nPSeAggpoXeJ7WNKvtGJJLwa3czqn/1"
+      ],
+      "transaction": {
+        "type": "0x02",
+        "from": "0x42c7ef198f8ac9888e2b1b73e5b71f1d4535194a",
+        "to": "0x7c7f0b8df108dc8c867016c3b203037d44409c30",
+        "gas": "0x39f2f",
+        "value": "0x0",
+        "data": "0x2dfb9ff000000000000000000000000000000000000000000000000000000000009896800000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000004568747470733a2f2f697066732e696f2f697066732f516d55553977646564534374725a4673356e505365416767706f58654a37574e4b7674474a4a4c776133637a716e2f31000000000000000000000000000000000000000000000000000000",
+        "nonce": "0x86",
+        "accessList": []
+      },
+      "additionalContracts": [],
+      "isFixedGasLimit": false
+    },
+    {
+      "hash": "0xf0552d110d34232faab48f99d60e9f99031a36fb81c065b3d083a06b4d5c5090",
+      "transactionType": "CALL",
+      "contractName": "ERC1155Cloneable",
+      "contractAddress": "0x7c7f0b8dF108DC8C867016C3b203037d44409C30",
+      "function": "createFungibleType(uint64,string):(uint256)",
+      "arguments": [
+        "5000000",
+        "https://ipfs.io/ipfs/QmUU9wdedSCtrZFs5nPSeAggpoXeJ7WNKvtGJJLwa3czqn/2"
+      ],
+      "transaction": {
+        "type": "0x02",
+        "from": "0x42c7ef198f8ac9888e2b1b73e5b71f1d4535194a",
+        "to": "0x7c7f0b8df108dc8c867016c3b203037d44409c30",
+        "gas": "0x30f68",
+        "value": "0x0",
+        "data": "0x2dfb9ff000000000000000000000000000000000000000000000000000000000004c4b400000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000004568747470733a2f2f697066732e696f2f697066732f516d55553977646564534374725a4673356e505365416767706f58654a37574e4b7674474a4a4c776133637a716e2f32000000000000000000000000000000000000000000000000000000",
+        "nonce": "0x87",
+        "accessList": []
+      },
+      "additionalContracts": [],
+      "isFixedGasLimit": false
+    },
+    {
+      "hash": "0x37c35e46c0e8a6ea088990587e673b2ff9a43aea5bf8bce0025425f6fdada8d9",
+      "transactionType": "CALL",
+      "contractName": "ERC1155Cloneable",
+      "contractAddress": "0x7c7f0b8dF108DC8C867016C3b203037d44409C30",
+      "function": "createFungibleType(uint64,string):(uint256)",
+      "arguments": [
+        "2000000",
+        "https://ipfs.io/ipfs/QmUU9wdedSCtrZFs5nPSeAggpoXeJ7WNKvtGJJLwa3czqn/3"
+      ],
+      "transaction": {
+        "type": "0x02",
+        "from": "0x42c7ef198f8ac9888e2b1b73e5b71f1d4535194a",
+        "to": "0x7c7f0b8df108dc8c867016c3b203037d44409c30",
+        "gas": "0x30f68",
+        "value": "0x0",
+        "data": "0x2dfb9ff000000000000000000000000000000000000000000000000000000000001e84800000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000004568747470733a2f2f697066732e696f2f697066732f516d55553977646564534374725a4673356e505365416767706f58654a37574e4b7674474a4a4c776133637a716e2f33000000000000000000000000000000000000000000000000000000",
+        "nonce": "0x88",
+        "accessList": []
+      },
+      "additionalContracts": [],
+      "isFixedGasLimit": false
+    }
+  ],
+  "receipts": [],
+  "libraries": [],
+  "pending": [
+    "0x3443194ef312a5093116e25a76a9406e88ba1c741cbf5f8b2f2e3e652e33e37c",
+    "0xcfdaffa73c8a8955ecb8b8fb29396493c66bc8b0df1e63c175f4a4381855a0c0",
+    "0x1c2cd455cae64bf9bb171488469a36502d5e9a5125074ebf09f7ee320854c4c7",
+    "0x495a1576c219de9429a190abe6c3a22bc6a911dd84a90ff6bd7e6dcb7a08f4d8",
+    "0xf0552d110d34232faab48f99d60e9f99031a36fb81c065b3d083a06b4d5c5090",
+    "0x37c35e46c0e8a6ea088990587e673b2ff9a43aea5bf8bce0025425f6fdada8d9"
+  ],
+  "returns": {},
+  "timestamp": 1693545604,
+  "chain": 11155111,
+  "multi": false,
+  "commit": "11bdc2c"
+}

@@ -13,13 +13,13 @@ contract NewUserEarns3 is Script {
 
     address payable public tbaAccount = payable(vm.envAddress("TOKENBOUND_ACCOUNT_TOKENID_1"));
     address payable public tbaAccountX =
-        payable(vm.envAddress("PROJECT_X_TOKENBOUND_ACCOUNT_TOKENID_1"));
+        payable(vm.envAddress("PARTNER_X_TOKENBOUND_ACCOUNT_TOKENID_1"));
     address payable public tbaAccountY =
-        payable(vm.envAddress("PROJECT_Y_TOKENBOUND_ACCOUNT_TOKENID_1"));
+        payable(vm.envAddress("PARTNER_Y_TOKENBOUND_ACCOUNT_TOKENID_1"));
 
-    address public erc1155Address = vm.envAddress("ERC1155_CLONEABLE_ADDRESS");
-    address public clonedERC1155AddressX = vm.envAddress("PROJECT_X_CLONED_ERC1155_ADDRESS");
-    address public clonedERC1155AddressY = vm.envAddress("PROJECT_Y_CLONED_ERC1155_ADDRESS");
+    address public erc1155Address = vm.envAddress("TRONIC_REWARDS_ERC1155_ADDRESS");
+    address public clonedERC1155AddressX = vm.envAddress("PARTNER_X_CLONED_ERC1155_ADDRESS");
+    address public clonedERC1155AddressY = vm.envAddress("PARTNER_Y_CLONED_ERC1155_ADDRESS");
 
     // this script mints 25 premium tokens with id=3 to the tokenbound project x address
     // and 10 premium tronic tokens to the tronic tbaAccount address
@@ -34,10 +34,10 @@ contract NewUserEarns3 is Script {
         vm.startBroadcast(deployerPrivateKey);
 
         //mint 25 level 3 premium tokens from project x to tbaAccountX address
-        erc1155CloneX.mintFungible(tbaAccountX, 3, 25);
+        erc1155CloneX.mintFungible(tbaAccountX, 0, 25);
 
-        //mint 50 premium tronic tokens id: 2 to tronic tbaAccount address
-        tronicERC1155.mintFungible(tbaAccount, 2, 50);
+        //mint 50 premium tronic tokens id: 0 to tronic tbaAccount address
+        tronicERC1155.mintFungible(tbaAccount, 0, 50);
 
         vm.stopBroadcast();
     }

@@ -8,20 +8,20 @@ import "../src/ERC721CloneableTBA.sol";
 import "../src/ERC1155Cloneable.sol";
 
 //This script deploys the clone factory and initializes the erc721 token
-contract Initialize is Script, Test {
+contract Initialize is Script {
     // Deployments
     ERC721CloneableTBA public erc721;
     ERC1155Cloneable public erc1155;
 
     address public tronicAddress = vm.envAddress("TRONIC_ADMIN_ADDRESS");
-    address public erc721Address = vm.envAddress("ERC721_CLONEABLE_ADDRESS");
-    address public erc1155Address = vm.envAddress("ERC1155_CLONEABLE_ADDRESS");
+    address public erc721Address = vm.envAddress("TRONIC_MEMBER_ERC721_ADDRESS");
+    address public erc1155Address = vm.envAddress("TRONIC_REWARDS_ERC1155_ADDRESS");
     address public registryAddress = vm.envAddress("ERC6551_REGISTRY_ADDRESS");
     address payable public tbaAddress =
         payable(vm.envAddress("TOKENBOUND_ACCOUNT_DEFAULT_IMPLEMENTATION_ADDRESS"));
 
     string public baseURI = vm.envString("ERC721_BASE_URI");
-    string public erc1155BaseURI = vm.envString("TRONIC_FUNGIBLE_BASE_URI");
+    string public erc1155BaseURI = vm.envString("TRONIC_ERC1155_BASE_URI");
     string public tronicFungibleUri1 = vm.envString("TRONIC_FUNGIBLE_URI_1");
     string public tronicFungibleUri2 = vm.envString("TRONIC_FUNGIBLE_URI_2");
     string public tronicFungibleUri3 = vm.envString("TRONIC_FUNGIBLE_URI_3");
@@ -36,15 +36,17 @@ contract Initialize is Script, Test {
         vm.startBroadcast(deployerPrivateKey);
 
         //initialize erc721 for tronic member nfts
-        erc721.initialize(tbaAddress, registryAddress, "TronClub", "TRNC", baseURI, tronicAddress);
+        erc721.initialize(
+            tbaAddress, registryAddress, "Tronic Members", "TRON", baseURI, tronicAddress
+        );
         //initialize erc1155 for tronic loyalty points
-        erc1155.initialize(erc1155BaseURI, tronicAddress, "TRC CLUB POINTS", "TRCP");
+        erc1155.initialize(erc1155BaseURI, tronicAddress, "Tronic Rewards", "TRONIC");
 
         //create fungible token types for tronic
-        erc1155.createFungibleType(1, tronicFungibleUri1);
-        erc1155.createFungibleType(2, tronicFungibleUri2);
-        erc1155.createFungibleType(3, tronicFungibleUri3);
-        erc1155.createFungibleType(4, tronicFungibleUri4);
+        erc1155.createFungibleType(1_000_000, tronicFungibleUri1);
+        erc1155.createFungibleType(500_000, tronicFungibleUri2);
+        erc1155.createFungibleType(250_000, tronicFungibleUri3);
+        erc1155.createFungibleType(125_000, tronicFungibleUri4);
 
         vm.stopBroadcast();
     }

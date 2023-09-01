@@ -1,0 +1,63 @@
+{
+  "transactions": [
+    {
+      "hash": "0x8ff54638efa3df1dda98318556b89c1e3867f3174f6c8f8c703b1d57a9b8c122",
+      "transactionType": "CALL",
+      "contractName": "ERC1155Cloneable",
+      "contractAddress": "0x88CDb8f97854F4a389F3482667d57f2B8a223812",
+      "function": "mintFungible(address,uint256,uint64)",
+      "arguments": [
+        "0x03B00190d8E2603B08dA94d8A6E0C8844842499F",
+        "0",
+        "25"
+      ],
+      "transaction": {
+        "type": "0x02",
+        "from": "0x42c7ef198f8ac9888e2b1b73e5b71f1d4535194a",
+        "to": "0x88cdb8f97854f4a389f3482667d57f2b8a223812",
+        "gas": "0x1f3d1",
+        "value": "0x0",
+        "data": "0x6dcb111d00000000000000000000000003b00190d8e2603b08da94d8a6e0c8844842499f00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000019",
+        "nonce": "0x91",
+        "accessList": []
+      },
+      "additionalContracts": [],
+      "isFixedGasLimit": false
+    },
+    {
+      "hash": "0x8d1268719433fd837758039117a58075829c11d35c1774fc34c2e9e45acac4e4",
+      "transactionType": "CALL",
+      "contractName": "ERC1155Cloneable",
+      "contractAddress": "0xEAB7a1e6244Ca96A537823be249B3b7bEfF4117F",
+      "function": "mintFungible(address,uint256,uint64)",
+      "arguments": [
+        "0x23aec166d19e8a11390445479267D7e07D550A66",
+        "0",
+        "50"
+      ],
+      "transaction": {
+        "type": "0x02",
+        "from": "0x42c7ef198f8ac9888e2b1b73e5b71f1d4535194a",
+        "to": "0xeab7a1e6244ca96a537823be249b3b7beff4117f",
+        "gas": "0x1d6f0",
+        "value": "0x0",
+        "data": "0x6dcb111d00000000000000000000000023aec166d19e8a11390445479267d7e07d550a6600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000032",
+        "nonce": "0x92",
+        "accessList": []
+      },
+      "additionalContracts": [],
+      "isFixedGasLimit": false
+    }
+  ],
+  "receipts": [],
+  "libraries": [],
+  "pending": [
+    "0x8ff54638efa3df1dda98318556b89c1e3867f3174f6c8f8c703b1d57a9b8c122",
+    "0x8d1268719433fd837758039117a58075829c11d35c1774fc34c2e9e45acac4e4"
+  ],
+  "returns": {},
+  "timestamp": 1693546835,
+  "chain": 11155111,
+  "multi": false,
+  "commit": "11bdc2c"
+}

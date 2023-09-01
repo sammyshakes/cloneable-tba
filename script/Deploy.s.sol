@@ -3,13 +3,13 @@ pragma solidity ^0.8.13;
 
 // Imports
 import "forge-std/Script.sol";
-import "../src/CloneFactory.sol";
+import "../src/TronicAdmin.sol";
 
 contract Deploy is Script {
     // Deployments
     ERC721CloneableTBA public erc721;
     ERC1155Cloneable public erc1155;
-    CloneFactory public cloneFactory;
+    TronicAdmin public tronicAdminContract;
 
     address public tronicAddress = vm.envAddress("TRONIC_ADMIN_ADDRESS");
     address public registryAddress = vm.envAddress("ERC6551_REGISTRY_ADDRESS");
@@ -25,8 +25,8 @@ contract Deploy is Script {
         erc721 = new ERC721CloneableTBA();
         erc1155 = new ERC1155Cloneable();
 
-        // deploy new clone factory with environment variables
-        cloneFactory = new CloneFactory(
+        // deploy new Tronic Admin Contract
+        tronicAdminContract = new TronicAdmin(
             tronicAddress,
             address(erc721),
             address(erc1155),

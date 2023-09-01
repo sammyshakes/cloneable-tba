@@ -68,11 +68,11 @@ contract TronicAdminTest is TronicTestBase {
         assertEq(tokenInfoY.totalMinted, 0, "Incorrect totalMinted");
         assertEq(tokenInfoY.totalBurned, 0, "Incorrect totalBurned");
 
-        // mint 100 tokens to user1
+        // mint 100 tokens to user1's tba
         vm.prank(tronicAdmin);
-        tronicAdminContract.mintFungibleERC1155(partnerIDX, user1, fungibleIDX, 100);
+        tronicAdminContract.mintFungibleERC1155(partnerIDX, user1TBA, fungibleIDX, 100);
 
-        assertEq(partnerXERC1155.balanceOf(user1, fungibleIDX), 100);
+        assertEq(partnerXERC1155.balanceOf(user1TBA, fungibleIDX), 100);
     }
 
     function testCreateNonFungibleType() public {
@@ -154,14 +154,13 @@ contract TronicAdminTest is TronicTestBase {
     // test getAccount function from ERC721CloneableTBA
     function testGetAccount() public {
         // get the token bound account
-        address account = tronicERC721.getTbaAccount(1);
+        address account = tronicERC721.getTBAccount(1);
 
         // check that the account is correct
         assertEq(account, user1TBA);
     }
 
     // function testBatchProcessMinting() public {
-    //     setUp();
 
     //     uint256[] memory partnerIds = new uint256[](2);
     //     partnerIds[0] = partnerIDX;

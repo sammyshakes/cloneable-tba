@@ -27,14 +27,13 @@ contract ERC1155Cloneable is ERC1155, Initializable {
     }
 
     address public owner;
-    address public tronicAdmin;
     uint256 private _nextNFTTypeMinStartId = 100_000;
     uint256 private _tokenTypeCounter;
     string public name;
     string public symbol;
     mapping(uint256 => FungibleTokenInfo) private _fungibleTokens;
     mapping(uint256 => NFTTokenInfo) private _nftTypes;
-    mapping(uint256 => uint256) public nftLevels;
+    mapping(uint256 => uint256) public tokenLevels;
     mapping(uint256 => address) public nftOwners;
     mapping(address => bool) private _admins;
 
@@ -52,13 +51,7 @@ contract ERC1155Cloneable is ERC1155, Initializable {
 
     /// @dev Modifier to ensure only an admin can call certain functions.
     modifier onlyAdmin() {
-        require(_admins[msg.sender] || msg.sender == tronicAdmin, "Only Admin");
-        _;
-    }
-
-    /// @dev Modifier to ensure only the Tronic admin can call certain functions.
-    modifier onlyTronicAdmin() {
-        require(msg.sender == tronicAdmin, "Only Tronic Admin");
+        require(_admins[msg.sender], "Only Admin");
         _;
     }
 
@@ -73,12 +66,13 @@ contract ERC1155Cloneable is ERC1155, Initializable {
         string memory _name,
         string memory _symbol
     ) external initializer {
-        // TODO: add tronic admin contract address to admin
-        _setURI(_baseURI);
-        tronicAdmin = _tronicAdmin;
         owner = _tronicAdmin;
+        _admins[_tronicAdmin] = true;
+        _admins[msg.sender] = true;
         name = _name;
         symbol = _symbol;
+
+        _setURI(_baseURI);
     }
 
     /// @notice Gets the information of a fungible token type.
@@ -102,7 +96,7 @@ contract ERC1155Cloneable is ERC1155, Initializable {
     /// @dev Only callable by admin.
     function createNFTType(string memory baseURI, uint64 maxMintable, uint64 startingTokenId)
         external
-        onlyTronicAdmin
+        onlyAdmin
         returns (uint256 nftTypeId)
     {
         require(_nftTypes[startingTokenId].maxMintable == 0, "Token type already exists");
@@ -128,7 +122,7 @@ contract ERC1155Cloneable is ERC1155, Initializable {
     /// @dev Only callable by admin.
     function createFungibleType(uint64 _maxSupply, string memory _uri)
         external
-        onlyTronicAdmin
+        onlyAdmin
         returns (uint256 fungibleTokenId)
     {
         require(_maxSupply > 0, "Max supply must be greater than 0");
@@ -143,7 +137,7 @@ contract ERC1155Cloneable is ERC1155, Initializable {
     /// @param id The ID of the token type to update.
     /// @param uri_ The new URI for the token type.
     /// @dev Requires that the token type exists.
-    function setFungibleURI(uint256 id, string memory uri_) external onlyTronicAdmin {
+    function setFungibleURI(uint256 id, string memory uri_) external onlyAdmin {
         require((bytes(_fungibleTokenURIs[id]).length > 0), "Token type does not exists");
         _fungibleTokenURIs[id] = uri_;
     }
@@ -153,7 +147,7 @@ contract ERC1155Cloneable is ERC1155, Initializable {
     /// @param id ID of the fungible token type.
     /// @param amount The amount of tokens to mint.
     /// @dev Requires that the token type exists and minting amount does not exceed max supply.
-    function mintFungible(address to, uint256 id, uint64 amount) external onlyTronicAdmin {
+    function mintFungible(address to, uint256 id, uint64 amount) external onlyAdmin {
         FungibleTokenInfo memory token = _fungibleTokens[id];
         require(bytes(token.uri).length > 0, "Token type does not exist");
 
@@ -171,7 +165,7 @@ contract ERC1155Cloneable is ERC1155, Initializable {
     /// @param to Address to mint the NFT to.
     /// @param typeId Type ID of the NFT.
     /// @dev Requires that the NFT type already exists.
-    function mintNFT(uint256 typeId, address to) external onlyTronicAdmin {
+    function mintNFT(uint256 typeId, address to) external onlyAdmin {
         require(bytes(_nftTypes[typeId].baseURI).length > 0, "NFT type does not exist");
         // Get the next token ID to mint, and increment the totalMinted count
         uint256 tokenId = _nftTypes[typeId].startingTokenId + _nftTypes[typeId].totalMinted++;
@@ -185,7 +179,7 @@ contract ERC1155Cloneable is ERC1155, Initializable {
         _mint(to, tokenId, 1, "");
     }
 
-    function mintNFTs(uint256 typeId, address to, uint256 amount) external onlyTronicAdmin {
+    function mintNFTs(uint256 typeId, address to, uint256 amount) external onlyAdmin {
         //get memory instance of NFT type
         NFTTokenInfo memory nftType = _nftTypes[typeId];
 
@@ -219,15 +213,15 @@ contract ERC1155Cloneable is ERC1155, Initializable {
     /// @param tokenId The ID of the token.
     /// @param level The level to set.
     /// @dev Only callable by admin.
-    function setLevel(uint256 tokenId, uint256 level) external onlyTronicAdmin {
-        nftLevels[tokenId] = level;
+    function setLevel(uint256 tokenId, uint256 level) external onlyAdmin {
+        tokenLevels[tokenId] = level;
     }
 
     /// @notice Gets the level of a specific token ID.
     /// @param tokenId The ID of the token.
     /// @return The level of the token.
     function getLevel(uint256 tokenId) external view returns (uint256) {
-        return nftLevels[tokenId];
+        return tokenLevels[tokenId];
     }
 
     /// @notice Mints multiple tokens to a specific address.
@@ -241,7 +235,7 @@ contract ERC1155Cloneable is ERC1155, Initializable {
         uint256[] memory typeIds,
         uint256[] memory amounts,
         bytes memory data
-    ) external onlyTronicAdmin {
+    ) external onlyAdmin {
         require(to != address(0), "ERC1155Cloneable: mint to the zero address");
         require(typeIds.length == amounts.length, "Mismatch between typeIds and amounts length");
 
@@ -285,7 +279,7 @@ contract ERC1155Cloneable is ERC1155, Initializable {
         uint256[][] memory typeIds,
         uint256[][] memory amounts,
         bytes[] memory data
-    ) external onlyTronicAdmin {
+    ) external onlyAdmin {
         require(tos.length == typeIds.length, "Mismatch in array lengths");
         require(tos.length == amounts.length, "Mismatch in array lengths");
         require(tos.length == data.length, "Mismatch in array lengths");
@@ -343,7 +337,7 @@ contract ERC1155Cloneable is ERC1155, Initializable {
     /// @param account Address to burn tokens from.
     /// @param id ID of the token type to burn.
     /// @param amount The amount of tokens to burn.
-    function burn(address account, uint256 id, uint256 amount) public onlyTronicAdmin {
+    function burn(address account, uint256 id, uint256 amount) public onlyAdmin {
         _burn(account, id, amount);
     }
 

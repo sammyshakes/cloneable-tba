@@ -44,19 +44,19 @@ contract ERC721CloneableTBA is ERC721Enumerable, Initializable {
     /// @param name_ Name of the token.
     /// @param symbol_ Symbol of the token.
     /// @param uri Base URI of the token.
-    /// @param admin Address of the initial admin.
+    /// @param tronicAdmin Address of the initial admin.
     function initialize(
         address payable _accountImplementation,
         address _registry,
         string memory name_,
         string memory symbol_,
         string memory uri,
-        address admin
+        address tronicAdmin
     ) external initializer {
         accountImplementation = _accountImplementation;
         registry = IERC6551Registry(_registry);
-        owner = msg.sender;
-        _admins[admin] = true;
+        owner = tronicAdmin;
+        _admins[tronicAdmin] = true;
         _admins[msg.sender] = true;
         _name = name_;
         _symbol = symbol_;
@@ -91,7 +91,7 @@ contract ERC721CloneableTBA is ERC721Enumerable, Initializable {
     /// @notice Retrieves the tokenbound account of a given token ID.
     /// @param tokenId The ID of the token.
     /// @return The address of the tokenbound account.
-    function getTbaAccount(uint256 tokenId) external view returns (address) {
+    function getTBAccount(uint256 tokenId) external view returns (address) {
         return registry.account(accountImplementation, block.chainid, address(this), tokenId, 0);
     }
 

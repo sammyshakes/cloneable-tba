@@ -26,6 +26,7 @@ contract TronicAdmin {
     );
 
     address public owner;
+    address public tronicAdmin;
     address payable public tbaAccountImplementation;
 
     // Deployments
@@ -51,21 +52,21 @@ contract TronicAdmin {
         address _tbaAccountImplementation
     ) {
         owner = msg.sender;
+        tronicAdmin = _admin;
         tronicERC1155 = ERC1155Cloneable(_tronicERC1155);
         tronicERC721 = ERC721CloneableTBA(_tronicERC721);
         registry = IERC6551Registry(_registry);
         tbaAccountImplementation = payable(_tbaAccountImplementation);
-        _admins[_admin] = true;
     }
 
     // Modifiers for access control
     modifier onlyOwner() {
-        require(msg.sender == owner, "Only owner can call this function");
+        require(msg.sender == owner, "Only owner");
         _;
     }
 
     modifier onlyAdmin() {
-        require(_admins[msg.sender], "Only admin");
+        require(_admins[msg.sender] || msg.sender == tronicAdmin, "Only admin");
         _;
     }
 
@@ -85,8 +86,8 @@ contract TronicAdmin {
     ) external onlyAdmin returns (address erc721Address, address erc1155Address) {
         // Question: Will we know the TierIds beforehand?
         // Deploy the partner's contracts
-        erc721Address = deployPartnerERC721(name721, symbol721, uri721, address(this));
-        erc1155Address = deployPartnerERC1155(name1155, symbol1155, uri1155, address(this));
+        erc721Address = deployPartnerERC721(name721, symbol721, uri721);
+        erc1155Address = deployPartnerERC1155(name1155, symbol1155, uri1155);
 
         // Assign partner id and associate the deployed contracts with the partner
         partners[partnerCounter++] = PartnerInfo({
@@ -102,36 +103,30 @@ contract TronicAdmin {
     /// @param name The name of the token.
     /// @param symbol The symbol of the token.
     /// @param uri The URI for the cloned contract.
-    /// @param admin The address of the admin for the cloned contract.
     /// @return erc721CloneAddress The address of the newly cloned ERC721 contract.
-    function deployPartnerERC721(
-        string memory name,
-        string memory symbol,
-        string memory uri,
-        address admin
-    ) private returns (address erc721CloneAddress) {
+    function deployPartnerERC721(string memory name, string memory symbol, string memory uri)
+        private
+        returns (address erc721CloneAddress)
+    {
         erc721CloneAddress = Clones.clone(address(tronicERC721));
         ERC721CloneableTBA erc721Clone = ERC721CloneableTBA(erc721CloneAddress);
         erc721Clone.initialize(
-            tbaAccountImplementation, address(registry), name, symbol, uri, admin
+            tbaAccountImplementation, address(registry), name, symbol, uri, tronicAdmin
         );
     }
 
     /// @notice Clones the ERC1155 implementation and initializes it.
     /// @param uri The URI for the cloned contract.
-    /// @param admin The address of the admin for the cloned contract.
     /// @param name The name of the token.
     /// @param symbol The symbol of the token.
     /// @return erc1155cloneAddress The address of the newly cloned ERC1155 contract.
-    function deployPartnerERC1155(
-        string memory name,
-        string memory symbol,
-        string memory uri,
-        address admin
-    ) private returns (address erc1155cloneAddress) {
+    function deployPartnerERC1155(string memory name, string memory symbol, string memory uri)
+        private
+        returns (address erc1155cloneAddress)
+    {
         erc1155cloneAddress = Clones.clone(address(tronicERC1155));
         ERC1155Cloneable erc1155clone = ERC1155Cloneable(erc1155cloneAddress);
-        erc1155clone.initialize(uri, admin, name, symbol);
+        erc1155clone.initialize(uri, tronicAdmin, name, symbol);
     }
 
     // Function to remove a partner's contracts (considering the challenges of removing from a mapping)
