@@ -105,7 +105,7 @@ contract TronicTestBase is Test {
         tronicERC1155 = new ERC1155Cloneable();
 
         tronicAdminContract =
-        new TronicAdmin(tronicAdmin, address(tronicERC721), address(tronicERC1155), tbaAddress, tbaAddress);
+        new TronicAdmin(tronicAdmin, address(tronicERC721), address(tronicERC1155), registryAddress, tbaAddress);
 
         //initialize Tronic erc1155
         tronicERC1155.initialize(
@@ -161,18 +161,12 @@ contract TronicTestBase is Test {
         tronicAdminContract.createFungibleTokenType(initialMaxSupply, initialUriX, channelIDX);
         tronicAdminContract.createFungibleTokenType(initialMaxSupply, initialUriY, channelIDY);
 
+        tronicAdminContract.createNonFungibleTokenType(initialUriX, 10_000, 100_000, channelIDX);
+        tronicAdminContract.createNonFungibleTokenType(initialUriY, 25_000, 1_000_000, channelIDY);
+
         vm.stopPrank();
 
-        channelXERC721 = ERC721CloneableTBA(clone721AddressX);
-        channelXERC1155 = ERC1155Cloneable(clone1155AddressX);
-        channelYERC721 = ERC721CloneableTBA(clone721AddressY);
-        channelYERC1155 = ERC1155Cloneable(clone1155AddressY);
-
-        channelX = tronicAdminContract.getChannelInfo(channelIDX);
-        channelY = tronicAdminContract.getChannelInfo(channelIDY);
-
         //setup some initial users
-
         //vars for tokenids
         uint256 tokenId1 = 1;
         uint256 tokenId2 = 2;
@@ -193,18 +187,6 @@ contract TronicTestBase is Test {
         tronicERC721.setMembershipTier(tokenId2, "tier1");
         tronicERC721.setMembershipTier(tokenId3, "tier2");
         tronicERC721.setMembershipTier(tokenId4, "tier2");
-
-        // //mint channelX erc721cloneabletba membership nfts to users 1-4
-        // channelXERC721.mint(user1);
-        // channelXERC721.mint(user2);
-        // channelXERC721.mint(user3);
-        // channelXERC721.mint(user4);
-
-        // //mint channelY erc721cloneabletba membership nfts to users 1-4
-        // channelYERC721.mint(user1);
-        // channelYERC721.mint(user2);
-        // channelYERC721.mint(user3);
-        // channelYERC721.mint(user4);
 
         vm.stopPrank();
     }

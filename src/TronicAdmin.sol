@@ -305,6 +305,6 @@ contract TronicAdmin {
     /// @param admin The address to check.
     /// @return True if the address is an admin, false otherwise.
     function isAdmin(address admin) external view returns (bool) {
-        return _admins[admin];
+        return _admins[admin] || admin == tronicAdmin;
     }
 }
