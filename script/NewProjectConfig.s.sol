@@ -6,19 +6,19 @@ import "forge-std/Script.sol";
 import "../src/ERC1155Cloneable.sol";
 
 contract NewProjectConfig is Script {
-    string public erc115FungibleURI1X = vm.envString("PARTNER_X_FUNGIBLE_URI_1");
-    string public erc115FungibleURI2X = vm.envString("PARTNER_X_FUNGIBLE_URI_2");
-    string public erc115FungibleURI3X = vm.envString("PARTNER_X_FUNGIBLE_URI_3");
+    string public erc115FungibleURI1X = vm.envString("CHANNEL_X_FUNGIBLE_URI_1");
+    string public erc115FungibleURI2X = vm.envString("CHANNEL_X_FUNGIBLE_URI_2");
+    string public erc115FungibleURI3X = vm.envString("CHANNEL_X_FUNGIBLE_URI_3");
 
-    string public erc115FungibleURI1Y = vm.envString("PARTNER_Y_FUNGIBLE_URI_1");
-    string public erc115FungibleURI2Y = vm.envString("PARTNER_Y_FUNGIBLE_URI_2");
-    string public erc115FungibleURI3Y = vm.envString("PARTNER_Y_FUNGIBLE_URI_3");
+    string public erc115FungibleURI1Y = vm.envString("CHANNEL_Y_FUNGIBLE_URI_1");
+    string public erc115FungibleURI2Y = vm.envString("CHANNEL_Y_FUNGIBLE_URI_2");
+    string public erc115FungibleURI3Y = vm.envString("CHANNEL_Y_FUNGIBLE_URI_3");
 
     // erc1155 clone adress
-    address public erc1155CloneX = vm.envAddress("PARTNER_X_CLONED_ERC1155_ADDRESS");
-    address public erc1155CloneY = vm.envAddress("PARTNER_Y_CLONED_ERC1155_ADDRESS");
+    address public erc1155CloneX = vm.envAddress("CHANNEL_X_CLONED_ERC1155_ADDRESS");
+    address public erc1155CloneY = vm.envAddress("CHANNEL_Y_CLONED_ERC1155_ADDRESS");
 
-    // this script clones an erc1155 token for a partner x and partner y
+    // this script clones an erc1155 token for a channel x and channel y
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY_TRONIC_ADMIN");
 

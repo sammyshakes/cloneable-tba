@@ -13,13 +13,13 @@ contract NewUserEarns3 is Script {
 
     address payable public tbaAccount = payable(vm.envAddress("TOKENBOUND_ACCOUNT_TOKENID_1"));
     address payable public tbaAccountX =
-        payable(vm.envAddress("PARTNER_X_TOKENBOUND_ACCOUNT_TOKENID_1"));
+        payable(vm.envAddress("CHANNEL_X_TOKENBOUND_ACCOUNT_TOKENID_1"));
     address payable public tbaAccountY =
-        payable(vm.envAddress("PARTNER_Y_TOKENBOUND_ACCOUNT_TOKENID_1"));
+        payable(vm.envAddress("CHANNEL_Y_TOKENBOUND_ACCOUNT_TOKENID_1"));
 
     address public erc1155Address = vm.envAddress("TRONIC_REWARDS_ERC1155_ADDRESS");
-    address public clonedERC1155AddressX = vm.envAddress("PARTNER_X_CLONED_ERC1155_ADDRESS");
-    address public clonedERC1155AddressY = vm.envAddress("PARTNER_Y_CLONED_ERC1155_ADDRESS");
+    address public clonedERC1155AddressX = vm.envAddress("CHANNEL_X_CLONED_ERC1155_ADDRESS");
+    address public clonedERC1155AddressY = vm.envAddress("CHANNEL_Y_CLONED_ERC1155_ADDRESS");
 
     // this script mints 25 premium tokens with id=3 to the tokenbound project x address
     // and 10 premium tronic tokens to the tronic tbaAccount address

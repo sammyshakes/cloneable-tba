@@ -7,10 +7,10 @@ import "./ERC721CloneableTBA.sol";
 import "@openzeppelin/contracts/proxy/Clones.sol";
 
 contract TronicAdmin {
-    struct PartnerInfo {
+    struct ChannelInfo {
         address erc721Address;
         address erc1155Address;
-        string partnerName;
+        string channelName;
     }
 
     enum TokenType {
@@ -18,11 +18,11 @@ contract TronicAdmin {
         ERC721
     }
 
-    event PartnerAdded(
-        uint256 indexed partnerId,
+    event ChannelAdded(
+        uint256 indexed channelId,
         address indexed erc721Address,
         address indexed erc1155Address,
-        string partnerName
+        string channelName
     );
 
     address public owner;
@@ -34,8 +34,8 @@ contract TronicAdmin {
     ERC721CloneableTBA public tronicERC721;
     ERC1155Cloneable public tronicERC1155;
 
-    uint256 public partnerCounter;
-    mapping(uint256 => PartnerInfo) public partners;
+    uint256 public channelCounter;
+    mapping(uint256 => ChannelInfo) public channels;
     mapping(address => bool) private _admins;
 
     /// @notice Constructs the CloneFactory contract.
@@ -70,21 +70,21 @@ contract TronicAdmin {
         _;
     }
 
-    function getPartnerInfo(uint256 partnerId) external view returns (PartnerInfo memory) {
-        return partners[partnerId];
+    function getChannelInfo(uint256 channelId) external view returns (ChannelInfo memory) {
+        return channels[channelId];
     }
 
-    /// @notice Deploys a new partner's contracts.
+    /// @notice Deploys a new channel's contracts.
     /// @param name721 The name of the ERC721 token.
     /// @param symbol721 The symbol of the ERC721 token.
     /// @param uri721 The URI for the ERC721 token.
     /// @param name1155 The name of the ERC1155 token.
     /// @param symbol1155 The symbol of the ERC1155 token.
     /// @param uri1155 The URI for the ERC1155 token.
-    /// @param partnerName The name of the partner.
+    /// @param channelName The name of the channel.
     /// @return erc721Address The address of the deployed ERC721 contract.
     /// @return erc1155Address The address of the deployed ERC1155 contract.
-    function deployPartner(
+    function deployChannel(
         string memory name721,
         string memory symbol721,
         string memory uri721,
@@ -92,21 +92,21 @@ contract TronicAdmin {
         string memory name1155,
         string memory symbol1155,
         string memory uri1155,
-        string memory partnerName
+        string memory channelName
     ) external onlyAdmin returns (address erc721Address, address erc1155Address) {
         // Question: Will we know the TierIds beforehand?
-        // Deploy the partner's contracts
-        erc721Address = deployPartnerERC721(name721, symbol721, uri721, maxSupply);
-        erc1155Address = deployPartnerERC1155(name1155, symbol1155, uri1155);
+        // Deploy the channel's contracts
+        erc721Address = deployChannelERC721(name721, symbol721, uri721, maxSupply);
+        erc1155Address = deployChannelERC1155(name1155, symbol1155, uri1155);
 
-        // Assign partner id and associate the deployed contracts with the partner
-        partners[partnerCounter++] = PartnerInfo({
+        // Assign channel id and associate the deployed contracts with the channel
+        channels[channelCounter++] = ChannelInfo({
             erc721Address: erc721Address,
             erc1155Address: erc1155Address,
-            partnerName: partnerName
+            channelName: channelName
         });
 
-        emit PartnerAdded(partnerCounter - 1, erc721Address, erc1155Address, partnerName); // partnerCounter - 1 will give the last added partner's ID
+        emit ChannelAdded(channelCounter - 1, erc721Address, erc1155Address, channelName); // channelCounter - 1 will give the last added channel's ID
     }
 
     /// @notice Clones the ERC721 implementation and initializes it.
@@ -114,7 +114,7 @@ contract TronicAdmin {
     /// @param symbol The symbol of the token.
     /// @param uri The URI for the cloned contract.
     /// @return erc721CloneAddress The address of the newly cloned ERC721 contract.
-    function deployPartnerERC721(
+    function deployChannelERC721(
         string memory name,
         string memory symbol,
         string memory uri,
@@ -132,7 +132,7 @@ contract TronicAdmin {
     /// @param name The name of the token.
     /// @param symbol The symbol of the token.
     /// @return erc1155cloneAddress The address of the newly cloned ERC1155 contract.
-    function deployPartnerERC1155(string memory name, string memory symbol, string memory uri)
+    function deployChannelERC1155(string memory name, string memory symbol, string memory uri)
         private
         returns (address erc1155cloneAddress)
     {
@@ -141,124 +141,124 @@ contract TronicAdmin {
         erc1155clone.initialize(uri, tronicAdmin, name, symbol);
     }
 
-    // Function to remove a partner's contracts (considering the challenges of removing from a mapping)
-    function removePartner(uint256 _partnerId) external onlyAdmin {
-        delete partners[_partnerId];
+    // Function to remove a channel's contracts (considering the challenges of removing from a mapping)
+    function removeChannel(uint256 _channelId) external onlyAdmin {
+        delete channels[_channelId];
     }
 
-    /// @notice Creates a new ERC1155 fungible token type for a partner.
+    /// @notice Creates a new ERC1155 fungible token type for a channel.
     /// @param maxSupply The maximum supply of the token type.
     /// @param uri The URI for the token type.
-    /// @param partnerId The ID of the partner to create the token type for.
+    /// @param channelId The ID of the channel to create the token type for.
     /// @return The ID of the newly created token type.
-    function createFungibleTokenType(uint256 maxSupply, string memory uri, uint256 partnerId)
+    function createFungibleTokenType(uint256 maxSupply, string memory uri, uint256 channelId)
         external
         onlyAdmin
         returns (uint256)
     {
-        PartnerInfo memory partner = partners[partnerId];
-        return ERC1155Cloneable(partner.erc1155Address).createFungibleType(uint64(maxSupply), uri);
+        ChannelInfo memory channel = channels[channelId];
+        return ERC1155Cloneable(channel.erc1155Address).createFungibleType(uint64(maxSupply), uri);
     }
 
-    /// @notice Creates a new ERC1155 non-fungible token type for a partner.
+    /// @notice Creates a new ERC1155 non-fungible token type for a channel.
     /// @param baseUri The URI for the token type.
     /// @param maxMintable The maximum number of tokens that can be minted.
     /// @param startingTokenId The ID of the first token to mint.
-    /// @param partnerId The ID of the partner to create the token type for.
+    /// @param channelId The ID of the channel to create the token type for.
     /// @return nftTypeID The ID of the newly created token type.
     function createNonFungibleTokenType(
         string memory baseUri,
         uint64 maxMintable,
         uint64 startingTokenId,
-        uint256 partnerId
+        uint256 channelId
     ) external onlyAdmin returns (uint256 nftTypeID) {
-        PartnerInfo memory partner = partners[partnerId];
-        nftTypeID = ERC1155Cloneable(partner.erc1155Address).createNFTType(
+        ChannelInfo memory channel = channels[channelId];
+        nftTypeID = ERC1155Cloneable(channel.erc1155Address).createNFTType(
             baseUri, maxMintable, startingTokenId
         );
     }
 
     /// @notice Mints a new ERC721 token.
     /// @param _recipient The address to mint the token to.
-    /// @param _partnerId The ID of the partner to mint the token for.
+    /// @param _channelId The ID of the channel to mint the token for.
     /// @return The address of the newly created token account.
-    function mintERC721(address _recipient, uint256 _partnerId)
+    function mintERC721(address _recipient, uint256 _channelId)
         external
         onlyAdmin
         returns (address payable)
     {
-        PartnerInfo memory partner = partners[_partnerId];
-        return ERC721CloneableTBA(partner.erc721Address).mint(_recipient);
+        ChannelInfo memory channel = channels[_channelId];
+        return ERC721CloneableTBA(channel.erc721Address).mint(_recipient);
     }
 
     /// @notice Mints a new ERC1155 token.
     /// @param _recipient The address to mint the token to.
     /// @param _tokenId The ID of the token to mint.
     /// @param _amount The amount of the token to mint.
-    /// @param _partnerId The ID of the partner to mint the token for.
+    /// @param _channelId The ID of the channel to mint the token for.
     function mintFungibleERC1155(
-        uint256 _partnerId,
+        uint256 _channelId,
         address _recipient,
         uint256 _tokenId,
         uint64 _amount
     ) external onlyAdmin {
-        PartnerInfo memory partner = partners[_partnerId];
-        ERC1155Cloneable(partner.erc1155Address).mintFungible(_recipient, _tokenId, _amount);
+        ChannelInfo memory channel = channels[_channelId];
+        ERC1155Cloneable(channel.erc1155Address).mintFungible(_recipient, _tokenId, _amount);
     }
 
     /// @notice Mints a new nonfungible ERC1155 token.
     /// @param _recipient The address to mint the token to.
     /// @param _typeId The ID of the token to mint.
-    /// @param _partnerId The ID of the partner to mint the token for.
+    /// @param _channelId The ID of the channel to mint the token for.
     /// @param _amount The amount of the token to mint.
     function mintNonFungibleERC1155(
-        uint256 _partnerId,
+        uint256 _channelId,
         address _recipient,
         uint256 _typeId,
         uint256 _amount
     ) external onlyAdmin {
-        PartnerInfo memory partner = partners[_partnerId];
-        ERC1155Cloneable(partner.erc1155Address).mintNFTs(_typeId, _recipient, _amount);
+        ChannelInfo memory channel = channels[_channelId];
+        ERC1155Cloneable(channel.erc1155Address).mintNFTs(_typeId, _recipient, _amount);
     }
 
-    /// @notice Processes multiple minting operations for both ERC1155 and ERC721 tokens on behalf of partners.
-    /// @param _partnerIds   Array of partner IDs corresponding to each minting operation.
+    /// @notice Processes multiple minting operations for both ERC1155 and ERC721 tokens on behalf of channels.
+    /// @param _channelIds   Array of channel IDs corresponding to each minting operation.
     /// @param _recipients   2D array of recipient addresses for each minting operation.
-    /// @param _tokenIds     4D array of token IDs to mint for each partner.
+    /// @param _tokenIds     4D array of token IDs to mint for each channel.
     ///                      For ERC1155, it could be multiple IDs, and for ERC721, it should contain a single ID.
-    /// @param _amounts      4D array of token amounts to mint for each partner.
+    /// @param _amounts      4D array of token amounts to mint for each channel.
     ///                      For ERC1155, it represents the quantities of each token ID, and for ERC721, it should be either [1] (to mint) or [0] (to skip).
     /// @param _tokenTypes   3D array specifying the type of each token (either ERC1155 or ERC721) to determine the minting logic.
     /// @dev Requires that all input arrays have matching lengths.
     ///      For ERC721 minting, the inner arrays of _tokenIds and _amounts should have a length of 1.
     function batchProcess(
-        uint256[] memory _partnerIds,
+        uint256[] memory _channelIds,
         address[][] memory _recipients,
         uint256[][][][] memory _tokenIds,
         uint256[][][][] memory _amounts,
         TokenType[][][] memory _tokenTypes
     ) external {
         require(
-            _partnerIds.length == _tokenIds.length && _tokenIds.length == _amounts.length
+            _channelIds.length == _tokenIds.length && _tokenIds.length == _amounts.length
                 && _amounts.length == _recipients.length && _recipients.length == _tokenTypes.length,
             "Outer arrays must have the same length"
         );
 
-        // i = partnerId, j = recipient, k = token
-        // Loop through each partner
-        for (uint256 i = 0; i < _partnerIds.length; i++) {
-            PartnerInfo memory partner = partners[_partnerIds[i]];
+        // i = channelId, j = recipient, k = token
+        // Loop through each channel
+        for (uint256 i = 0; i < _channelIds.length; i++) {
+            ChannelInfo memory channel = channels[_channelIds[i]];
 
             for (uint256 j = 0; j < _recipients[i].length; j++) {
                 address recipient = _recipients[i][j];
 
                 for (uint256 k = 0; k < _tokenTypes[i][j].length; k++) {
                     if (_tokenTypes[i][j][k] == TokenType.ERC1155) {
-                        ERC1155Cloneable(partner.erc1155Address).mintBatch(
+                        ERC1155Cloneable(channel.erc1155Address).mintBatch(
                             recipient, _tokenIds[i][j][k], _amounts[i][j][k], ""
                         );
                     } else if (_tokenTypes[i][j][k] == TokenType.ERC721) {
-                        ERC721CloneableTBA(partner.erc721Address).mint(recipient);
+                        ERC721CloneableTBA(channel.erc721Address).mint(recipient);
                     }
                 }
             }

@@ -8,7 +8,7 @@ import "../src/interfaces/IERC6551Account.sol";
 
 /// @dev Sets up the initial state for testing the TronicAdmin system
 /// @notice Deploys the core TronicAdmin, ERC721, and ERC1155 contracts
-/// @notice Creates user accounts, default partners, and initial token types
+/// @notice Creates user accounts, default channels, and initial token types
 /// @notice Should be called automatically by any contract inheriting TronicTestBase
 ///
 /// Details:
@@ -32,9 +32,9 @@ import "../src/interfaces/IERC6551Account.sol";
 ///   - user1, user2, user3: Sample user accounts
 ///   - unauthorizedUser: Unauthorized user account
 ///
-/// - Deploys 2 sample partners
-///   - partnerX: Partner 0
-///   - partnerY: Partner 1
+/// - Deploys 2 sample channels
+///   - channelX: Channel 0
+///   - channelY: Channel 1
 ///
 /// - Mints initial sample tokens
 ///
@@ -43,7 +43,7 @@ import "../src/interfaces/IERC6551Account.sol";
 /// and sample data to test against.
 contract TronicTestBase is Test {
     struct BatchMintOrder {
-        uint256 partnerId;
+        uint256 channelId;
         address[] recipients;
         uint256[][] tokenIds;
         uint256[][] amounts;
@@ -55,16 +55,16 @@ contract TronicTestBase is Test {
     ERC1155Cloneable tronicERC1155;
     IERC6551Account tbaCloneable;
 
-    ERC721CloneableTBA partnerXERC721;
-    ERC1155Cloneable partnerXERC1155;
-    ERC721CloneableTBA partnerYERC721;
-    ERC1155Cloneable partnerYERC1155;
+    ERC721CloneableTBA channelXERC721;
+    ERC1155Cloneable channelXERC1155;
+    ERC721CloneableTBA channelYERC721;
+    ERC1155Cloneable channelYERC1155;
 
-    TronicAdmin.PartnerInfo partnerX;
-    TronicAdmin.PartnerInfo partnerY;
+    TronicAdmin.ChannelInfo channelX;
+    TronicAdmin.ChannelInfo channelY;
 
-    uint256 partnerIDX = 0;
-    uint256 partnerIDY = 1;
+    uint256 channelIDX = 0;
+    uint256 channelIDY = 1;
 
     // set users
     address public user1 = address(0x1);
@@ -79,7 +79,7 @@ contract TronicTestBase is Test {
     //tronicAdmin will be some privatekey stored on backend
     address public tronicAdmin = address(0x6);
 
-    address public partnerAdmin = address(0x7);
+    address public channelAdmin = address(0x7);
 
     address payable public tbaAddress =
         payable(vm.envAddress("TOKENBOUND_ACCOUNT_DEFAULT_IMPLEMENTATION_ADDRESS"));
@@ -125,13 +125,13 @@ contract TronicTestBase is Test {
 
         vm.stopPrank();
 
-        // deploy partner contracts
+        // deploy channel contracts
         vm.startPrank(tronicAdmin);
 
         //set admin
         tronicERC721.addAdmin(address(tronicAdminContract));
 
-        (clone721AddressX, clone1155AddressX) = tronicAdminContract.deployPartner(
+        (clone721AddressX, clone1155AddressX) = tronicAdminContract.deployChannel(
             "XClone721",
             "XCL721",
             "http://Xclone721.com/",
@@ -139,10 +139,10 @@ contract TronicTestBase is Test {
             "XClone1155",
             "XCL1155",
             "http://Xclone1155.com/",
-            "SetupPartnerX"
+            "SetupChannelX"
         );
 
-        (clone721AddressY, clone1155AddressY) = tronicAdminContract.deployPartner(
+        (clone721AddressY, clone1155AddressY) = tronicAdminContract.deployChannel(
             "YClone721",
             "YCL721",
             "http://Yclone721.com/",
@@ -150,7 +150,7 @@ contract TronicTestBase is Test {
             "YClone1155",
             "YCL1155",
             "http://Yclone1155.com/",
-            "SetupPartnerY"
+            "SetupChannelY"
         );
 
         // Set up initial state
@@ -158,18 +158,18 @@ contract TronicTestBase is Test {
         string memory initialUriX = "http://setup-exampleX.com/token/";
         string memory initialUriY = "http://setup-exampleY.com/token/";
 
-        tronicAdminContract.createFungibleTokenType(initialMaxSupply, initialUriX, partnerIDX);
-        tronicAdminContract.createFungibleTokenType(initialMaxSupply, initialUriY, partnerIDY);
+        tronicAdminContract.createFungibleTokenType(initialMaxSupply, initialUriX, channelIDX);
+        tronicAdminContract.createFungibleTokenType(initialMaxSupply, initialUriY, channelIDY);
 
         vm.stopPrank();
 
-        partnerXERC721 = ERC721CloneableTBA(clone721AddressX);
-        partnerXERC1155 = ERC1155Cloneable(clone1155AddressX);
-        partnerYERC721 = ERC721CloneableTBA(clone721AddressY);
-        partnerYERC1155 = ERC1155Cloneable(clone1155AddressY);
+        channelXERC721 = ERC721CloneableTBA(clone721AddressX);
+        channelXERC1155 = ERC1155Cloneable(clone1155AddressX);
+        channelYERC721 = ERC721CloneableTBA(clone721AddressY);
+        channelYERC1155 = ERC1155Cloneable(clone1155AddressY);
 
-        partnerX = tronicAdminContract.getPartnerInfo(partnerIDX);
-        partnerY = tronicAdminContract.getPartnerInfo(partnerIDY);
+        channelX = tronicAdminContract.getChannelInfo(channelIDX);
+        channelY = tronicAdminContract.getChannelInfo(channelIDY);
 
         //setup some initial users
 
@@ -194,17 +194,17 @@ contract TronicTestBase is Test {
         tronicERC721.setMembershipTier(tokenId3, "tier2");
         tronicERC721.setMembershipTier(tokenId4, "tier2");
 
-        // //mint partnerX erc721cloneabletba membership nfts to users 1-4
-        // partnerXERC721.mint(user1);
-        // partnerXERC721.mint(user2);
-        // partnerXERC721.mint(user3);
-        // partnerXERC721.mint(user4);
+        // //mint channelX erc721cloneabletba membership nfts to users 1-4
+        // channelXERC721.mint(user1);
+        // channelXERC721.mint(user2);
+        // channelXERC721.mint(user3);
+        // channelXERC721.mint(user4);
 
-        // //mint partnerY erc721cloneabletba membership nfts to users 1-4
-        // partnerYERC721.mint(user1);
-        // partnerYERC721.mint(user2);
-        // partnerYERC721.mint(user3);
-        // partnerYERC721.mint(user4);
+        // //mint channelY erc721cloneabletba membership nfts to users 1-4
+        // channelYERC721.mint(user1);
+        // channelYERC721.mint(user2);
+        // channelYERC721.mint(user3);
+        // channelYERC721.mint(user4);
 
         vm.stopPrank();
     }

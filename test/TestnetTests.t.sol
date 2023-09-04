@@ -38,15 +38,15 @@ contract TestnetTests is Test {
     address public erc1155Address = vm.envAddress("TRONIC_REWARDS_ERC1155_ADDRESS");
 
     // cloned project contracts
-    address public cloned1155AddressX = vm.envAddress("PARTNER_X_CLONED_ERC1155_ADDRESS");
-    address public cloned1155AddressY = vm.envAddress("PARTNER_Y_CLONED_ERC1155_ADDRESS");
-    address public cloned721AddressX = vm.envAddress("PARTNER_X_CLONED_ERC721_ADDRESS");
-    address public cloned721AddressY = vm.envAddress("PARTNER_Y_CLONED_ERC721_ADDRESS");
+    address public cloned1155AddressX = vm.envAddress("CHANNEL_X_CLONED_ERC1155_ADDRESS");
+    address public cloned1155AddressY = vm.envAddress("CHANNEL_Y_CLONED_ERC1155_ADDRESS");
+    address public cloned721AddressX = vm.envAddress("CHANNEL_X_CLONED_ERC721_ADDRESS");
+    address public cloned721AddressY = vm.envAddress("CHANNEL_Y_CLONED_ERC721_ADDRESS");
 
     // tokenbound accounts
     address public tbaAddressTokenID1 = vm.envAddress("TOKENBOUND_ACCOUNT_TOKENID_1");
-    address public tbaAddressXTokenID1 = vm.envAddress("PARTNER_X_TOKENBOUND_ACCOUNT_TOKENID_1");
-    address public tbaAddressYTokenID1 = vm.envAddress("PARTNER_Y_TOKENBOUND_ACCOUNT_TOKENID_1");
+    address public tbaAddressXTokenID1 = vm.envAddress("CHANNEL_X_TOKENBOUND_ACCOUNT_TOKENID_1");
+    address public tbaAddressYTokenID1 = vm.envAddress("CHANNEL_Y_TOKENBOUND_ACCOUNT_TOKENID_1");
 
     function setUp() public {
         vm.startPrank(tronicOwner);
@@ -211,13 +211,13 @@ contract TestnetTests is Test {
 
         // Expect the cloneERC1155 function to be reverted due to unauthorized access
         vm.expectRevert();
-        tronicAdminContract.deployPartner(
+        tronicAdminContract.deployChannel(
             "", "", "", 0, "Clone1155", "CL1155", "http://unauthorized1155.com/", "Name1"
         );
 
         // Expect the cloneERC721 function to be reverted due to unauthorized access
         vm.expectRevert();
-        tronicAdminContract.deployPartner(
+        tronicAdminContract.deployChannel(
             "Unauthorized721", "UN721", "http://unauthorized721.com/", 10_000, "", "", "", "Name2"
         );
     }
