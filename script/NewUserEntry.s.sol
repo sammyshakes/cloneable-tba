@@ -30,7 +30,7 @@ contract NewUserEntry is Script {
         vm.startBroadcast(deployerPrivateKey);
 
         //mint erc721 to userAddress
-        address tba = erc721.mint(userAddress, tokenId);
+        address tba = erc721.mint(userAddress);
 
         // do we also mint some initial tronic tokens to the new tba?
         tronicERC1155.mintFungible(tba, 1, 1000);

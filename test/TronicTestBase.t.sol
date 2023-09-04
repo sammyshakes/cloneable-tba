@@ -70,8 +70,9 @@ contract TronicTestBase is Test {
     address public user1 = address(0x1);
     address public user2 = address(0x2);
     address public user3 = address(0x3);
+    address public user4 = address(0x4);
     // new address for an unauthorized user
-    address public unauthorizedUser = address(0x4);
+    address public unauthorizedUser = address(0x666);
 
     address public tronicOwner = address(0x5);
 
@@ -89,7 +90,11 @@ contract TronicTestBase is Test {
     address public clone1155AddressX;
     address public clone721AddressY;
     address public clone1155AddressY;
+
     address public user1TBA;
+    address public user2TBA;
+    address public user3TBA;
+    address public user4TBA;
 
     function setUp() public {
         tbaCloneable = IERC6551Account(tbaAddress);
@@ -107,8 +112,6 @@ contract TronicTestBase is Test {
             "http://example1155.com/", address(tronicAdminContract), "Original1155", "OR1155"
         );
 
-        vm.stopPrank();
-
         //initialize tronicERC721
         tronicERC721.initialize(
             tbaAddress,
@@ -116,15 +119,23 @@ contract TronicTestBase is Test {
             "Original721",
             "OR721",
             "http://example721.com/",
-            address(tronicAdminContract)
+            10_000,
+            tronicAdmin
         );
+
+        vm.stopPrank();
 
         // deploy partner contracts
         vm.startPrank(tronicAdmin);
+
+        //set admin
+        tronicERC721.addAdmin(address(tronicAdminContract));
+
         (clone721AddressX, clone1155AddressX) = tronicAdminContract.deployPartner(
             "XClone721",
             "XCL721",
             "http://Xclone721.com/",
+            10_000,
             "XClone1155",
             "XCL1155",
             "http://Xclone1155.com/",
@@ -135,6 +146,7 @@ contract TronicTestBase is Test {
             "YClone721",
             "YCL721",
             "http://Yclone721.com/",
+            10_000,
             "YClone1155",
             "YCL1155",
             "http://Yclone1155.com/",
@@ -151,10 +163,6 @@ contract TronicTestBase is Test {
 
         vm.stopPrank();
 
-        vm.prank(address(tronicAdminContract));
-        //mint tronic erc721cloneabletba membership nft to user1
-        user1TBA = tronicERC721.mint(user1, 1);
-
         partnerXERC721 = ERC721CloneableTBA(clone721AddressX);
         partnerXERC1155 = ERC1155Cloneable(clone1155AddressX);
         partnerYERC721 = ERC721CloneableTBA(clone721AddressY);
@@ -162,5 +170,42 @@ contract TronicTestBase is Test {
 
         partnerX = tronicAdminContract.getPartnerInfo(partnerIDX);
         partnerY = tronicAdminContract.getPartnerInfo(partnerIDY);
+
+        //setup some initial users
+
+        //vars for tokenids
+        uint256 tokenId1 = 1;
+        uint256 tokenId2 = 2;
+        uint256 tokenId3 = 3;
+        uint256 tokenId4 = 4;
+
+        vm.startPrank(address(tronicAdminContract));
+
+        //mint tronic erc721cloneabletba membership nfts to users 1-4
+        user1TBA = tronicERC721.mint(user1);
+        user2TBA = tronicERC721.mint(user2);
+        user3TBA = tronicERC721.mint(user3);
+        user4TBA = tronicERC721.mint(user4);
+
+        //set tronic Membership tiers based on some external factores
+        //here token ids 1 and 2 are tier1, and ids 3 and 4 are tier2
+        tronicERC721.setMembershipTier(tokenId1, "tier1");
+        tronicERC721.setMembershipTier(tokenId2, "tier1");
+        tronicERC721.setMembershipTier(tokenId3, "tier2");
+        tronicERC721.setMembershipTier(tokenId4, "tier2");
+
+        // //mint partnerX erc721cloneabletba membership nfts to users 1-4
+        // partnerXERC721.mint(user1);
+        // partnerXERC721.mint(user2);
+        // partnerXERC721.mint(user3);
+        // partnerXERC721.mint(user4);
+
+        // //mint partnerY erc721cloneabletba membership nfts to users 1-4
+        // partnerYERC721.mint(user1);
+        // partnerYERC721.mint(user2);
+        // partnerYERC721.mint(user3);
+        // partnerYERC721.mint(user4);
+
+        vm.stopPrank();
     }
 }

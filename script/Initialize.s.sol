@@ -13,6 +13,9 @@ contract Initialize is Script {
     ERC721CloneableTBA public erc721;
     ERC1155Cloneable public erc1155;
 
+    // max Supply
+    uint256 public maxSupply = 10_000;
+
     address public tronicAddress = vm.envAddress("TRONIC_ADMIN_ADDRESS");
     address public erc721Address = vm.envAddress("TRONIC_MEMBER_ERC721_ADDRESS");
     address public erc1155Address = vm.envAddress("TRONIC_REWARDS_ERC1155_ADDRESS");
@@ -37,7 +40,7 @@ contract Initialize is Script {
 
         //initialize erc721 for tronic member nfts
         erc721.initialize(
-            tbaAddress, registryAddress, "Tronic Members", "TRON", baseURI, tronicAddress
+            tbaAddress, registryAddress, "Tronic Members", "TRON", baseURI, maxSupply, tronicAddress
         );
         //initialize erc1155 for tronic loyalty points
         erc1155.initialize(erc1155BaseURI, tronicAddress, "Tronic Rewards", "TRONIC");

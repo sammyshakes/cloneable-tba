@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.13;
 
-import "./TronicTestBase.sol";
+import "./TronicTestBase.t.sol";
 
 contract TronicAdminTest is TronicTestBase {
     function testInitialSetup() public {
@@ -31,6 +31,10 @@ contract TronicAdminTest is TronicTestBase {
         assertEq(tronicAdmin, partnerXERC1155.owner());
         assertEq(tronicAdmin, partnerYERC721.owner());
         assertEq(tronicAdmin, partnerYERC1155.owner());
+
+        // get owner of tokenid 0
+        address owner = tronicERC721.ownerOf(1);
+        console.log("owner of tokenid 1: ", owner);
     }
 
     function testCreateFungibleType() public {
@@ -133,12 +137,17 @@ contract TronicAdminTest is TronicTestBase {
         string memory uri1155 = "http://testclone1155.com/";
         string memory partnerName = "TestPartner";
 
+        // maxsupply for partner erc721
+        uint64 maxSupply = 10_000;
+
         // Simulate as admin
         vm.prank(tronicAdmin);
 
         // Call the deployAndAddPartner function
         (address testClone721Address, address testClone1155AddressY) = tronicAdminContract
-            .deployPartner(name721, symbol721, uri721, name1155, symbol1155, uri1155, partnerName);
+            .deployPartner(
+            name721, symbol721, uri721, maxSupply, name1155, symbol1155, uri1155, partnerName
+        );
 
         // Retrieve the added partner's details
         TronicAdmin.PartnerInfo memory partner = tronicAdminContract.getPartnerInfo(partnerCount);
@@ -155,6 +164,8 @@ contract TronicAdminTest is TronicTestBase {
     function testGetAccount() public {
         // get the token bound account
         address account = tronicERC721.getTBAccount(1);
+
+        console.log("tokenbound account address: ", account);
 
         // check that the account is correct
         assertEq(account, user1TBA);

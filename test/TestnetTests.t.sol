@@ -5,9 +5,6 @@ pragma solidity ^0.8.0;
 import "forge-std/Test.sol";
 import "../src/TronicAdmin.sol";
 import "../src/interfaces/IERC6551Account.sol";
-//import mocks
-import "../src/mocks/MockERC721.sol";
-import "../src/mocks/MockERC1155.sol";
 
 contract TestnetTests is Test {
     TronicAdmin public tronicAdminContract;
@@ -20,11 +17,6 @@ contract TestnetTests is Test {
     IERC6551Account public accountTronic;
 
     IERC6551Registry public registry;
-
-    //mocks
-    MockERC721 public dummyERC721 = new MockERC721();
-    MockERC1155 public dummyERC1155 = new MockERC1155();
-    MockERC721 public tokenCollection = new MockERC721();
 
     // set users
     address public user1 = address(0x1);
@@ -140,7 +132,7 @@ contract TestnetTests is Test {
         assertEq(clonedERC1155X.balanceOf(user1, 1), 10);
         assertEq(clonedERC1155X.balanceOf(nestedTbaAddress, 1), 90);
 
-        // approve user 2 to transfer 5 of token 1
+        // approve user 2 to control tba
         address[] memory approved = new address[](1);
         approved[0] = user2;
         bool[] memory approvedValues = new bool[](1);
@@ -151,26 +143,6 @@ contract TestnetTests is Test {
 
         vm.prank(user2);
         accountTba.executeCall(nestedTbaAddress, 0, executeCall);
-    }
-
-    function testTransferERC721PostDeploy() public {
-        address accountAddress = tbaAddressTokenID1;
-
-        dummyERC721.mint(accountAddress, 1);
-
-        assertEq(dummyERC721.balanceOf(accountAddress), 1);
-        assertEq(dummyERC721.ownerOf(1), accountAddress);
-        assertEq(accountTba.owner(), tbaOwner);
-
-        bytes memory erc721TransferCall = abi.encodeWithSignature(
-            "safeTransferFrom(address,address,uint256)", accountAddress, user1, 1
-        );
-        vm.prank(tbaOwner);
-        accountTba.executeCall(payable(address(dummyERC721)), 0, erc721TransferCall);
-
-        assertEq(dummyERC721.balanceOf(accountAddress), 0);
-        assertEq(dummyERC721.balanceOf(user1), 1);
-        assertEq(dummyERC721.ownerOf(1), user1);
     }
 
     function testTransferERC1155PostDeploy() public {
@@ -233,18 +205,6 @@ contract TestnetTests is Test {
         // account.execute(cloned1155Address, 0, erc1155TransferCall, 0);
     }
 
-    // function testChangeFactoryOwnership() public {
-    //     vm.prank(tronicOwner);
-    //     // Change tronicAdmin to user1
-    //     factory.setTronicAdmin(user1);
-    //     assertEq(factory.tronicAdmin(), user1);
-
-    //     // Try to change tronicAdmin from a non-admin address should fail
-    //     vm.expectRevert();
-    //     vm.prank(user2);
-    //     factory.setTronicAdmin(user2);
-    // }
-
     function testUnauthorizedCloning() public {
         // Prank the VM to make the unauthorized user the msg.sender
         vm.prank(unauthorizedUser);
@@ -252,13 +212,13 @@ contract TestnetTests is Test {
         // Expect the cloneERC1155 function to be reverted due to unauthorized access
         vm.expectRevert();
         tronicAdminContract.deployPartner(
-            "", "", "", "Clone1155", "CL1155", "http://unauthorized1155.com/", "Name1"
+            "", "", "", 0, "Clone1155", "CL1155", "http://unauthorized1155.com/", "Name1"
         );
 
         // Expect the cloneERC721 function to be reverted due to unauthorized access
         vm.expectRevert();
         tronicAdminContract.deployPartner(
-            "Unauthorized721", "UN721", "http://unauthorized721.com/", "", "", "", "Name2"
+            "Unauthorized721", "UN721", "http://unauthorized721.com/", 10_000, "", "", "", "Name2"
         );
     }
 }

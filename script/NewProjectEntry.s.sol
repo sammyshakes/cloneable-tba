@@ -9,6 +9,9 @@ contract NewProjectEntry is Script {
     // Deployments
     TronicAdmin public tronicAdminContract;
 
+    // max Supply for partner x and y's erc721 tokens
+    uint256 public maxSupply = 10_000;
+
     string public nameX = "Partner X Clone ERC1155";
     string public symbolX = "PX1155";
 
@@ -36,12 +39,12 @@ contract NewProjectEntry is Script {
 
         //deploy partner x
         tronicAdminContract.deployPartner(
-            "Project X", "PRJX", erc721URIX, nameX, symbolX, erc115BaseURIX, "PartnerX"
+            "Project X", "PRJX", erc721URIX, maxSupply, nameX, symbolX, erc115BaseURIX, "PartnerX"
         );
 
         //deploy partner y
         tronicAdminContract.deployPartner(
-            "Project Y", "PRJY", erc721URIY, nameY, symbolY, erc115BaseURIY, "PartnerY"
+            "Project Y", "PRJY", erc721URIY, maxSupply, nameY, symbolY, erc115BaseURIY, "PartnerY"
         );
 
         vm.stopBroadcast();

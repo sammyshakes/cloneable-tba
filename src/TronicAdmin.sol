@@ -88,6 +88,7 @@ contract TronicAdmin {
         string memory name721,
         string memory symbol721,
         string memory uri721,
+        uint256 maxSupply,
         string memory name1155,
         string memory symbol1155,
         string memory uri1155,
@@ -95,7 +96,7 @@ contract TronicAdmin {
     ) external onlyAdmin returns (address erc721Address, address erc1155Address) {
         // Question: Will we know the TierIds beforehand?
         // Deploy the partner's contracts
-        erc721Address = deployPartnerERC721(name721, symbol721, uri721);
+        erc721Address = deployPartnerERC721(name721, symbol721, uri721, maxSupply);
         erc1155Address = deployPartnerERC1155(name1155, symbol1155, uri1155);
 
         // Assign partner id and associate the deployed contracts with the partner
@@ -113,14 +114,16 @@ contract TronicAdmin {
     /// @param symbol The symbol of the token.
     /// @param uri The URI for the cloned contract.
     /// @return erc721CloneAddress The address of the newly cloned ERC721 contract.
-    function deployPartnerERC721(string memory name, string memory symbol, string memory uri)
-        private
-        returns (address erc721CloneAddress)
-    {
+    function deployPartnerERC721(
+        string memory name,
+        string memory symbol,
+        string memory uri,
+        uint256 maxSupply
+    ) private returns (address erc721CloneAddress) {
         erc721CloneAddress = Clones.clone(address(tronicERC721));
         ERC721CloneableTBA erc721Clone = ERC721CloneableTBA(erc721CloneAddress);
         erc721Clone.initialize(
-            tbaAccountImplementation, address(registry), name, symbol, uri, tronicAdmin
+            tbaAccountImplementation, address(registry), name, symbol, uri, maxSupply, tronicAdmin
         );
     }
 
@@ -177,16 +180,15 @@ contract TronicAdmin {
 
     /// @notice Mints a new ERC721 token.
     /// @param _recipient The address to mint the token to.
-    /// @param _tokenId The ID of the token to mint.
     /// @param _partnerId The ID of the partner to mint the token for.
     /// @return The address of the newly created token account.
-    function mintERC721(address _recipient, uint256 _tokenId, uint256 _partnerId)
+    function mintERC721(address _recipient, uint256 _partnerId)
         external
         onlyAdmin
         returns (address payable)
     {
         PartnerInfo memory partner = partners[_partnerId];
-        return ERC721CloneableTBA(partner.erc721Address).mint(_recipient, _tokenId);
+        return ERC721CloneableTBA(partner.erc721Address).mint(_recipient);
     }
 
     /// @notice Mints a new ERC1155 token.
@@ -256,9 +258,7 @@ contract TronicAdmin {
                             recipient, _tokenIds[i][j][k], _amounts[i][j][k], ""
                         );
                     } else if (_tokenTypes[i][j][k] == TokenType.ERC721) {
-                        ERC721CloneableTBA(partner.erc721Address).mint(
-                            recipient, _tokenIds[i][j][k][0]
-                        );
+                        ERC721CloneableTBA(partner.erc721Address).mint(recipient);
                     }
                 }
             }

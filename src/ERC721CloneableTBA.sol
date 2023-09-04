@@ -13,6 +13,9 @@ contract ERC721CloneableTBA is ERC721Enumerable, Initializable {
     address public accountImplementation;
     address public owner;
 
+    uint256 private _totalMinted;
+    uint256 public maxSupply;
+
     mapping(uint256 => string) private tokenIdToMembershipTierId;
     mapping(address => bool) private _admins;
 
@@ -51,6 +54,7 @@ contract ERC721CloneableTBA is ERC721Enumerable, Initializable {
         string memory name_,
         string memory symbol_,
         string memory uri,
+        uint256 _maxSupply,
         address tronicAdmin
     ) external initializer {
         accountImplementation = _accountImplementation;
@@ -61,31 +65,28 @@ contract ERC721CloneableTBA is ERC721Enumerable, Initializable {
         _name = name_;
         _symbol = symbol_;
         _baseURI_ = uri;
+        maxSupply = _maxSupply;
     }
 
     /// @notice Mints a new token.
     /// @param to Address to mint the token to.
-    /// @param tokenId ID of the token to mint.
     /// @return tbaAccount The payable address of the created tokenbound account.
-    function mint(address to, uint256 tokenId)
-        public
-        onlyAdmin
-        returns (address payable tbaAccount)
-    {
+    function mint(address to) public onlyAdmin returns (address payable tbaAccount) {
+        require(_totalMinted < maxSupply, "Max supply reached");
         // Deploy token account
         tbaAccount = payable(
             registry.createAccount(
                 accountImplementation,
                 block.chainid,
                 address(this),
-                tokenId,
+                ++_totalMinted,
                 0, // salt
                 abi.encodeWithSignature("initialize()") // init data
             )
         );
 
         // Mint token
-        _mint(to, tokenId);
+        _mint(to, _totalMinted);
     }
 
     /// @notice Retrieves the tokenbound account of a given token ID.
@@ -122,14 +123,14 @@ contract ERC721CloneableTBA is ERC721Enumerable, Initializable {
     /// @notice Retrieves the membership tier of a given token ID.
     /// @param tokenId The ID of the token.
     /// @return The membership tier of the token.
-    function getTier(uint256 tokenId) external view returns (string memory) {
+    function getMembershipTier(uint256 tokenId) external view returns (string memory) {
         return tokenIdToMembershipTierId[tokenId];
     }
 
     /// @notice Sets the membership tier of a given token ID.
     /// @param tokenId The ID of the token.
     /// @param newTierId The new membership tier ID.
-    function setTier(uint256 tokenId, string memory newTierId) external onlyAdmin {
+    function setMembershipTier(uint256 tokenId, string memory newTierId) external onlyAdmin {
         tokenIdToMembershipTierId[tokenId] = newTierId;
     }
 

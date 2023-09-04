@@ -27,10 +27,10 @@ contract NewUserEarns1 is Script {
         vm.startBroadcast(deployerPrivateKey);
 
         //mint erc721 to tbaAddress for project x
-        erc721X.mint(tbaAddress, 1);
+        erc721X.mint(tbaAddress);
 
         //mint erc721 to tbaAddress for project y
-        erc721Y.mint(tbaAddress, 1);
+        erc721Y.mint(tbaAddress);
 
         vm.stopBroadcast();
     }
