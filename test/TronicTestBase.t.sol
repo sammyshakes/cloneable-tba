@@ -45,9 +45,9 @@ contract TronicTestBase is Test {
     struct BatchMintOrder {
         uint256 channelId;
         address[] recipients;
-        uint256[][] tokenIds;
-        uint256[][] amounts;
-        TronicAdmin.TokenType[] tokenTypes;
+        uint256[][][] tokenIds;
+        uint256[][][] amounts;
+        TronicAdmin.TokenType[][] tokenTypes;
     }
 
     TronicAdmin tronicAdminContract;
@@ -201,5 +201,22 @@ contract TronicTestBase is Test {
         channelXERC1155 = ERC1155Cloneable(channelX.erc1155Address);
         channelYERC721 = ERC721CloneableTBA(channelY.erc721Address);
         channelYERC1155 = ERC1155Cloneable(channelY.erc1155Address);
+    }
+
+    // Implement the helper function to create instances of BatchMintOrder
+    function createBatchMintOrder(
+        uint256 _channelId,
+        address[] memory _recipients,
+        uint256[][][] memory _tokenIds,
+        uint256[][][] memory _amounts,
+        TronicAdmin.TokenType[][] memory _tokenTypes
+    ) public pure returns (BatchMintOrder memory order) {
+        order = BatchMintOrder({
+            channelId: _channelId,
+            recipients: _recipients,
+            tokenIds: _tokenIds,
+            amounts: _amounts,
+            tokenTypes: _tokenTypes
+        });
     }
 }

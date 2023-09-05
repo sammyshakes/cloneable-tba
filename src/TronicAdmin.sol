@@ -217,6 +217,10 @@ contract TronicAdmin {
         ERC1155Cloneable(channel.erc1155Address).mintNFTs(_typeId, _recipient, _amount);
     }
 
+    event DebugUint256(string description, uint256 value);
+    event DebugAddress(string description, address value);
+    event DebugTokenType(string description, TokenType tokenType);
+
     /// @notice Processes multiple minting operations for both ERC1155 and ERC721 tokens on behalf of channels.
     /// @param _channelIds   Array of channel IDs corresponding to each minting operation.
     /// @param _recipients   2D array of recipient addresses for each minting operation.
@@ -240,15 +244,34 @@ contract TronicAdmin {
             "Outer arrays must have the same length"
         );
 
-        // i = channelId, j = recipient, k = token
+        emit DebugUint256("Number of channels", _channelIds.length);
+
+        // i = channelId, j = recipient, k = tokentype
         // Loop through each channel
         for (uint256 i = 0; i < _channelIds.length; i++) {
             ChannelInfo memory channel = channels[_channelIds[i]];
 
+            emit DebugUint256("Processing channel at index", i);
+            emit DebugAddress("Channel ERC1155 address", channel.erc1155Address);
+            emit DebugAddress("Channel ERC721 address", channel.erc721Address);
+
             for (uint256 j = 0; j < _recipients[i].length; j++) {
+                emit DebugUint256("recipients length at index", _recipients[i].length);
                 address recipient = _recipients[i][j];
 
+                emit DebugAddress("Processing recipient at index", recipient);
+
                 for (uint256 k = 0; k < _tokenTypes[i][j].length; k++) {
+                    emit DebugUint256("index k", k);
+                    emit DebugUint256("index j", j);
+                    emit DebugUint256("index i", i);
+                    emit DebugUint256("Token Types length at index", _tokenTypes[i][j].length);
+                    emit DebugTokenType("Token type at index", _tokenTypes[i][j][k]);
+                    emit DebugUint256("Token ID at index", _tokenIds[i][j][k][0]); // Assuming you only have one tokenId per recipient per channel. Adjust if not.
+
+                    emit DebugUint256("Token ID length at index", _tokenIds[i][j][k].length); // Assuming you only have one tokenId per recipient per channel. Adjust if not.
+                    emit DebugUint256("Amount length at index", _amounts[i][j][k].length);
+
                     if (_tokenTypes[i][j][k] == TokenType.ERC1155) {
                         ERC1155Cloneable(channel.erc1155Address).mintBatch(
                             recipient, _tokenIds[i][j][k], _amounts[i][j][k], ""

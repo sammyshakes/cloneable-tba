@@ -263,7 +263,7 @@ contract TronicAdminTest is TronicTestBase {
     //     address[] recipients;
     //     uint256[][] tokenIds;
     //     uint256[][] amounts;
-    //     TronicAdmin.TokenType[] tokenTypes;
+    //     TronicAdmin.TokenType[][] tokenTypes;
     // }
 
     // function convertBatchMintOrdersToParameters(BatchMintOrder[] memory orders)
