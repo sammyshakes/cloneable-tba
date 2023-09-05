@@ -219,4 +219,36 @@ contract TronicTestBase is Test {
             tokenTypes: _tokenTypes
         });
     }
+
+    function prepareBatchProcessData(BatchMintOrder[] memory orders)
+        internal
+        pure
+        returns (
+            uint256[] memory channelIds,
+            address[][] memory recipients,
+            uint256[][][][] memory tokenIds,
+            uint256[][][][] memory amounts,
+            TronicAdmin.TokenType[][][] memory tokenTypes
+        )
+    {
+        uint256 orderCount = orders.length;
+
+        // Initialize the arrays
+        channelIds = new uint256[](orderCount);
+        recipients = new address[][](orderCount);
+        tokenIds = new uint256[][][][](orderCount);
+        amounts = new uint256[][][][](orderCount);
+        tokenTypes = new TronicAdmin.TokenType[][][](orderCount);
+
+        // Populate the arrays based on the input orders
+        for (uint256 i = 0; i < orderCount; i++) {
+            channelIds[i] = orders[i].channelId;
+            recipients[i] = orders[i].recipients;
+            tokenIds[i] = orders[i].tokenIds;
+            amounts[i] = orders[i].amounts;
+            tokenTypes[i] = orders[i].tokenTypes;
+        }
+
+        return (channelIds, recipients, tokenIds, amounts, tokenTypes);
+    }
 }
