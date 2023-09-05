@@ -159,10 +159,12 @@ contract TronicTestBase is Test {
         string memory initialUriY = "http://setup-exampleY.com/token/";
 
         tronicAdminContract.createFungibleTokenType(initialMaxSupply, initialUriX, channelIDX);
+
         tronicAdminContract.createFungibleTokenType(initialMaxSupply, initialUriY, channelIDY);
 
-        tronicAdminContract.createNonFungibleTokenType(initialUriX, 10_000, 100_000, channelIDX);
-        tronicAdminContract.createNonFungibleTokenType(initialUriY, 25_000, 1_000_000, channelIDY);
+        tronicAdminContract.createNonFungibleTokenType(initialUriX, 10_000, channelIDX);
+
+        tronicAdminContract.createNonFungibleTokenType(initialUriY, 25_000, channelIDY);
 
         vm.stopPrank();
 
@@ -189,5 +191,15 @@ contract TronicTestBase is Test {
         tronicERC721.setMembershipTier(tokenId4, "tier2");
 
         vm.stopPrank();
+
+        // get channel x and y details, channel ids: x=0 and y=1
+        channelX = tronicAdminContract.getChannelInfo(channelIDX);
+        channelY = tronicAdminContract.getChannelInfo(channelIDY);
+
+        // get channel contracts
+        channelXERC721 = ERC721CloneableTBA(channelX.erc721Address);
+        channelXERC1155 = ERC1155Cloneable(channelX.erc1155Address);
+        channelYERC721 = ERC721CloneableTBA(channelY.erc721Address);
+        channelYERC1155 = ERC1155Cloneable(channelY.erc1155Address);
     }
 }

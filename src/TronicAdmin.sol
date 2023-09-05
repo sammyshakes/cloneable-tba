@@ -163,19 +163,15 @@ contract TronicAdmin {
     /// @notice Creates a new ERC1155 non-fungible token type for a channel.
     /// @param baseUri The URI for the token type.
     /// @param maxMintable The maximum number of tokens that can be minted.
-    /// @param startingTokenId The ID of the first token to mint.
     /// @param channelId The ID of the channel to create the token type for.
     /// @return nftTypeID The ID of the newly created token type.
     function createNonFungibleTokenType(
         string memory baseUri,
         uint64 maxMintable,
-        uint64 startingTokenId,
         uint256 channelId
     ) external onlyAdmin returns (uint256 nftTypeID) {
         ChannelInfo memory channel = channels[channelId];
-        nftTypeID = ERC1155Cloneable(channel.erc1155Address).createNFTType(
-            baseUri, maxMintable, startingTokenId
-        );
+        nftTypeID = ERC1155Cloneable(channel.erc1155Address).createNFTType(baseUri, maxMintable);
     }
 
     /// @notice Mints a new ERC721 token.

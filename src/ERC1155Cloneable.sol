@@ -20,15 +20,15 @@ contract ERC1155Cloneable is ERC1155, Initializable {
     }
 
     struct NFTTokenInfo {
-        string baseURI;
         uint64 startingTokenId;
         uint64 totalMinted;
         uint64 maxMintable;
+        string baseURI;
     }
 
+    uint32 private _tokenTypeCounter;
+    uint64 private _nextNFTTypeMinStartId = 100_000;
     address public owner;
-    uint256 private _nextNFTTypeMinStartId = 100_000;
-    uint256 private _tokenTypeCounter;
     string public name;
     string public symbol;
     mapping(uint256 => FungibleTokenInfo) private _fungibleTokens;
@@ -92,33 +92,31 @@ contract ERC1155Cloneable is ERC1155, Initializable {
     /// @notice Creates a new non-fungible token (NFT) type.
     /// @param baseURI Base URI for the token metadata.
     /// @param maxMintable Max mintable for the NFT type.
-    /// @param startingTokenId The starting token ID for the NFT type.
+    /// @return nftTypeId The ID of the new NFT type.
     /// @dev Only callable by admin.
-    function createNFTType(string memory baseURI, uint64 maxMintable, uint64 startingTokenId)
+    function createNFTType(string memory baseURI, uint64 maxMintable)
         external
         onlyAdmin
         returns (uint256 nftTypeId)
     {
+        uint256 startingTokenId = _nextNFTTypeMinStartId;
         require(_nftTypes[startingTokenId].maxMintable == 0, "Token type already exists");
         require(maxMintable > 0, "Max mintable must be greater than 0");
-        require(startingTokenId >= _nextNFTTypeMinStartId, "Invalid Starting token ID");
 
         nftTypeId = _tokenTypeCounter++;
 
         _nftTypes[nftTypeId] = NFTTokenInfo({
             baseURI: baseURI,
-            startingTokenId: startingTokenId,
+            startingTokenId: _nextNFTTypeMinStartId += maxMintable,
             totalMinted: 0,
             maxMintable: maxMintable
         });
-
-        //update nextNFTTypeMinStartId
-        _nextNFTTypeMinStartId += maxMintable;
     }
 
     /// @notice Creates a new fungible token type.
     /// @param _maxSupply Max supply for the fungible token type.
     /// @param _uri URI for the token type's metadata.
+    /// @return fungibleTokenId The ID of the new fungible token type.
     /// @dev Only callable by admin.
     function createFungibleType(uint64 _maxSupply, string memory _uri)
         external
