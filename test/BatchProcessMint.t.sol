@@ -138,8 +138,8 @@ contract BatchProcessMint is TronicTestBase {
         assertEq(membershipYERC1155.balanceOf(user3, fungibleTypeIdY1), 10);
         assertEq(membershipYERC1155.balanceOf(user3, _tokenIds[0][0][1]), 20);
 
-        TronicLoyalty.NFTTokenInfo memory nonFungibleX1 =
-            membershipXERC1155.getNFTTokenInfo(nonFungibleTypeIdX1);
+        TronicToken.NFTokenInfo memory nonFungibleX1 =
+            membershipXERC1155.getNFTokenInfo(nonFungibleTypeIdX1);
 
         console.log("nonFungibleTypeIdX1 ", nonFungibleTypeIdX1);
         console.log("nonFungibleX1.startingTokenId: ", nonFungibleX1.startingTokenId);

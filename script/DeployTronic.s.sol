@@ -8,7 +8,7 @@ import "../src/TronicMain.sol";
 contract DeployTronic is Script {
     // Deployments
     TronicMembership public erc721;
-    TronicLoyalty public erc1155;
+    TronicToken public erc1155;
     TronicMain public tronicAdminContract;
 
     address public tronicAddress = vm.envAddress("TRONIC_ADMIN_ADDRESS");
@@ -23,7 +23,7 @@ contract DeployTronic is Script {
         vm.startBroadcast(deployerPrivateKey);
 
         erc721 = new TronicMembership();
-        erc1155 = new TronicLoyalty();
+        erc1155 = new TronicToken();
 
         // deploy new Tronic Admin Contract
         tronicAdminContract = new TronicMain(

@@ -52,13 +52,13 @@ contract TronicTestBase is Test {
 
     TronicMain tronicAdminContract;
     TronicMembership tronicERC721;
-    TronicLoyalty tronicERC1155;
+    TronicToken tronicERC1155;
     IERC6551Account tbaCloneable;
 
     TronicMembership membershipXERC721;
-    TronicLoyalty membershipXERC1155;
+    TronicToken membershipXERC1155;
     TronicMembership membershipYERC721;
-    TronicLoyalty membershipYERC1155;
+    TronicToken membershipYERC1155;
 
     TronicMain.MembershipInfo membershipX;
     TronicMain.MembershipInfo membershipY;
@@ -107,7 +107,7 @@ contract TronicTestBase is Test {
         //deploy tronic contracts
         vm.startPrank(tronicOwner);
         tronicERC721 = new TronicMembership();
-        tronicERC1155 = new TronicLoyalty();
+        tronicERC1155 = new TronicToken();
 
         tronicAdminContract =
         new TronicMain(tronicAdmin, address(tronicERC721), address(tronicERC1155), registryAddress, tbaAddress);
@@ -193,9 +193,9 @@ contract TronicTestBase is Test {
 
         // get membership contracts
         membershipXERC721 = TronicMembership(membershipX.membershipAddress);
-        membershipXERC1155 = TronicLoyalty(membershipX.loyaltyAddress);
+        membershipXERC1155 = TronicToken(membershipX.tokenAddress);
         membershipYERC721 = TronicMembership(membershipY.membershipAddress);
-        membershipYERC1155 = TronicLoyalty(membershipY.loyaltyAddress);
+        membershipYERC1155 = TronicToken(membershipY.tokenAddress);
     }
 
     // Implement the helper function to create instances of BatchMintOrder

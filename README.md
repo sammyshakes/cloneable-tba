@@ -4,14 +4,14 @@
 
 ### Deploys:
 
-- Main Tronic Member Nft Contract (cloneable ERC721)
-- Main Tronic Rewards Contract (Cloneable ERC1155)
-- Main Tronic Admin Contract `TronicAdmin.sol`
+- Main Tronic Membership Contract (Cloneable ERC721)
+- Main Tronic Loyalty Contract (Cloneable ERC1155)
+- Main Tronic Admin Contract `TronicMain.sol`
 
 Verifies all contracts on etherscan
 
 ```bash
-forge script script/Deploy.s.sol:Deploy -vvvv --rpc-url sepolia --broadcast --verify
+forge script script/DeployTronic.s.sol:DeployTronic -vvvv --rpc-url sepolia --broadcast --verify
 ```
 
 ```bash
@@ -29,7 +29,7 @@ TRONIC_ADMIN_CONTRACT_ADDRESS=0x94a98A6E2027976f6BAdD05ae6fA933Da5fa6C49
 ## Initialize Tronic ERC721 and ERC1155
 
 - Initializes Tronic Member Nft Contract
-- Initializes Tronic Rewards ERC1155 Contract
+- Initializes Tronic Loyalty ERC1155 Contract
 - Creates 4 Fungible Reward Tokens for Tronic
 
 ```bash

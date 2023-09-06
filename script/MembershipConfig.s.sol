@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 // Imports
 import "forge-std/Script.sol";
-import "../src/TronicLoyalty.sol";
+import "../src/TronicToken.sol";
 
 contract MembershipConfig is Script {
     string public erc115FungibleURI1X = vm.envString("MEMBERSHIP_X_FUNGIBLE_URI_1");
@@ -25,13 +25,13 @@ contract MembershipConfig is Script {
         vm.startBroadcast(deployerPrivateKey);
 
         //create fungible token types
-        TronicLoyalty(erc1155CloneX).createFungibleType(1_000_000, erc115FungibleURI1X);
-        TronicLoyalty(erc1155CloneX).createFungibleType(500_000, erc115FungibleURI2X);
-        TronicLoyalty(erc1155CloneX).createFungibleType(250_000, erc115FungibleURI3X);
+        TronicToken(erc1155CloneX).createFungibleType(1_000_000, erc115FungibleURI1X);
+        TronicToken(erc1155CloneX).createFungibleType(500_000, erc115FungibleURI2X);
+        TronicToken(erc1155CloneX).createFungibleType(250_000, erc115FungibleURI3X);
 
-        TronicLoyalty(erc1155CloneY).createFungibleType(10_000_000, erc115FungibleURI1Y);
-        TronicLoyalty(erc1155CloneY).createFungibleType(5_000_000, erc115FungibleURI2Y);
-        TronicLoyalty(erc1155CloneY).createFungibleType(2_000_000, erc115FungibleURI3Y);
+        TronicToken(erc1155CloneY).createFungibleType(10_000_000, erc115FungibleURI1Y);
+        TronicToken(erc1155CloneY).createFungibleType(5_000_000, erc115FungibleURI2Y);
+        TronicToken(erc1155CloneY).createFungibleType(2_000_000, erc115FungibleURI3Y);
 
         vm.stopBroadcast();
     }

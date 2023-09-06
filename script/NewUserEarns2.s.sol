@@ -3,12 +3,12 @@ pragma solidity ^0.8.13;
 
 // Imports
 import "forge-std/Script.sol";
-import "../src/TronicLoyalty.sol";
+import "../src/TronicToken.sol";
 
 contract NewUserEarns2 is Script {
     // Deployments
-    TronicLoyalty public erc1155CloneX;
-    TronicLoyalty public erc1155CloneY;
+    TronicToken public erc1155CloneX;
+    TronicToken public erc1155CloneY;
 
     address payable public tbaAccountX =
         payable(vm.envAddress("MEMBERSHIP_X_TOKENBOUND_ACCOUNT_TOKENID_1"));
@@ -23,22 +23,22 @@ contract NewUserEarns2 is Script {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY_TRONIC_ADMIN");
 
         // get project contracts
-        erc1155CloneX = TronicLoyalty(clonedERC1155AddressX);
-        erc1155CloneY = TronicLoyalty(clonedERC1155AddressY);
+        erc1155CloneX = TronicToken(clonedERC1155AddressX);
+        erc1155CloneY = TronicToken(clonedERC1155AddressY);
 
         vm.startBroadcast(deployerPrivateKey);
 
         //mint 100 level 1 premium tokens to tbaAccountX address
-        TronicLoyalty(erc1155CloneX).mintFungible(tbaAccountX, 1, 100);
+        TronicToken(erc1155CloneX).mintFungible(tbaAccountX, 1, 100);
 
         //mint 50 level 2 premium tokens to tronic address
-        TronicLoyalty(erc1155CloneX).mintFungible(tbaAccountX, 2, 50);
+        TronicToken(erc1155CloneX).mintFungible(tbaAccountX, 2, 50);
 
         //mint 100 level 1 premium tokens to tbaAccountY address
-        TronicLoyalty(erc1155CloneY).mintFungible(tbaAccountY, 1, 100);
+        TronicToken(erc1155CloneY).mintFungible(tbaAccountY, 1, 100);
 
         //mint 50 level 2 premium tokens to tronic address
-        TronicLoyalty(erc1155CloneY).mintFungible(tbaAccountY, 2, 50);
+        TronicToken(erc1155CloneY).mintFungible(tbaAccountY, 2, 50);
 
         vm.stopBroadcast();
     }

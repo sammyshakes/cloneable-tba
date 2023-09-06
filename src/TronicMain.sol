@@ -2,14 +2,14 @@
 
 pragma solidity ^0.8.13;
 
-import "./TronicLoyalty.sol";
+import "./TronicToken.sol";
 import "./TronicMembership.sol";
 import "@openzeppelin/contracts/proxy/Clones.sol";
 
 contract TronicMain {
     struct MembershipInfo {
         address membershipAddress;
-        address loyaltyAddress;
+        address tokenAddress;
         string membershipName;
     }
 
@@ -21,9 +21,7 @@ contract TronicMain {
     event MembershipAdded(
         uint256 indexed membershipId,
         address indexed membershipAddress,
-        address indexed loyaltyAddress,
-        string membershipName,
-        string membershipSymbol
+        address indexed tokenAddress
     );
 
     address public owner;
@@ -33,7 +31,7 @@ contract TronicMain {
     // Deployments
     IERC6551Registry public registry;
     TronicMembership public tronicERC721;
-    TronicLoyalty public tronicERC1155;
+    TronicToken public tronicERC1155;
 
     uint256 public membershipCounter;
     mapping(uint256 => MembershipInfo) public memberships;
@@ -42,19 +40,19 @@ contract TronicMain {
     /// @notice Constructs the CloneFactory contract.
     /// @param _admin The address of the Tronic admin.
     /// @param _tronicMembership The address of the Tronic Membership contract (ERC721 implementation).
-    /// @param _tronicLoyalty The address of the Tronic Loyalty contract (ERC1155 implementation).
+    /// @param _tronicToken The address of the Tronic Token contract (ERC1155 implementation).
     /// @param _registry The address of the registry contract.
     /// @param _tbaAccountImplementation The address of the tokenbound account implementation.
     constructor(
         address _admin,
         address _tronicMembership,
-        address _tronicLoyalty,
+        address _tronicToken,
         address _registry,
         address _tbaAccountImplementation
     ) {
         owner = msg.sender;
         tronicAdmin = _admin;
-        tronicERC1155 = TronicLoyalty(_tronicLoyalty);
+        tronicERC1155 = TronicToken(_tronicToken);
         tronicERC721 = TronicMembership(_tronicMembership);
         registry = IERC6551Registry(_registry);
         tbaAccountImplementation = payable(_tbaAccountImplementation);
@@ -84,30 +82,28 @@ contract TronicMain {
     /// @param membershipSymbol The membership symbol for the ERC721 token.
     /// @param membershipBaseURI The base URI for the membership ERC721 token.
     /// @return membershipAddress The address of the deployed membership ERC721 contract.
-    /// @return loyaltyAddress The address of the deployed loyalty ERC1155 contract.
+    /// @return tokenAddress The address of the deployed token ERC1155 contract.
     /// @dev The membership ID is the index of the membership in the memberships mapping.
     function deployMembership(
         string memory membershipName,
         string memory membershipSymbol,
         string memory membershipBaseURI,
         uint256 maxMintable
-    ) external onlyAdmin returns (address membershipAddress, address loyaltyAddress) {
+    ) external onlyAdmin returns (address membershipAddress, address tokenAddress) {
         // Question: Will we know the TierIds beforehand?
         // Deploy the membership's contracts
         membershipAddress =
             _deployMembership(membershipName, membershipSymbol, membershipBaseURI, maxMintable);
-        loyaltyAddress = _deployLoyalty();
+        tokenAddress = _deployToken();
 
         // Assign membership id and associate the deployed contracts with the membership
         memberships[membershipCounter] = MembershipInfo({
             membershipAddress: membershipAddress,
-            loyaltyAddress: loyaltyAddress,
+            tokenAddress: tokenAddress,
             membershipName: membershipName
         });
 
-        emit MembershipAdded(
-            membershipCounter++, membershipAddress, loyaltyAddress, membershipName, membershipSymbol
-        );
+        emit MembershipAdded(membershipCounter++, membershipAddress, tokenAddress);
     }
 
     /// @notice Clones the ERC721 implementation and initializes it.
@@ -130,9 +126,9 @@ contract TronicMain {
 
     /// @notice Clones the ERC1155 implementation and initializes it.
     /// @return erc1155cloneAddress The address of the newly cloned ERC1155 contract.
-    function _deployLoyalty() private returns (address erc1155cloneAddress) {
+    function _deployToken() private returns (address erc1155cloneAddress) {
         erc1155cloneAddress = Clones.clone(address(tronicERC1155));
-        TronicLoyalty erc1155clone = TronicLoyalty(erc1155cloneAddress);
+        TronicToken erc1155clone = TronicToken(erc1155cloneAddress);
         erc1155clone.initialize(tronicAdmin);
     }
 
@@ -152,8 +148,8 @@ contract TronicMain {
         returns (uint256)
     {
         MembershipInfo memory membership = memberships[membershipId];
-        require(membership.loyaltyAddress != address(0), "Membership does not exist");
-        return TronicLoyalty(membership.loyaltyAddress).createFungibleType(uint64(maxSupply), uri);
+        require(membership.tokenAddress != address(0), "Membership does not exist");
+        return TronicToken(membership.tokenAddress).createFungibleType(uint64(maxSupply), uri);
     }
 
     /// @notice Creates a new ERC1155 non-fungible token type for a membership.
@@ -167,8 +163,8 @@ contract TronicMain {
         uint256 membershipId
     ) external onlyAdmin returns (uint256 nftTypeID) {
         MembershipInfo memory membership = memberships[membershipId];
-        require(membership.loyaltyAddress != address(0), "Membership does not exist");
-        nftTypeID = TronicLoyalty(membership.loyaltyAddress).createNFTType(baseUri, maxMintable);
+        require(membership.tokenAddress != address(0), "Membership does not exist");
+        nftTypeID = TronicToken(membership.tokenAddress).createNFTType(baseUri, maxMintable);
     }
 
     /// @notice Mints a new ERC721 token.
@@ -197,8 +193,8 @@ contract TronicMain {
         uint64 _amount
     ) external onlyAdmin {
         MembershipInfo memory membership = memberships[_membershipId];
-        require(membership.loyaltyAddress != address(0), "Membership does not exist");
-        TronicLoyalty(membership.loyaltyAddress).mintFungible(_recipient, _tokenId, _amount);
+        require(membership.tokenAddress != address(0), "Membership does not exist");
+        TronicToken(membership.tokenAddress).mintFungible(_recipient, _tokenId, _amount);
     }
 
     /// @notice Mints a new nonfungible ERC1155 token.
@@ -213,8 +209,8 @@ contract TronicMain {
         uint256 _amount
     ) external onlyAdmin {
         MembershipInfo memory membership = memberships[_membershipId];
-        require(membership.loyaltyAddress != address(0), "Membership does not exist");
-        TronicLoyalty(membership.loyaltyAddress).mintNFTs(_typeId, _recipient, _amount);
+        require(membership.tokenAddress != address(0), "Membership does not exist");
+        TronicToken(membership.tokenAddress).mintNFTs(_typeId, _recipient, _amount);
     }
 
     /// @notice Processes multiple minting operations for both ERC1155 and ERC721 tokens on behalf of memberships.
@@ -252,7 +248,7 @@ contract TronicMain {
 
                 for (uint256 k = 0; k < _contractTypes[i][j].length; k++) {
                     if (_contractTypes[i][j][k] == TokenType.ERC1155) {
-                        TronicLoyalty(membership.loyaltyAddress).mintBatch(
+                        TronicToken(membership.tokenAddress).mintBatch(
                             recipient, _tokenTypes[i][j][k], _amounts[i][j][k], ""
                         );
                     } else if (_contractTypes[i][j][k] == TokenType.ERC721) {
@@ -272,7 +268,7 @@ contract TronicMain {
     /// @notice Sets the ERC1155 implementation address, callable only by the owner.
     /// @param newImplementation The address of the new ERC1155 implementation.
     function setERC1155Implementation(address newImplementation) external onlyOwner {
-        tronicERC1155 = TronicLoyalty(newImplementation);
+        tronicERC1155 = TronicToken(newImplementation);
     }
 
     /// @notice Sets the account implementation address, callable only by the owner.

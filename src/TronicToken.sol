@@ -6,10 +6,10 @@ import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
-/// @title TronicLoyalty
+/// @title TronicToken
 /// @notice A contract for managing ERC1155 fungible and non-fungible tokens (NFTs).
 /// @dev It includes functionalities to create, mint, and burn tokens.
-contract TronicLoyalty is ERC1155, Initializable {
+contract TronicToken is ERC1155, Initializable {
     using Strings for uint256;
 
     struct FungibleTokenInfo {
@@ -19,7 +19,7 @@ contract TronicLoyalty is ERC1155, Initializable {
         string uri;
     }
 
-    struct NFTTokenInfo {
+    struct NFTokenInfo {
         uint64 startingTokenId;
         uint64 totalMinted;
         uint64 maxMintable;
@@ -32,7 +32,7 @@ contract TronicLoyalty is ERC1155, Initializable {
     string public name;
     string public symbol;
     mapping(uint256 => FungibleTokenInfo) private _fungibleTokens;
-    mapping(uint256 => NFTTokenInfo) private _nftTypes;
+    mapping(uint256 => NFTokenInfo) private _nftTypes;
     mapping(uint256 => uint256) public tokenLevels;
     mapping(uint256 => address) public nftOwners;
     mapping(address => bool) private _admins;
@@ -78,7 +78,7 @@ contract TronicLoyalty is ERC1155, Initializable {
     /// @notice Gets the information of a non-fungible token (NFT) type.
     /// @param typeId The ID of the token type.
     /// @return The information of the token type.
-    function getNFTTokenInfo(uint256 typeId) external view returns (NFTTokenInfo memory) {
+    function getNFTokenInfo(uint256 typeId) external view returns (NFTokenInfo memory) {
         return _nftTypes[typeId];
     }
 
@@ -96,7 +96,7 @@ contract TronicLoyalty is ERC1155, Initializable {
         require(_nftTypes[nftTypeId].maxMintable == 0, "Token type already exists");
         require(maxMintable > 0, "Max mintable must be greater than 0");
 
-        _nftTypes[nftTypeId] = NFTTokenInfo({
+        _nftTypes[nftTypeId] = NFTokenInfo({
             baseURI: baseURI,
             startingTokenId: _nextNFTTypeStartId += maxMintable,
             totalMinted: 0,
@@ -156,7 +156,7 @@ contract TronicLoyalty is ERC1155, Initializable {
     /// @dev Requires that the NFT type already exists.
     function mintNFT(uint256 typeId, address to) external onlyAdmin {
         //get memory instance of NFT type
-        NFTTokenInfo memory nftType = _nftTypes[typeId];
+        NFTokenInfo memory nftType = _nftTypes[typeId];
 
         require(nftType.maxMintable > 0, "NFT type does not exist");
         // Get the next token ID to mint, and increment the totalMinted count
@@ -193,7 +193,7 @@ contract TronicLoyalty is ERC1155, Initializable {
     /// @dev Requires that the amount does not exceed the max mintable for the NFT type.
     function _mintNFTs(uint256 typeId, address to, uint256 amount) internal {
         //get memory instance of NFT type
-        NFTTokenInfo memory nftType = _nftTypes[typeId];
+        NFTokenInfo memory nftType = _nftTypes[typeId];
 
         require(nftType.maxMintable > 0, "NFT type does not exist");
         require(
