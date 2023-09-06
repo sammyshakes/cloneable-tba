@@ -96,6 +96,11 @@ contract TronicTestBase is Test {
     address public user3TBA;
     address public user4TBA;
 
+    uint256 fungibleTypeIdX1;
+    uint256 fungibleTypeIdY1;
+    uint256 nonFungibleTypeIdX1;
+    uint256 nonFungibleTypeIdY1;
+
     function setUp() public {
         tbaCloneable = IERC6551Account(tbaAddress);
 
@@ -154,17 +159,21 @@ contract TronicTestBase is Test {
         );
 
         // Set up initial state
-        uint64 initialMaxSupply = 1000;
+        uint64 initialMaxSupply = 100_000;
         string memory initialUriX = "http://setup-exampleX.com/token/";
         string memory initialUriY = "http://setup-exampleY.com/token/";
 
-        tronicAdminContract.createFungibleTokenType(initialMaxSupply, initialUriX, channelIDX);
+        fungibleTypeIdX1 =
+            tronicAdminContract.createFungibleTokenType(initialMaxSupply, initialUriX, channelIDX);
 
-        tronicAdminContract.createFungibleTokenType(initialMaxSupply, initialUriY, channelIDY);
+        fungibleTypeIdY1 =
+            tronicAdminContract.createFungibleTokenType(initialMaxSupply, initialUriY, channelIDY);
 
-        tronicAdminContract.createNonFungibleTokenType(initialUriX, 10_000, channelIDX);
+        nonFungibleTypeIdX1 =
+            tronicAdminContract.createNonFungibleTokenType(initialUriX, 1_000_000, channelIDX);
 
-        tronicAdminContract.createNonFungibleTokenType(initialUriY, 25_000, channelIDY);
+        nonFungibleTypeIdY1 =
+            tronicAdminContract.createNonFungibleTokenType(initialUriY, 25_000, channelIDY);
 
         vm.stopPrank();
 

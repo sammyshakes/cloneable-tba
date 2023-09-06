@@ -220,23 +220,23 @@ contract TronicAdmin {
     /// @notice Processes multiple minting operations for both ERC1155 and ERC721 tokens on behalf of channels.
     /// @param _channelIds   Array of channel IDs corresponding to each minting operation.
     /// @param _recipients   2D array of recipient addresses for each minting operation.
-    /// @param _tokenIds     4D array of token IDs to mint for each channel.
+    /// @param _tokenTypes     4D array of token Typess to mint for each channel.
     ///                      For ERC1155, it could be multiple IDs, and for ERC721, it should contain a single ID.
     /// @param _amounts      4D array of token amounts to mint for each channel.
     ///                      For ERC1155, it represents the quantities of each token ID, and for ERC721, it should be either [1] (to mint) or [0] (to skip).
-    /// @param _tokenTypes   3D array specifying the type of each token (either ERC1155 or ERC721) to determine the minting logic.
+    /// @param _contractTypes   3D array specifying the type of each token contract (either ERC1155 or ERC721) to determine the minting logic.
     /// @dev Requires that all input arrays have matching lengths.
-    ///      For ERC721 minting, the inner arrays of _tokenIds and _amounts should have a length of 1.
+    ///      For ERC721 minting, the inner arrays of _tokenTypes and _amounts should have a length of 1.
     function batchProcess(
         uint256[] memory _channelIds,
         address[][] memory _recipients,
-        uint256[][][][] memory _tokenIds,
+        uint256[][][][] memory _tokenTypes,
         uint256[][][][] memory _amounts,
-        TokenType[][][] memory _tokenTypes
+        TokenType[][][] memory _contractTypes
     ) external {
         require(
-            _channelIds.length == _tokenIds.length && _tokenIds.length == _amounts.length
-                && _amounts.length == _recipients.length && _recipients.length == _tokenTypes.length,
+            _channelIds.length == _tokenTypes.length && _tokenTypes.length == _amounts.length
+                && _amounts.length == _recipients.length && _recipients.length == _contractTypes.length,
             "Outer arrays must have the same length"
         );
 
@@ -248,12 +248,12 @@ contract TronicAdmin {
             for (uint256 j = 0; j < _recipients[i].length; j++) {
                 address recipient = _recipients[i][j];
 
-                for (uint256 k = 0; k < _tokenTypes[i][j].length; k++) {
-                    if (_tokenTypes[i][j][k] == TokenType.ERC1155) {
+                for (uint256 k = 0; k < _contractTypes[i][j].length; k++) {
+                    if (_contractTypes[i][j][k] == TokenType.ERC1155) {
                         ERC1155Cloneable(channel.erc1155Address).mintBatch(
-                            recipient, _tokenIds[i][j][k], _amounts[i][j][k], ""
+                            recipient, _tokenTypes[i][j][k], _amounts[i][j][k], ""
                         );
-                    } else if (_tokenTypes[i][j][k] == TokenType.ERC721) {
+                    } else if (_contractTypes[i][j][k] == TokenType.ERC721) {
                         ERC721CloneableTBA(channel.erc721Address).mint(recipient);
                     }
                 }
