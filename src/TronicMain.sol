@@ -171,7 +171,7 @@ contract TronicMain {
     /// @param _recipient The address to mint the token to.
     /// @param _membershipId The ID of the membership to mint the token for.
     /// @return The address of the newly created token account.
-    function mintERC721(address _recipient, uint256 _membershipId)
+    function mintMembership(address _recipient, uint256 _membershipId)
         external
         onlyAdmin
         returns (address payable)
@@ -181,12 +181,12 @@ contract TronicMain {
         return TronicMembership(membership.membershipAddress).mint(_recipient);
     }
 
-    /// @notice Mints a new ERC1155 token.
+    /// @notice Mints a fungible ERC1155 token.
     /// @param _recipient The address to mint the token to.
-    /// @param _tokenId The ID of the token to mint.
+    /// @param _tokenId The tokenID (same as typeID for fungibles) of the token to mint.
     /// @param _amount The amount of the token to mint.
     /// @param _membershipId The ID of the membership to mint the token for.
-    function mintFungibleERC1155(
+    function mintFungibleToken(
         uint256 _membershipId,
         address _recipient,
         uint256 _tokenId,
@@ -199,10 +199,10 @@ contract TronicMain {
 
     /// @notice Mints a new nonfungible ERC1155 token.
     /// @param _recipient The address to mint the token to.
-    /// @param _typeId The ID of the token to mint.
+    /// @param _typeId The typeID of the token to mint.
     /// @param _membershipId The ID of the membership to mint the token for.
     /// @param _amount The amount of the token to mint.
-    function mintNonFungibleERC1155(
+    function mintNonFungibleToken(
         uint256 _membershipId,
         address _recipient,
         uint256 _typeId,

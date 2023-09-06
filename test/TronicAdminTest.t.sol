@@ -74,7 +74,7 @@ contract TronicAdminTest is TronicTestBase {
 
         // mint 100 tokens to user1's tba
         vm.prank(tronicAdmin);
-        tronicAdminContract.mintFungibleERC1155(membershipIDX, user1TBA, fungibleIDX, 100);
+        tronicAdminContract.mintFungibleToken(membershipIDX, user1TBA, fungibleIDX, 100);
 
         assertEq(membershipXERC1155.balanceOf(user1TBA, fungibleIDX), 100);
     }
