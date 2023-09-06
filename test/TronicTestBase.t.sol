@@ -8,7 +8,7 @@ import "../src/interfaces/IERC6551Account.sol";
 
 /// @dev Sets up the initial state for testing the TronicAdmin system
 /// @notice Deploys the core TronicAdmin, ERC721, and ERC1155 contracts
-/// @notice Creates user accounts, default channels, and initial token types
+/// @notice Creates user accounts, default memberships, and initial token types
 /// @notice Should be called automatically by any contract inheriting TronicTestBase
 ///
 /// Details:
@@ -32,9 +32,9 @@ import "../src/interfaces/IERC6551Account.sol";
 ///   - user1, user2, user3: Sample user accounts
 ///   - unauthorizedUser: Unauthorized user account
 ///
-/// - Deploys 2 sample channels
-///   - channelX: Channel 0
-///   - channelY: Channel 1
+/// - Deploys 2 sample memberships
+///   - membershipX: Membership 0
+///   - membershipY: Membership 1
 ///
 /// - Mints initial sample tokens
 ///
@@ -43,7 +43,7 @@ import "../src/interfaces/IERC6551Account.sol";
 /// and sample data to test against.
 contract TronicTestBase is Test {
     struct BatchMintOrder {
-        uint256 channelId;
+        uint256 membershipId;
         address[] recipients;
         uint256[][][] tokenIds;
         uint256[][][] amounts;
@@ -55,16 +55,16 @@ contract TronicTestBase is Test {
     ERC1155Cloneable tronicERC1155;
     IERC6551Account tbaCloneable;
 
-    ERC721CloneableTBA channelXERC721;
-    ERC1155Cloneable channelXERC1155;
-    ERC721CloneableTBA channelYERC721;
-    ERC1155Cloneable channelYERC1155;
+    ERC721CloneableTBA membershipXERC721;
+    ERC1155Cloneable membershipXERC1155;
+    ERC721CloneableTBA membershipYERC721;
+    ERC1155Cloneable membershipYERC1155;
 
-    TronicAdmin.ChannelInfo channelX;
-    TronicAdmin.ChannelInfo channelY;
+    TronicAdmin.MembershipInfo membershipX;
+    TronicAdmin.MembershipInfo membershipY;
 
-    uint256 channelIDX = 0;
-    uint256 channelIDY = 1;
+    uint256 membershipIDX = 0;
+    uint256 membershipIDY = 1;
 
     // set users
     address public user1 = address(0x1);
@@ -79,7 +79,7 @@ contract TronicTestBase is Test {
     //tronicAdmin will be some privatekey stored on backend
     address public tronicAdmin = address(0x6);
 
-    address public channelAdmin = address(0x7);
+    address public membershipAdmin = address(0x7);
 
     address payable public tbaAddress =
         payable(vm.envAddress("TOKENBOUND_ACCOUNT_DEFAULT_IMPLEMENTATION_ADDRESS"));
@@ -113,9 +113,7 @@ contract TronicTestBase is Test {
         new TronicAdmin(tronicAdmin, address(tronicERC721), address(tronicERC1155), registryAddress, tbaAddress);
 
         //initialize Tronic erc1155
-        tronicERC1155.initialize(
-            "http://example1155.com/", address(tronicAdminContract), "Original1155", "OR1155"
-        );
+        tronicERC1155.initialize(address(tronicAdminContract));
 
         //initialize tronicERC721
         tronicERC721.initialize(
@@ -130,32 +128,18 @@ contract TronicTestBase is Test {
 
         vm.stopPrank();
 
-        // deploy channel contracts
+        // deploy membership contracts
         vm.startPrank(tronicAdmin);
 
         //set admin
         tronicERC721.addAdmin(address(tronicAdminContract));
 
-        (clone721AddressX, clone1155AddressX) = tronicAdminContract.deployChannel(
-            "XClone721",
-            "XCL721",
-            "http://Xclone721.com/",
-            10_000,
-            "XClone1155",
-            "XCL1155",
-            "http://Xclone1155.com/",
-            "SetupChannelX"
+        (clone721AddressX, clone1155AddressX) = tronicAdminContract.deployMembership(
+            "XClone721", "XCL721", "http://Xclone721.com/", 10_000
         );
 
-        (clone721AddressY, clone1155AddressY) = tronicAdminContract.deployChannel(
-            "YClone721",
-            "YCL721",
-            "http://Yclone721.com/",
-            10_000,
-            "YClone1155",
-            "YCL1155",
-            "http://Yclone1155.com/",
-            "SetupChannelY"
+        (clone721AddressY, clone1155AddressY) = tronicAdminContract.deployMembership(
+            "YClone721", "YCL721", "http://Yclone721.com/", 10_000
         );
 
         // Set up initial state
@@ -163,17 +147,19 @@ contract TronicTestBase is Test {
         string memory initialUriX = "http://setup-exampleX.com/token/";
         string memory initialUriY = "http://setup-exampleY.com/token/";
 
-        fungibleTypeIdX1 =
-            tronicAdminContract.createFungibleTokenType(initialMaxSupply, initialUriX, channelIDX);
+        fungibleTypeIdX1 = tronicAdminContract.createFungibleTokenType(
+            initialMaxSupply, initialUriX, membershipIDX
+        );
 
-        fungibleTypeIdY1 =
-            tronicAdminContract.createFungibleTokenType(initialMaxSupply, initialUriY, channelIDY);
+        fungibleTypeIdY1 = tronicAdminContract.createFungibleTokenType(
+            initialMaxSupply, initialUriY, membershipIDY
+        );
 
         nonFungibleTypeIdX1 =
-            tronicAdminContract.createNonFungibleTokenType(initialUriX, 1_000_000, channelIDX);
+            tronicAdminContract.createNonFungibleTokenType(initialUriX, 1_000_000, membershipIDX);
 
         nonFungibleTypeIdY1 =
-            tronicAdminContract.createNonFungibleTokenType(initialUriY, 25_000, channelIDY);
+            tronicAdminContract.createNonFungibleTokenType(initialUriY, 25_000, membershipIDY);
 
         vm.stopPrank();
 
@@ -201,27 +187,27 @@ contract TronicTestBase is Test {
 
         vm.stopPrank();
 
-        // get channel x and y details, channel ids: x=0 and y=1
-        channelX = tronicAdminContract.getChannelInfo(channelIDX);
-        channelY = tronicAdminContract.getChannelInfo(channelIDY);
+        // get membership x and y details, membership ids: x=0 and y=1
+        membershipX = tronicAdminContract.getMembershipInfo(membershipIDX);
+        membershipY = tronicAdminContract.getMembershipInfo(membershipIDY);
 
-        // get channel contracts
-        channelXERC721 = ERC721CloneableTBA(channelX.erc721Address);
-        channelXERC1155 = ERC1155Cloneable(channelX.erc1155Address);
-        channelYERC721 = ERC721CloneableTBA(channelY.erc721Address);
-        channelYERC1155 = ERC1155Cloneable(channelY.erc1155Address);
+        // get membership contracts
+        membershipXERC721 = ERC721CloneableTBA(membershipX.erc721Address);
+        membershipXERC1155 = ERC1155Cloneable(membershipX.erc1155Address);
+        membershipYERC721 = ERC721CloneableTBA(membershipY.erc721Address);
+        membershipYERC1155 = ERC1155Cloneable(membershipY.erc1155Address);
     }
 
     // Implement the helper function to create instances of BatchMintOrder
     function createBatchMintOrder(
-        uint256 _channelId,
+        uint256 _membershipId,
         address[] memory _recipients,
         uint256[][][] memory _tokenIds,
         uint256[][][] memory _amounts,
         TronicAdmin.TokenType[][] memory _tokenTypes
     ) public pure returns (BatchMintOrder memory order) {
         order = BatchMintOrder({
-            channelId: _channelId,
+            membershipId: _membershipId,
             recipients: _recipients,
             tokenIds: _tokenIds,
             amounts: _amounts,
@@ -233,7 +219,7 @@ contract TronicTestBase is Test {
         internal
         pure
         returns (
-            uint256[] memory channelIds,
+            uint256[] memory membershipIds,
             address[][] memory recipients,
             uint256[][][][] memory tokenIds,
             uint256[][][][] memory amounts,
@@ -243,7 +229,7 @@ contract TronicTestBase is Test {
         uint256 orderCount = orders.length;
 
         // Initialize the arrays
-        channelIds = new uint256[](orderCount);
+        membershipIds = new uint256[](orderCount);
         recipients = new address[][](orderCount);
         tokenIds = new uint256[][][][](orderCount);
         amounts = new uint256[][][][](orderCount);
@@ -251,13 +237,13 @@ contract TronicTestBase is Test {
 
         // Populate the arrays based on the input orders
         for (uint256 i = 0; i < orderCount; i++) {
-            channelIds[i] = orders[i].channelId;
+            membershipIds[i] = orders[i].membershipId;
             recipients[i] = orders[i].recipients;
             tokenIds[i] = orders[i].tokenIds;
             amounts[i] = orders[i].amounts;
             tokenTypes[i] = orders[i].tokenTypes;
         }
 
-        return (channelIds, recipients, tokenIds, amounts, tokenTypes);
+        return (membershipIds, recipients, tokenIds, amounts, tokenTypes);
     }
 }

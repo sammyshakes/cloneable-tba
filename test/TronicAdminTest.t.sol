@@ -7,7 +7,7 @@ import "./TronicTestBase.t.sol";
 contract TronicAdminTest is TronicTestBase {
     function testInitialSetup() public {
         assertEq(tronicAdminContract.owner(), tronicOwner);
-        assertEq(tronicAdminContract.channelCounter(), 2);
+        assertEq(tronicAdminContract.membershipCounter(), 2);
         console.log("tronicAdminContract address: ", address(tronicAdminContract));
         console.log("tronicERC721 address: ", address(tronicERC721));
         console.log("tronicERC1155 address: ", address(tronicERC1155));
@@ -18,19 +18,17 @@ contract TronicAdminTest is TronicTestBase {
         console.log("clone721AddressY: ", clone721AddressY);
         console.log("clone1155AddressY: ", clone1155AddressY);
 
-        // check that the channel details are correctly set
-        assertEq(channelX.erc721Address, clone721AddressX);
-        assertEq(channelX.erc1155Address, clone1155AddressX);
-        assertEq(channelX.channelName, "SetupChannelX");
-        assertEq(channelY.erc721Address, clone721AddressY);
-        assertEq(channelY.erc1155Address, clone1155AddressY);
-        assertEq(channelY.channelName, "SetupChannelY");
+        // check that the membership details are correctly set
+        assertEq(membershipX.erc721Address, clone721AddressX);
+        assertEq(membershipX.erc1155Address, clone1155AddressX);
+        assertEq(membershipY.erc721Address, clone721AddressY);
+        assertEq(membershipY.erc1155Address, clone1155AddressY);
 
-        //assert that TronicAdmin Contract is the owner of channel erc721 and erc1155 token contracts
-        assertEq(tronicAdmin, channelXERC721.owner());
-        assertEq(tronicAdmin, channelXERC1155.owner());
-        assertEq(tronicAdmin, channelYERC721.owner());
-        assertEq(tronicAdmin, channelYERC1155.owner());
+        //assert that TronicAdmin Contract is the owner of membership erc721 and erc1155 token contracts
+        assertEq(tronicAdmin, membershipXERC721.owner());
+        assertEq(tronicAdmin, membershipXERC1155.owner());
+        assertEq(tronicAdmin, membershipYERC721.owner());
+        assertEq(tronicAdmin, membershipYERC1155.owner());
 
         // get owner of tokenid 0
         address owner = tronicERC721.ownerOf(1);
@@ -43,20 +41,22 @@ contract TronicAdminTest is TronicTestBase {
         string memory initialUriX = "http://exampleX.com/token/";
         string memory initialUriY = "http://exampleY.com/token/";
 
-        // Admin creates a fungible token type for channelX and channelY
+        // Admin creates a fungible token type for membershipX and membershipY
         vm.startPrank(tronicAdmin);
-        uint256 fungibleIDX =
-            tronicAdminContract.createFungibleTokenType(initialMaxSupply, initialUriX, channelIDX);
+        uint256 fungibleIDX = tronicAdminContract.createFungibleTokenType(
+            initialMaxSupply, initialUriX, membershipIDX
+        );
 
-        //create a new fungible token type for channelY
-        uint256 fungibleIDY =
-            tronicAdminContract.createFungibleTokenType(initialMaxSupply, initialUriY, channelIDY);
+        //create a new fungible token type for membershipY
+        uint256 fungibleIDY = tronicAdminContract.createFungibleTokenType(
+            initialMaxSupply, initialUriY, membershipIDY
+        );
 
         vm.stopPrank();
 
         // Verify that the new token type has the correct attributes
         ERC1155Cloneable.FungibleTokenInfo memory tokenInfo =
-            channelXERC1155.getFungibleTokenInfo(fungibleIDX);
+            membershipXERC1155.getFungibleTokenInfo(fungibleIDX);
 
         assertEq(tokenInfo.maxSupply, initialMaxSupply, "Incorrect maxSupply");
         assertEq(tokenInfo.uri, initialUriX, "Incorrect URI");
@@ -65,7 +65,7 @@ contract TronicAdminTest is TronicTestBase {
 
         // Verify that the new token type has the correct attributes
         ERC1155Cloneable.FungibleTokenInfo memory tokenInfoY =
-            channelYERC1155.getFungibleTokenInfo(fungibleIDY);
+            membershipYERC1155.getFungibleTokenInfo(fungibleIDY);
 
         assertEq(tokenInfoY.maxSupply, initialMaxSupply, "Incorrect maxSupply");
         assertEq(tokenInfoY.uri, initialUriY, "Incorrect URI");
@@ -74,9 +74,9 @@ contract TronicAdminTest is TronicTestBase {
 
         // mint 100 tokens to user1's tba
         vm.prank(tronicAdmin);
-        tronicAdminContract.mintFungibleERC1155(channelIDX, user1TBA, fungibleIDX, 100);
+        tronicAdminContract.mintFungibleERC1155(membershipIDX, user1TBA, fungibleIDX, 100);
 
-        assertEq(channelXERC1155.balanceOf(user1TBA, fungibleIDX), 100);
+        assertEq(membershipXERC1155.balanceOf(user1TBA, fungibleIDX), 100);
     }
 
     function testCreateNonFungibleType() public {
@@ -85,20 +85,20 @@ contract TronicAdminTest is TronicTestBase {
         string memory initialUriY = "http://exampleNFTY.com/token";
         uint64 maxMintable = 1000;
 
-        // Admin creates a non-fungible token type for channelX and channelY
+        // Admin creates a non-fungible token type for membershipX and membershipY
         vm.startPrank(tronicAdmin);
         uint256 nonFungibleIDX =
-            tronicAdminContract.createNonFungibleTokenType(initialUriX, maxMintable, channelIDX);
+            tronicAdminContract.createNonFungibleTokenType(initialUriX, maxMintable, membershipIDX);
 
-        //create a new non-fungible token type for channelY
+        //create a new non-fungible token type for membershipY
         uint256 nonFungibleIDY =
-            tronicAdminContract.createNonFungibleTokenType(initialUriY, maxMintable, channelIDY);
+            tronicAdminContract.createNonFungibleTokenType(initialUriY, maxMintable, membershipIDY);
 
         vm.stopPrank();
 
         // Verify that the new token type has the correct attributes
         ERC1155Cloneable.NFTTokenInfo memory tokenInfo =
-            channelXERC1155.getNFTTokenInfo(nonFungibleIDX);
+            membershipXERC1155.getNFTTokenInfo(nonFungibleIDX);
 
         assertEq(tokenInfo.baseURI, initialUriX, "Incorrect URI");
         assertEq(tokenInfo.maxMintable, maxMintable, "Incorrect maxMintable");
@@ -106,55 +106,50 @@ contract TronicAdminTest is TronicTestBase {
 
         // Verify that the new token type has the correct attributes
         ERC1155Cloneable.NFTTokenInfo memory tokenInfoY =
-            channelYERC1155.getNFTTokenInfo(nonFungibleIDY);
+            membershipYERC1155.getNFTTokenInfo(nonFungibleIDY);
 
         assertEq(tokenInfoY.baseURI, initialUriY, "Incorrect URI");
         assertEq(tokenInfoY.maxMintable, maxMintable, "Incorrect maxMintable");
         assertEq(tokenInfoY.totalMinted, 0, "Incorrect totalMinted");
 
-        uint256 userBalanceBefore = channelXERC1155.balanceOf(user1, nonFungibleIDX);
+        // uint256 userBalanceBefore = membershipXERC1155.balanceOf(user1, nonFungibleIDX);
 
         // mint a non-fungible token to user1
         // vm.prank(tronicAdmin);
-        // tronicAdminContract.mintNonFungibleERC1155(channelIDX, user1, nonFungibleIDX, 1);
+        // tronicAdminContract.mintNonFungibleERC1155(membershipIDX, user1, nonFungibleIDX, 1);
 
-        // assertEq(channelXERC1155.balanceOf(user1, nonFungibleIDX), userBalanceBefore + 1);
+        // assertEq(membershipXERC1155.balanceOf(user1, nonFungibleIDX), userBalanceBefore + 1);
     }
 
-    function testDeployAndAddChannel() public {
-        // get channel count
-        uint256 channelCount = tronicAdminContract.channelCounter();
+    function testDeployAndAddMembership() public {
+        // get membership count
+        uint256 membershipCount = tronicAdminContract.membershipCounter();
 
-        // Define channel details
+        // Define membership details
         string memory name721 = "TestClone721";
         string memory symbol721 = "TCL721";
         string memory uri721 = "http://testclone721.com/";
-        string memory name1155 = "TestClone1155";
-        string memory symbol1155 = "TCL1155";
-        string memory uri1155 = "http://testclone1155.com/";
-        string memory channelName = "TestChannel";
 
-        // maxsupply for channel erc721
+        // maxsupply for membership erc721
         uint64 maxSupply = 10_000;
 
         // Simulate as admin
         vm.prank(tronicAdmin);
 
-        // Call the deployAndAddChannel function
-        (address testClone721Address, address testClone1155AddressY) = tronicAdminContract
-            .deployChannel(
-            name721, symbol721, uri721, maxSupply, name1155, symbol1155, uri1155, channelName
-        );
+        // Call the deployAndAddMembership function
+        (address testClone721Address, address testClone1155AddressY) =
+            tronicAdminContract.deployMembership(name721, symbol721, uri721, maxSupply);
 
-        // Retrieve the added channel's details
-        TronicAdmin.ChannelInfo memory channel = tronicAdminContract.getChannelInfo(channelCount);
+        // Retrieve the added membership's details
+        TronicAdmin.MembershipInfo memory membership =
+            tronicAdminContract.getMembershipInfo(membershipCount);
 
-        // Assert that the channel's details are correctly set
-        assertEq(channel.erc721Address, testClone721Address);
-        assertEq(channel.erc1155Address, testClone1155AddressY);
-        assertEq(channel.channelName, channelName);
+        // Assert that the membership's details are correctly set
+        assertEq(membership.erc721Address, testClone721Address);
+        assertEq(membership.erc1155Address, testClone1155AddressY);
+        assertEq(membership.membershipName, name721);
 
-        // TODO: check that ChannelAdded event was emitted
+        // TODO: check that MembershipAdded event was emitted
     }
 
     // test getAccount function from ERC721CloneableTBA
@@ -170,9 +165,9 @@ contract TronicAdminTest is TronicTestBase {
 
     // function testBatchProcessMinting() public {
 
-    //     uint256[] memory channelIds = new uint256[](2);
-    //     channelIds[0] = channelIDX;
-    //     channelIds[1] = channelIDY;
+    //     uint256[] memory membershipIds = new uint256[](2);
+    //     membershipIds[0] = membershipIDX;
+    //     membershipIds[1] = membershipIDY;
 
     //     // Set up recipients
     //     address[] memory recipients1 = new address[](2);
@@ -247,19 +242,19 @@ contract TronicAdminTest is TronicTestBase {
     //     tokenTypes[0] = tokenTypes1;
     //     tokenTypes[1] = tokenTypes2;
 
-    //     tronicAdminContract.batchProcess(channelIds, recipients, tokenIds, amounts, tokenTypes);
+    //     tronicAdminContract.batchProcess(membershipIds, recipients, tokenIds, amounts, tokenTypes);
 
     //     // Assertions to validate correct minting
-    //     assertEq(channelXERC721.ownerOf(1), user1);
-    //     assertEq(channelXERC1155.balanceOf(user2, 3), 1);
-    //     assertEq(channelXERC1155.balanceOf(user2, 4), 2);
-    //     assertEq(channelYERC721.ownerOf(7), user2);
-    //     assertEq(channelYERC1155.balanceOf(user3, 9), 2);
+    //     assertEq(membershipXERC721.ownerOf(1), user1);
+    //     assertEq(membershipXERC1155.balanceOf(user2, 3), 1);
+    //     assertEq(membershipXERC1155.balanceOf(user2, 4), 2);
+    //     assertEq(membershipYERC721.ownerOf(7), user2);
+    //     assertEq(membershipYERC1155.balanceOf(user3, 9), 2);
     //     // ... Add more assertions as needed
     // }
 
     // struct BatchMintOrder {
-    //     uint256 channelId;
+    //     uint256 membershipId;
     //     address[] recipients;
     //     uint256[][] tokenIds;
     //     uint256[][] amounts;
@@ -270,21 +265,21 @@ contract TronicAdminTest is TronicTestBase {
     //     public
     //     pure
     //     returns (
-    //         uint256[] memory channelIds,
+    //         uint256[] memory membershipIds,
     //         address[][] memory recipients,
     //         uint256[][][][] memory tokenIds,
     //         uint256[][][][] memory amounts,
     //         TronicAdmin.TokenType[][][] memory tokenTypes
     //     )
     // {
-    //     channelIds = new uint256[](orders.length);
+    //     membershipIds = new uint256[](orders.length);
     //     recipients = new address[][](orders.length);
     //     tokenIds = new uint256[][][][](orders.length);
     //     amounts = new uint256[][][][](orders.length);
     //     tokenTypes = new TronicAdmin.TokenType[][][](orders.length);
 
     //     for (uint256 i = 0; i < orders.length; i++) {
-    //         channelIds[i] = orders[i].channelId;
+    //         membershipIds[i] = orders[i].membershipId;
 
     //         recipients[i] = orders[i].recipients;
 
@@ -305,6 +300,6 @@ contract TronicAdminTest is TronicTestBase {
     //         }
     //     }
 
-    //     return (channelIds, recipients, tokenIds, amounts, tokenTypes);
+    //     return (membershipIds, recipients, tokenIds, amounts, tokenTypes);
     // }
 }

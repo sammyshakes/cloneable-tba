@@ -12,8 +12,8 @@ contract NewUserEarns1 is Script {
 
     address payable public tbaAddress = payable(vm.envAddress("TOKENBOUND_ACCOUNT_TOKENID_1"));
 
-    address public clonedERC721AddressX = vm.envAddress("CHANNEL_X_CLONED_ERC721_ADDRESS");
-    address public clonedERC721AddressY = vm.envAddress("CHANNEL_Y_CLONED_ERC721_ADDRESS");
+    address public clonedERC721AddressX = vm.envAddress("MEMBERSHIP_X_CLONED_ERC721_ADDRESS");
+    address public clonedERC721AddressY = vm.envAddress("MEMBERSHIP_Y_CLONED_ERC721_ADDRESS");
 
     // this script mints an erc721 token to the tbaAddress address for each project,
     // which will be used to mint a tokenbound nft for each project

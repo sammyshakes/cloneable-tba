@@ -7,10 +7,10 @@ import "./ERC721CloneableTBA.sol";
 import "@openzeppelin/contracts/proxy/Clones.sol";
 
 contract TronicAdmin {
-    struct ChannelInfo {
+    struct MembershipInfo {
         address erc721Address;
         address erc1155Address;
-        string channelName;
+        string membershipName;
     }
 
     enum TokenType {
@@ -18,11 +18,12 @@ contract TronicAdmin {
         ERC721
     }
 
-    event ChannelAdded(
-        uint256 indexed channelId,
+    event MembershipAdded(
+        uint256 indexed membershipId,
         address indexed erc721Address,
         address indexed erc1155Address,
-        string channelName
+        string membershipName,
+        string membershipSymbol
     );
 
     address public owner;
@@ -34,8 +35,8 @@ contract TronicAdmin {
     ERC721CloneableTBA public tronicERC721;
     ERC1155Cloneable public tronicERC1155;
 
-    uint256 public channelCounter;
-    mapping(uint256 => ChannelInfo) public channels;
+    uint256 public membershipCounter;
+    mapping(uint256 => MembershipInfo) public memberships;
     mapping(address => bool) private _admins;
 
     /// @notice Constructs the CloneFactory contract.
@@ -70,43 +71,44 @@ contract TronicAdmin {
         _;
     }
 
-    function getChannelInfo(uint256 channelId) external view returns (ChannelInfo memory) {
-        return channels[channelId];
+    function getMembershipInfo(uint256 membershipId)
+        external
+        view
+        returns (MembershipInfo memory)
+    {
+        return memberships[membershipId];
     }
 
-    /// @notice Deploys a new channel's contracts.
-    /// @param name721 The name of the ERC721 token.
-    /// @param symbol721 The symbol of the ERC721 token.
-    /// @param uri721 The URI for the ERC721 token.
-    /// @param name1155 The name of the ERC1155 token.
-    /// @param symbol1155 The symbol of the ERC1155 token.
-    /// @param uri1155 The URI for the ERC1155 token.
-    /// @param channelName The name of the channel.
+    /// @notice Deploys a new membership's contracts.
+    /// @param membershipName The membership name for the ERC721 token.
+    /// @param membershipSymbol The membership symbol for the ERC721 token.
+    /// @param membershipBaseURI The base URI for the membership ERC721 token.
     /// @return erc721Address The address of the deployed ERC721 contract.
     /// @return erc1155Address The address of the deployed ERC1155 contract.
-    function deployChannel(
-        string memory name721,
-        string memory symbol721,
-        string memory uri721,
-        uint256 maxSupply,
-        string memory name1155,
-        string memory symbol1155,
-        string memory uri1155,
-        string memory channelName
+    /// @dev The membership ID is the index of the membership in the memberships mapping.
+    function deployMembership(
+        string memory membershipName,
+        string memory membershipSymbol,
+        string memory membershipBaseURI,
+        uint256 maxMintable
     ) external onlyAdmin returns (address erc721Address, address erc1155Address) {
         // Question: Will we know the TierIds beforehand?
-        // Deploy the channel's contracts
-        erc721Address = deployChannelERC721(name721, symbol721, uri721, maxSupply);
-        erc1155Address = deployChannelERC1155(name1155, symbol1155, uri1155);
+        // Deploy the membership's contracts
+        erc721Address = _deployMembershipERC721(
+            membershipName, membershipSymbol, membershipBaseURI, maxMintable
+        );
+        erc1155Address = _deployMembershipERC1155();
 
-        // Assign channel id and associate the deployed contracts with the channel
-        channels[channelCounter++] = ChannelInfo({
+        // Assign membership id and associate the deployed contracts with the membership
+        memberships[membershipCounter] = MembershipInfo({
             erc721Address: erc721Address,
             erc1155Address: erc1155Address,
-            channelName: channelName
+            membershipName: membershipName
         });
 
-        emit ChannelAdded(channelCounter - 1, erc721Address, erc1155Address, channelName); // channelCounter - 1 will give the last added channel's ID
+        emit MembershipAdded(
+            membershipCounter++, erc721Address, erc1155Address, membershipName, membershipSymbol
+        );
     }
 
     /// @notice Clones the ERC721 implementation and initializes it.
@@ -114,7 +116,7 @@ contract TronicAdmin {
     /// @param symbol The symbol of the token.
     /// @param uri The URI for the cloned contract.
     /// @return erc721CloneAddress The address of the newly cloned ERC721 contract.
-    function deployChannelERC721(
+    function _deployMembershipERC721(
         string memory name,
         string memory symbol,
         string memory uri,
@@ -128,133 +130,135 @@ contract TronicAdmin {
     }
 
     /// @notice Clones the ERC1155 implementation and initializes it.
-    /// @param uri The URI for the cloned contract.
-    /// @param name The name of the token.
-    /// @param symbol The symbol of the token.
     /// @return erc1155cloneAddress The address of the newly cloned ERC1155 contract.
-    function deployChannelERC1155(string memory name, string memory symbol, string memory uri)
-        private
-        returns (address erc1155cloneAddress)
-    {
+    function _deployMembershipERC1155() private returns (address erc1155cloneAddress) {
         erc1155cloneAddress = Clones.clone(address(tronicERC1155));
         ERC1155Cloneable erc1155clone = ERC1155Cloneable(erc1155cloneAddress);
-        erc1155clone.initialize(uri, tronicAdmin, name, symbol);
+        erc1155clone.initialize(tronicAdmin);
     }
 
-    // Function to remove a channel's contracts (considering the challenges of removing from a mapping)
-    function removeChannel(uint256 _channelId) external onlyAdmin {
-        delete channels[_channelId];
+    // Function to remove a membership's contracts (considering the challenges of removing from a mapping)
+    function removeMembership(uint256 _membershipId) external onlyAdmin {
+        delete memberships[_membershipId];
     }
 
-    /// @notice Creates a new ERC1155 fungible token type for a channel.
+    /// @notice Creates a new ERC1155 fungible token type for a membership.
     /// @param maxSupply The maximum supply of the token type.
     /// @param uri The URI for the token type.
-    /// @param channelId The ID of the channel to create the token type for.
+    /// @param membershipId The ID of the membership to create the token type for.
     /// @return The ID of the newly created token type.
-    function createFungibleTokenType(uint256 maxSupply, string memory uri, uint256 channelId)
+    function createFungibleTokenType(uint256 maxSupply, string memory uri, uint256 membershipId)
         external
         onlyAdmin
         returns (uint256)
     {
-        ChannelInfo memory channel = channels[channelId];
-        return ERC1155Cloneable(channel.erc1155Address).createFungibleType(uint64(maxSupply), uri);
+        MembershipInfo memory membership = memberships[membershipId];
+        require(membership.erc1155Address != address(0), "Membership does not exist");
+        return
+            ERC1155Cloneable(membership.erc1155Address).createFungibleType(uint64(maxSupply), uri);
     }
 
-    /// @notice Creates a new ERC1155 non-fungible token type for a channel.
+    /// @notice Creates a new ERC1155 non-fungible token type for a membership.
     /// @param baseUri The URI for the token type.
     /// @param maxMintable The maximum number of tokens that can be minted.
-    /// @param channelId The ID of the channel to create the token type for.
+    /// @param membershipId The ID of the membership to create the token type for.
     /// @return nftTypeID The ID of the newly created token type.
     function createNonFungibleTokenType(
         string memory baseUri,
         uint64 maxMintable,
-        uint256 channelId
+        uint256 membershipId
     ) external onlyAdmin returns (uint256 nftTypeID) {
-        ChannelInfo memory channel = channels[channelId];
-        nftTypeID = ERC1155Cloneable(channel.erc1155Address).createNFTType(baseUri, maxMintable);
+        MembershipInfo memory membership = memberships[membershipId];
+        require(membership.erc1155Address != address(0), "Membership does not exist");
+        nftTypeID = ERC1155Cloneable(membership.erc1155Address).createNFTType(baseUri, maxMintable);
     }
 
     /// @notice Mints a new ERC721 token.
     /// @param _recipient The address to mint the token to.
-    /// @param _channelId The ID of the channel to mint the token for.
+    /// @param _membershipId The ID of the membership to mint the token for.
     /// @return The address of the newly created token account.
-    function mintERC721(address _recipient, uint256 _channelId)
+    function mintERC721(address _recipient, uint256 _membershipId)
         external
         onlyAdmin
         returns (address payable)
     {
-        ChannelInfo memory channel = channels[_channelId];
-        return ERC721CloneableTBA(channel.erc721Address).mint(_recipient);
+        MembershipInfo memory membership = memberships[_membershipId];
+        require(membership.erc721Address != address(0), "Membership does not exist");
+        return ERC721CloneableTBA(membership.erc721Address).mint(_recipient);
     }
 
     /// @notice Mints a new ERC1155 token.
     /// @param _recipient The address to mint the token to.
     /// @param _tokenId The ID of the token to mint.
     /// @param _amount The amount of the token to mint.
-    /// @param _channelId The ID of the channel to mint the token for.
+    /// @param _membershipId The ID of the membership to mint the token for.
     function mintFungibleERC1155(
-        uint256 _channelId,
+        uint256 _membershipId,
         address _recipient,
         uint256 _tokenId,
         uint64 _amount
     ) external onlyAdmin {
-        ChannelInfo memory channel = channels[_channelId];
-        ERC1155Cloneable(channel.erc1155Address).mintFungible(_recipient, _tokenId, _amount);
+        MembershipInfo memory membership = memberships[_membershipId];
+        require(membership.erc1155Address != address(0), "Membership does not exist");
+        ERC1155Cloneable(membership.erc1155Address).mintFungible(_recipient, _tokenId, _amount);
     }
 
     /// @notice Mints a new nonfungible ERC1155 token.
     /// @param _recipient The address to mint the token to.
     /// @param _typeId The ID of the token to mint.
-    /// @param _channelId The ID of the channel to mint the token for.
+    /// @param _membershipId The ID of the membership to mint the token for.
     /// @param _amount The amount of the token to mint.
     function mintNonFungibleERC1155(
-        uint256 _channelId,
+        uint256 _membershipId,
         address _recipient,
         uint256 _typeId,
         uint256 _amount
     ) external onlyAdmin {
-        ChannelInfo memory channel = channels[_channelId];
-        ERC1155Cloneable(channel.erc1155Address).mintNFTs(_typeId, _recipient, _amount);
+        MembershipInfo memory membership = memberships[_membershipId];
+        require(membership.erc1155Address != address(0), "Membership does not exist");
+        ERC1155Cloneable(membership.erc1155Address).mintNFTs(_typeId, _recipient, _amount);
     }
 
-    /// @notice Processes multiple minting operations for both ERC1155 and ERC721 tokens on behalf of channels.
-    /// @param _channelIds   Array of channel IDs corresponding to each minting operation.
+    /// @notice Processes multiple minting operations for both ERC1155 and ERC721 tokens on behalf of memberships.
+    /// @param _membershipIds   Array of membership IDs corresponding to each minting operation.
     /// @param _recipients   2D array of recipient addresses for each minting operation.
-    /// @param _tokenTypes     4D array of token Typess to mint for each channel.
+    /// @param _tokenTypes     4D array of token Typess to mint for each membership.
     ///                      For ERC1155, it could be multiple IDs, and for ERC721, it should contain a single ID.
-    /// @param _amounts      4D array of token amounts to mint for each channel.
+    /// @param _amounts      4D array of token amounts to mint for each membership.
     ///                      For ERC1155, it represents the quantities of each token ID, and for ERC721, it should be either [1] (to mint) or [0] (to skip).
     /// @param _contractTypes   3D array specifying the type of each token contract (either ERC1155 or ERC721) to determine the minting logic.
     /// @dev Requires that all input arrays have matching lengths.
     ///      For ERC721 minting, the inner arrays of _tokenTypes and _amounts should have a length of 1.
+    /// @dev array indexes: _tokenTypes[membershipId][recipient][contractType][tokenType]
+    /// @dev array indexes: _amounts[membershipId][recipient][contractType][amounts]
     function batchProcess(
-        uint256[] memory _channelIds,
+        uint256[] memory _membershipIds,
         address[][] memory _recipients,
         uint256[][][][] memory _tokenTypes,
         uint256[][][][] memory _amounts,
         TokenType[][][] memory _contractTypes
     ) external {
         require(
-            _channelIds.length == _tokenTypes.length && _tokenTypes.length == _amounts.length
+            _membershipIds.length == _tokenTypes.length && _tokenTypes.length == _amounts.length
                 && _amounts.length == _recipients.length && _recipients.length == _contractTypes.length,
             "Outer arrays must have the same length"
         );
 
-        // i = channelId, j = recipient, k = tokentype
-        // Loop through each channel
-        for (uint256 i = 0; i < _channelIds.length; i++) {
-            ChannelInfo memory channel = channels[_channelIds[i]];
+        // i = membershipId, j = recipient, k = contracttype
+        // Loop through each membership
+        for (uint256 i = 0; i < _membershipIds.length; i++) {
+            MembershipInfo memory membership = memberships[_membershipIds[i]];
 
             for (uint256 j = 0; j < _recipients[i].length; j++) {
                 address recipient = _recipients[i][j];
 
                 for (uint256 k = 0; k < _contractTypes[i][j].length; k++) {
                     if (_contractTypes[i][j][k] == TokenType.ERC1155) {
-                        ERC1155Cloneable(channel.erc1155Address).mintBatch(
+                        ERC1155Cloneable(membership.erc1155Address).mintBatch(
                             recipient, _tokenTypes[i][j][k], _amounts[i][j][k], ""
                         );
                     } else if (_contractTypes[i][j][k] == TokenType.ERC721) {
-                        ERC721CloneableTBA(channel.erc721Address).mint(recipient);
+                        ERC721CloneableTBA(membership.erc721Address).mint(recipient);
                     }
                 }
             }

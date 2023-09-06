@@ -43,7 +43,7 @@ contract Initialize is Script {
             tbaAddress, registryAddress, "Tronic Members", "TRON", baseURI, maxSupply, tronicAddress
         );
         //initialize erc1155 for tronic loyalty points
-        erc1155.initialize(erc1155BaseURI, tronicAddress, "Tronic Rewards", "TRONIC");
+        erc1155.initialize(tronicAddress);
 
         //create fungible token types for tronic
         erc1155.createFungibleType(1_000_000, tronicFungibleUri1);

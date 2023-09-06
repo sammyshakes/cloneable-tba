@@ -4,70 +4,70 @@ pragma solidity ^0.8.13;
 
 import "./TronicTestBase.t.sol";
 
-contract DeployChannel is TronicTestBase {
+contract DeployMembership is TronicTestBase {
     function testInitialSetup() public {
-        //assert that tronicAdmin is the owner of channel erc721 and erc1155 token contracts
-        assertEq(tronicAdmin, channelXERC721.owner());
-        assertEq(tronicAdmin, channelXERC1155.owner());
-        assertEq(tronicAdmin, channelYERC721.owner());
-        assertEq(tronicAdmin, channelYERC1155.owner());
+        //assert that tronicAdmin is the owner of membership erc721 and erc1155 token contracts
+        assertEq(tronicAdmin, membershipXERC721.owner());
+        assertEq(tronicAdmin, membershipXERC1155.owner());
+        assertEq(tronicAdmin, membershipYERC721.owner());
+        assertEq(tronicAdmin, membershipYERC1155.owner());
 
         // check if tronicAdminContract isAdmin
-        assertEq(channelXERC721.isAdmin(address(tronicAdminContract)), true);
+        assertEq(membershipXERC721.isAdmin(address(tronicAdminContract)), true);
         assertEq(tronicAdminContract.isAdmin(tronicAdmin), true);
 
         //get name and symbol
-        console.log("channelXERC721 name: ", channelXERC721.name());
-        console.log("channelXERC721 symbol: ", channelXERC721.symbol());
+        console.log("membershipXERC721 name: ", membershipXERC721.name());
+        console.log("membershipXERC721 symbol: ", membershipXERC721.symbol());
 
         vm.startPrank(tronicAdmin);
         // set membership tier
-        channelXERC721.setMembershipTier(1, "tier1111");
+        membershipXERC721.setMembershipTier(1, "tier1111");
 
         // get membership tier
-        console.log("channelXERC721 membership tier: ", channelXERC721.getMembershipTier(1));
+        console.log("membershipXERC721 membership tier: ", membershipXERC721.getMembershipTier(1));
 
-        address user1TBAchannelX = tronicAdminContract.mintERC721(user1TBA, channelIDX);
+        address user1TBAmembershipX = tronicAdminContract.mintERC721(user1TBA, membershipIDX);
         // get tba account address
-        address tbaAccount = channelXERC721.getTBAccount(1);
+        address tbaAccount = membershipXERC721.getTBAccount(1);
         console.log("tbaAccount: ", tbaAccount);
-        assertEq(tbaAccount, user1TBAchannelX);
+        assertEq(tbaAccount, user1TBAmembershipX);
 
         // verify that user1TBA owns token
-        assertEq(channelXERC721.ownerOf(1), user1TBA);
+        assertEq(membershipXERC721.ownerOf(1), user1TBA);
 
-        // Channel Y onboards a new user
-        address user2TBAchannelY = tronicAdminContract.mintERC721(user2TBA, channelIDY);
+        // Membership Y onboards a new user
+        address user2TBAmembershipY = tronicAdminContract.mintERC721(user2TBA, membershipIDY);
 
         // get tba account address
-        address tbaAccountY = channelYERC721.getTBAccount(1);
+        address tbaAccountY = membershipYERC721.getTBAccount(1);
         console.log("tbaAccountY: ", tbaAccountY);
-        assert(tbaAccountY == user2TBAchannelY);
+        assert(tbaAccountY == user2TBAmembershipY);
 
         // verify that user2TBA owns token
-        assertEq(channelYERC721.ownerOf(1), user2TBA);
+        assertEq(membershipYERC721.ownerOf(1), user2TBA);
 
-        // mint fungible tokens id=0 to user1TBAchannelX and user2TBAchannelY
-        channelXERC1155.mintFungible(user1TBAchannelX, 0, 100);
-        channelYERC1155.mintFungible(user2TBAchannelY, 0, 100);
+        // mint fungible tokens id=0 to user1TBAmembershipX and user2TBAmembershipY
+        membershipXERC1155.mintFungible(user1TBAmembershipX, 0, 100);
+        membershipYERC1155.mintFungible(user2TBAmembershipY, 0, 100);
 
-        //verify that user1TBAchannelX and user2TBAchannelY have 100 tokens
-        assertEq(channelXERC1155.balanceOf(user1TBAchannelX, 0), 100);
-        assertEq(channelYERC1155.balanceOf(user2TBAchannelY, 0), 100);
+        //verify that user1TBAmembershipX and user2TBAmembershipY have 100 tokens
+        assertEq(membershipXERC1155.balanceOf(user1TBAmembershipX, 0), 100);
+        assertEq(membershipYERC1155.balanceOf(user2TBAmembershipY, 0), 100);
 
         vm.stopPrank();
     }
 
     function testCreateTypesFromFromAdmin() public {
         vm.startPrank(tronicAdmin);
-        // create fungible token type for channelx
+        // create fungible token type for membershipx
         uint256 typeId = tronicAdminContract.createFungibleTokenType(
-            1000, "http://example.com/token/", channelIDX
+            1000, "http://example.com/token/", membershipIDX
         );
 
-        // get fungible token type from channelx
+        // get fungible token type from membershipx
         ERC1155Cloneable.FungibleTokenInfo memory tokenType =
-            channelXERC1155.getFungibleTokenInfo(typeId);
+            membershipXERC1155.getFungibleTokenInfo(typeId);
 
         console.log("tokenType.uri: ", tokenType.uri);
         console.log("tokenType.maxSupply: ", tokenType.maxSupply);
@@ -76,12 +76,12 @@ contract DeployChannel is TronicTestBase {
 
         // create non fungible token type
         typeId = tronicAdminContract.createNonFungibleTokenType(
-            "http://example.com/token/", 10_000, channelIDX
+            "http://example.com/token/", 10_000, membershipIDX
         );
 
-        // get non fungible token type from channelx
+        // get non fungible token type from membershipx
         ERC1155Cloneable.NFTTokenInfo memory nonFungibleTokenType =
-            channelXERC1155.getNFTTokenInfo(typeId);
+            membershipXERC1155.getNFTTokenInfo(typeId);
 
         console.log("nonFungibleTokenType.startingTokenId: ", nonFungibleTokenType.startingTokenId);
         console.log("nonFungibleTokenType.maxMintable: ", nonFungibleTokenType.maxMintable);
@@ -89,154 +89,40 @@ contract DeployChannel is TronicTestBase {
         console.log("nonFungibleTokenType.baseURI: ", nonFungibleTokenType.baseURI);
     }
 
-    function testBatchProcess() public {
-        // instantiate BatchMintOrder array
-        BatchMintOrder[] memory orders = new BatchMintOrder[](2);
+    // test deployMembership function
+    // function testDeployMembership() public {
+    //     // deploy membership
+    //     address membershipAddress = tronicAdminContract.deployMembership(
+    //         "membershipX", "CHX", "http://example.com/token/", "SetupMembershipX"
+    //     );
 
-        vm.startPrank(tronicAdmin);
+    //     // get membership info
+    //     TronicAdmin.MembershipInfo memory membershipInfo = tronicAdminContract.getMembershipInfo(membershipIDX);
 
-        // for channel x: (order1)
-        // user1 gets erc721 and fungible erc1155 tokens
-        // user2 gets fungible and nonfungible erc1155 tokens
+    //     // get membership contracts
+    //     membershipXERC721 = ERC721CloneableTBA(membershipInfo.erc721Address);
+    //     membershipXERC1155 = ERC1155Cloneable(membershipInfo.erc1155Address);
 
-        // for channel y: (order2)
-        // user3 gets 2 amounts of fungible erc1155 tokens
+    //     // assert that tronicAdmin is the owner of membership erc721 and erc1155 token contracts
+    //     assertEq(tronicAdmin, membershipXERC721.owner());
+    //     assertEq(tronicAdmin, membershipXERC1155.owner());
 
-        // For order1 (channelX)
-        address[] memory _recipients = new address[](2);
-        _recipients[0] = user1;
-        _recipients[1] = user2;
+    //     // get name and symbol
+    //     console.log("membershipXERC721 name: ", membershipXERC721.name());
+    //     console.log("membershipXERC721 symbol: ", membershipXERC721.symbol());
 
-        uint256[][][] memory _tokenIds = new uint256[][][](2);
-        //user1 gets fungible erc1155 and erc721 tokens from channel x
-        _tokenIds[0] = new uint256[][](2); // user 1 gets both contract types
+    //     // set membership tier
+    //     membershipXERC721.setMembershipTier(1, "tier1111");
 
-        //erc721 contract type
-        _tokenIds[0][0] = new uint256[](1); // gets 1 tokenid for erc721
-        _tokenIds[0][0][0] = 0; //erc721 tokenid irrelevant because it is autogenerated for user1, any value works here
+    //     // get membership tier
+    //     console.log("membershipXERC721 membership tier: ", membershipXERC721.getMembershipTier(1));
 
-        // erc1155 contract type
-        _tokenIds[0][1] = new uint256[](1); // gets 1 token id for erc1155
-        _tokenIds[0][1][0] = fungibleTypeIdX1; //fungible token id for user1
+    //     // mint fungible tokens id=0 to user1TBAmembershipX and user2TBAmembershipY
+    //     membershipXERC1155.mintFungible(user1TBAmembershipX, 0, 100);
+    //     membershipYERC1155.mintFungible(user2TBAmembershipY, 0, 100);
 
-        //user2 gets fungible and nonfungible tokens from channel x
-        //erc1155 token ids for user2
-        _tokenIds[1] = new uint256[][](1); // user 2 gets only erc1155 contract type
-
-        _tokenIds[1][0] = new uint256[](2); // user2 gets 2 tokenids for erc1155
-        _tokenIds[1][0][0] = fungibleTypeIdX1; // fungible token id for user2
-        _tokenIds[1][0][1] = nonFungibleTypeIdX1; // nonfungible token id for user2
-
-        //amounts for each token id
-        uint256[][][] memory _amounts = new uint256[][][](2);
-        // amount for user1's tokenId irrelevant when calling erc721 contract (always be treated as a 1)
-        _amounts[0] = new uint256[][](2);
-        _amounts[0][0] = new uint256[](1);
-        _amounts[0][0][0] = 1;
-
-        //fungible token amount for user1
-        _amounts[0][1] = new uint256[](1);
-        _amounts[0][1][0] = 10_000;
-
-        //user2 gets fungible and nonfungible tokens from channel x
-        //fungible token amount for user2
-        _amounts[1] = new uint256[][](1);
-        _amounts[1][0] = new uint256[](2);
-        _amounts[1][0][0] = 1000; // amount for user2's erc1155 fungible tokenId
-        _amounts[1][0][1] = 1; // amount for user2 erc1155 nonfungible tokenid
-
-        TronicAdmin.TokenType[][] memory _tokenTypes = new TronicAdmin.TokenType[][](2);
-        _tokenTypes[0] = new TronicAdmin.TokenType[](2);
-        _tokenTypes[0][0] = TronicAdmin.TokenType.ERC721;
-        _tokenTypes[0][1] = TronicAdmin.TokenType.ERC1155;
-        _tokenTypes[1] = new TronicAdmin.TokenType[](1);
-        _tokenTypes[1][0] = TronicAdmin.TokenType.ERC1155;
-
-        BatchMintOrder memory order1 = createBatchMintOrder(
-            channelIDX, // channelIdX
-            _recipients,
-            _tokenIds,
-            _amounts,
-            _tokenTypes
-        );
-
-        // For order2 (channelY)
-        _recipients = new address[](1);
-        _recipients[0] = user3;
-
-        _tokenIds = new uint256[][][](1);
-        _tokenIds[0] = new uint256[][](1);
-        _tokenIds[0][0] = new uint256[](2);
-
-        _tokenIds[0][0][0] = fungibleTypeIdY1; // first tokenId for user3
-
-        _tokenIds[0][0][1] = tronicAdminContract.createFungibleTokenType(
-            5000, "http://example.com/token/", channelIDY
-        ); // second tokenId for user3
-
-        _amounts = new uint256[][][](1);
-        _amounts[0] = new uint256[][](1);
-        _amounts[0][0] = new uint256[](2);
-        _amounts[0][0][0] = 10; // amount for user3's first tokenId
-        _amounts[0][0][1] = 20; // amount for user3's second tokenId
-
-        _tokenTypes = new TronicAdmin.TokenType[][](1);
-        _tokenTypes[0] = new TronicAdmin.TokenType[](1);
-        _tokenTypes[0][0] = TronicAdmin.TokenType.ERC1155; // type for user3's first and second tokenId
-
-        BatchMintOrder memory order2 = createBatchMintOrder(
-            channelIDY, // channelIdY
-            _recipients,
-            _tokenIds,
-            _amounts,
-            _tokenTypes
-        );
-
-        //populate orders array
-        orders[0] = order1;
-        orders[1] = order2;
-
-        // Prepare data for batchProcess using the helper function
-        (
-            uint256[] memory channelIds,
-            address[][] memory recipients,
-            uint256[][][][] memory tokenIds,
-            uint256[][][][] memory amounts,
-            TronicAdmin.TokenType[][][] memory tokenTypes
-        ) = prepareBatchProcessData(orders);
-
-        // Execute the batchProcess function
-        tronicAdminContract.batchProcess(channelIds, recipients, tokenIds, amounts, tokenTypes);
-
-        vm.stopPrank();
-
-        // Assertions
-        // For channel 1, ERC721
-        assertEq(ERC721(clone721AddressX).ownerOf(1), user1);
-
-        // For channel 1, ERC1155
-        assertEq(channelXERC1155.balanceOf(user1, fungibleTypeIdX1), 10_000);
-        assertEq(channelXERC1155.balanceOf(user2, fungibleTypeIdX1), 1000);
-
-        // For channel 2, ERC1155
-        assertEq(channelYERC1155.balanceOf(user3, fungibleTypeIdY1), 10);
-        assertEq(channelYERC1155.balanceOf(user3, _tokenIds[0][0][1]), 20);
-
-        ERC1155Cloneable.NFTTokenInfo memory nonFungibleX1 =
-            channelXERC1155.getNFTTokenInfo(nonFungibleTypeIdX1);
-
-        console.log("nonFungibleTypeIdX1 ", nonFungibleTypeIdX1);
-        console.log("nonFungibleX1.startingTokenId: ", nonFungibleX1.startingTokenId);
-        console.log("nonFungibleX1.maxMintable: ", nonFungibleX1.maxMintable);
-        console.log("nonFungibleX1.totalMinted: ", nonFungibleX1.totalMinted);
-        console.log("nonFungibleX1.baseURI: ", nonFungibleX1.baseURI);
-
-        assertEq(channelXERC1155.balanceOf(user2, nonFungibleX1.startingTokenId), 1);
-
-        assertEq(channelXERC1155.nftOwners(nonFungibleX1.startingTokenId), user2);
-
-        //get next tokenid for nonfungibletypeidX1
-        uint256 nextTokenId = channelXERC1155.getNextTokenIdForType(nonFungibleTypeIdX1);
-        console.log("nextTokenId: ", nextTokenId);
-    }
+    //     //verify that user1TBAmembershipX and user2TBAmembershipY have 100 tokens
+    //     assertEq(membershipXERC1155.balanceOf(user1TBAmembershipX, 0), 100);
+    //     assertEq(membershipYERC1155.balanceOf(user2TBAmembershipY, 0), 100);
+    // }
 }

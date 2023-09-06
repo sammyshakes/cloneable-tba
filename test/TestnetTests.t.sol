@@ -38,15 +38,15 @@ contract TestnetTests is Test {
     address public erc1155Address = vm.envAddress("TRONIC_REWARDS_ERC1155_ADDRESS");
 
     // cloned project contracts
-    address public cloned1155AddressX = vm.envAddress("CHANNEL_X_CLONED_ERC1155_ADDRESS");
-    address public cloned1155AddressY = vm.envAddress("CHANNEL_Y_CLONED_ERC1155_ADDRESS");
-    address public cloned721AddressX = vm.envAddress("CHANNEL_X_CLONED_ERC721_ADDRESS");
-    address public cloned721AddressY = vm.envAddress("CHANNEL_Y_CLONED_ERC721_ADDRESS");
+    address public cloned1155AddressX = vm.envAddress("MEMBERSHIP_X_CLONED_ERC1155_ADDRESS");
+    address public cloned1155AddressY = vm.envAddress("MEMBERSHIP_Y_CLONED_ERC1155_ADDRESS");
+    address public cloned721AddressX = vm.envAddress("MEMBERSHIP_X_CLONED_ERC721_ADDRESS");
+    address public cloned721AddressY = vm.envAddress("MEMBERSHIP_Y_CLONED_ERC721_ADDRESS");
 
     // tokenbound accounts
     address public tbaAddressTokenID1 = vm.envAddress("TOKENBOUND_ACCOUNT_TOKENID_1");
-    address public tbaAddressXTokenID1 = vm.envAddress("CHANNEL_X_TOKENBOUND_ACCOUNT_TOKENID_1");
-    address public tbaAddressYTokenID1 = vm.envAddress("CHANNEL_Y_TOKENBOUND_ACCOUNT_TOKENID_1");
+    address public tbaAddressXTokenID1 = vm.envAddress("MEMBERSHIP_X_TOKENBOUND_ACCOUNT_TOKENID_1");
+    address public tbaAddressYTokenID1 = vm.envAddress("MEMBERSHIP_Y_TOKENBOUND_ACCOUNT_TOKENID_1");
 
     function setUp() public {
         vm.startPrank(tronicOwner);
@@ -163,8 +163,6 @@ contract TestnetTests is Test {
 
         //retrieve and print out the erc1155 owner, name and symbol
         console.log("clonedERC1155X owner: ", clonedERC1155X.owner());
-        console.log("clonedERC1155X name: ", clonedERC1155X.name());
-        console.log("clonedERC1155X symbol: ", clonedERC1155X.symbol());
 
         // mint token to user1
         vm.prank(tronicOwner);
@@ -211,14 +209,12 @@ contract TestnetTests is Test {
 
         // Expect the cloneERC1155 function to be reverted due to unauthorized access
         vm.expectRevert();
-        tronicAdminContract.deployChannel(
-            "", "", "", 0, "Clone1155", "CL1155", "http://unauthorized1155.com/", "Name1"
-        );
+        tronicAdminContract.deployMembership("", "", "", 0);
 
         // Expect the cloneERC721 function to be reverted due to unauthorized access
         vm.expectRevert();
-        tronicAdminContract.deployChannel(
-            "Unauthorized721", "UN721", "http://unauthorized721.com/", 10_000, "", "", "", "Name2"
+        tronicAdminContract.deployMembership(
+            "Unauthorized721", "UN721", "http://unauthorized721.com/", 10_000
         );
     }
 }
