@@ -6,9 +6,9 @@ import "./interfaces/IERC6551Registry.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 
-/// @title ERC721CloneableTBA
+/// @title TronicMembership
 /// @notice A contract for managing ERC721 tokens with additional functionalities such as admin control.
-contract ERC721CloneableTBA is ERC721Enumerable, Initializable {
+contract TronicMembership is ERC721Enumerable, Initializable {
     IERC6551Registry public registry;
     address public accountImplementation;
     address public owner;

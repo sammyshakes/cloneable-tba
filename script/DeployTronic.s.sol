@@ -3,13 +3,13 @@ pragma solidity ^0.8.13;
 
 // Imports
 import "forge-std/Script.sol";
-import "../src/TronicAdmin.sol";
+import "../src/TronicMain.sol";
 
-contract Deploy is Script {
+contract DeployTronic is Script {
     // Deployments
-    ERC721CloneableTBA public erc721;
-    ERC1155Cloneable public erc1155;
-    TronicAdmin public tronicAdminContract;
+    TronicMembership public erc721;
+    TronicLoyalty public erc1155;
+    TronicMain public tronicAdminContract;
 
     address public tronicAddress = vm.envAddress("TRONIC_ADMIN_ADDRESS");
     address public registryAddress = vm.envAddress("ERC6551_REGISTRY_ADDRESS");
@@ -22,11 +22,11 @@ contract Deploy is Script {
         //Deploy Tronic Master Contracts
         vm.startBroadcast(deployerPrivateKey);
 
-        erc721 = new ERC721CloneableTBA();
-        erc1155 = new ERC1155Cloneable();
+        erc721 = new TronicMembership();
+        erc1155 = new TronicLoyalty();
 
         // deploy new Tronic Admin Contract
-        tronicAdminContract = new TronicAdmin(
+        tronicAdminContract = new TronicMain(
             tronicAddress,
             address(erc721),
             address(erc1155),

@@ -6,10 +6,10 @@ import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
-/// @title ERC1155Cloneable
+/// @title TronicLoyalty
 /// @notice A contract for managing ERC1155 fungible and non-fungible tokens (NFTs).
 /// @dev It includes functionalities to create, mint, and burn tokens.
-contract ERC1155Cloneable is ERC1155, Initializable {
+contract TronicLoyalty is ERC1155, Initializable {
     using Strings for uint256;
 
     struct FungibleTokenInfo {

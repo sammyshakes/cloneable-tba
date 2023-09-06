@@ -4,14 +4,14 @@ pragma solidity ^0.8.13;
 // Imports
 import "forge-std/Script.sol";
 import "forge-std/Test.sol";
-import "../src/ERC721CloneableTBA.sol";
-import "../src/ERC1155Cloneable.sol";
+import "../src/TronicMembership.sol";
+import "../src/TronicLoyalty.sol";
 
 //This script deploys the clone factory and initializes the erc721 token
-contract Initialize is Script {
+contract InitializeTronic is Script {
     // Deployments
-    ERC721CloneableTBA public erc721;
-    ERC1155Cloneable public erc1155;
+    TronicMembership public erc721;
+    TronicLoyalty public erc1155;
 
     // max Supply
     uint256 public maxSupply = 10_000;
@@ -33,8 +33,8 @@ contract Initialize is Script {
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY_TRONIC_ADMIN");
 
-        erc721 = ERC721CloneableTBA(erc721Address);
-        erc1155 = ERC1155Cloneable(erc1155Address);
+        erc721 = TronicMembership(erc721Address);
+        erc1155 = TronicLoyalty(erc1155Address);
 
         vm.startBroadcast(deployerPrivateKey);
 

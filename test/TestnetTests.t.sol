@@ -3,13 +3,13 @@ pragma solidity ^0.8.0;
 
 // Imports
 import "forge-std/Test.sol";
-import "../src/TronicAdmin.sol";
+import "../src/TronicMain.sol";
 import "../src/interfaces/IERC6551Account.sol";
 
 contract TestnetTests is Test {
-    TronicAdmin public tronicAdminContract;
-    ERC721CloneableTBA public erc721;
-    ERC1155Cloneable public erc1155;
+    TronicMain public tronicAdminContract;
+    TronicMembership public erc721;
+    TronicLoyalty public erc1155;
     IERC6551Account public account;
     IERC6551Account public accountTba;
     IERC6551Account public accountX;
@@ -50,8 +50,8 @@ contract TestnetTests is Test {
 
     function setUp() public {
         vm.startPrank(tronicOwner);
-        erc721 = ERC721CloneableTBA(erc721Address);
-        erc1155 = ERC1155Cloneable(erc1155Address);
+        erc721 = TronicMembership(erc721Address);
+        erc1155 = TronicLoyalty(erc1155Address);
         registry = IERC6551Registry(registryAddress);
 
         account = IERC6551Account(payable(tbaAddress));
@@ -62,7 +62,7 @@ contract TestnetTests is Test {
 
         tbaAddress = payable(address(account));
 
-        tronicAdminContract = TronicAdmin(tronicAdminContractAddress);
+        tronicAdminContract = TronicMain(tronicAdminContractAddress);
         vm.stopPrank();
     }
 
@@ -75,9 +75,9 @@ contract TestnetTests is Test {
         console.log("tokenContract: ", tokenContractAddress);
         console.log("tokenId: ", _tokenId);
 
-        ERC721CloneableTBA tokenContract = ERC721CloneableTBA(tokenContractAddress); // Parent TBA ERC721 token contract
-        ERC721CloneableTBA clonedERC721X = ERC721CloneableTBA(cloned721AddressX); // Nested TBA ERC721 token contract
-        ERC1155Cloneable clonedERC1155X = ERC1155Cloneable(cloned1155AddressX); // assets owned by nested TBA
+        TronicMembership tokenContract = TronicMembership(tokenContractAddress); // Parent TBA ERC721 token contract
+        TronicMembership clonedERC721X = TronicMembership(cloned721AddressX); // Nested TBA ERC721 token contract
+        TronicLoyalty clonedERC1155X = TronicLoyalty(cloned1155AddressX); // assets owned by nested TBA
 
         // Top level TBA is owned by tbaOwner (a random user),
         assertEq(_tokenId, 1);
@@ -157,7 +157,7 @@ contract TestnetTests is Test {
         console.log("tokenId: ", _tokenId);
 
         // Check the clone has correct uri and admin
-        ERC1155Cloneable clonedERC1155X = ERC1155Cloneable(cloned1155AddressX);
+        TronicLoyalty clonedERC1155X = TronicLoyalty(cloned1155AddressX);
 
         assertEq(erc721.ownerOf(tokenId), tronicOwner);
 

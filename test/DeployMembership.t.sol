@@ -66,7 +66,7 @@ contract DeployMembership is TronicTestBase {
         );
 
         // get fungible token type from membershipx
-        ERC1155Cloneable.FungibleTokenInfo memory tokenType =
+        TronicLoyalty.FungibleTokenInfo memory tokenType =
             membershipXERC1155.getFungibleTokenInfo(typeId);
 
         console.log("tokenType.uri: ", tokenType.uri);
@@ -80,7 +80,7 @@ contract DeployMembership is TronicTestBase {
         );
 
         // get non fungible token type from membershipx
-        ERC1155Cloneable.NFTTokenInfo memory nonFungibleTokenType =
+        TronicLoyalty.NFTTokenInfo memory nonFungibleTokenType =
             membershipXERC1155.getNFTTokenInfo(typeId);
 
         console.log("nonFungibleTokenType.startingTokenId: ", nonFungibleTokenType.startingTokenId);

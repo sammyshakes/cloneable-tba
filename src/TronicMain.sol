@@ -2,14 +2,14 @@
 
 pragma solidity ^0.8.13;
 
-import "./ERC1155Cloneable.sol";
-import "./ERC721CloneableTBA.sol";
+import "./TronicLoyalty.sol";
+import "./TronicMembership.sol";
 import "@openzeppelin/contracts/proxy/Clones.sol";
 
-contract TronicAdmin {
+contract TronicMain {
     struct MembershipInfo {
-        address erc721Address;
-        address erc1155Address;
+        address membershipAddress;
+        address loyaltyAddress;
         string membershipName;
     }
 
@@ -20,8 +20,8 @@ contract TronicAdmin {
 
     event MembershipAdded(
         uint256 indexed membershipId,
-        address indexed erc721Address,
-        address indexed erc1155Address,
+        address indexed membershipAddress,
+        address indexed loyaltyAddress,
         string membershipName,
         string membershipSymbol
     );
@@ -32,8 +32,8 @@ contract TronicAdmin {
 
     // Deployments
     IERC6551Registry public registry;
-    ERC721CloneableTBA public tronicERC721;
-    ERC1155Cloneable public tronicERC1155;
+    TronicMembership public tronicERC721;
+    TronicLoyalty public tronicERC1155;
 
     uint256 public membershipCounter;
     mapping(uint256 => MembershipInfo) public memberships;
@@ -41,21 +41,21 @@ contract TronicAdmin {
 
     /// @notice Constructs the CloneFactory contract.
     /// @param _admin The address of the Tronic admin.
-    /// @param _tronicERC721 The address of the Tronic ERC721 implementation.
-    /// @param _tronicERC1155 The address of the Tronic ERC1155 implementation.
+    /// @param _tronicMembership The address of the Tronic Membership contract (ERC721 implementation).
+    /// @param _tronicLoyalty The address of the Tronic Loyalty contract (ERC1155 implementation).
     /// @param _registry The address of the registry contract.
     /// @param _tbaAccountImplementation The address of the tokenbound account implementation.
     constructor(
         address _admin,
-        address _tronicERC721,
-        address _tronicERC1155,
+        address _tronicMembership,
+        address _tronicLoyalty,
         address _registry,
         address _tbaAccountImplementation
     ) {
         owner = msg.sender;
         tronicAdmin = _admin;
-        tronicERC1155 = ERC1155Cloneable(_tronicERC1155);
-        tronicERC721 = ERC721CloneableTBA(_tronicERC721);
+        tronicERC1155 = TronicLoyalty(_tronicLoyalty);
+        tronicERC721 = TronicMembership(_tronicMembership);
         registry = IERC6551Registry(_registry);
         tbaAccountImplementation = payable(_tbaAccountImplementation);
     }
@@ -83,31 +83,30 @@ contract TronicAdmin {
     /// @param membershipName The membership name for the ERC721 token.
     /// @param membershipSymbol The membership symbol for the ERC721 token.
     /// @param membershipBaseURI The base URI for the membership ERC721 token.
-    /// @return erc721Address The address of the deployed ERC721 contract.
-    /// @return erc1155Address The address of the deployed ERC1155 contract.
+    /// @return membershipAddress The address of the deployed membership ERC721 contract.
+    /// @return loyaltyAddress The address of the deployed loyalty ERC1155 contract.
     /// @dev The membership ID is the index of the membership in the memberships mapping.
     function deployMembership(
         string memory membershipName,
         string memory membershipSymbol,
         string memory membershipBaseURI,
         uint256 maxMintable
-    ) external onlyAdmin returns (address erc721Address, address erc1155Address) {
+    ) external onlyAdmin returns (address membershipAddress, address loyaltyAddress) {
         // Question: Will we know the TierIds beforehand?
         // Deploy the membership's contracts
-        erc721Address = _deployMembershipERC721(
-            membershipName, membershipSymbol, membershipBaseURI, maxMintable
-        );
-        erc1155Address = _deployMembershipERC1155();
+        membershipAddress =
+            _deployMembership(membershipName, membershipSymbol, membershipBaseURI, maxMintable);
+        loyaltyAddress = _deployLoyalty();
 
         // Assign membership id and associate the deployed contracts with the membership
         memberships[membershipCounter] = MembershipInfo({
-            erc721Address: erc721Address,
-            erc1155Address: erc1155Address,
+            membershipAddress: membershipAddress,
+            loyaltyAddress: loyaltyAddress,
             membershipName: membershipName
         });
 
         emit MembershipAdded(
-            membershipCounter++, erc721Address, erc1155Address, membershipName, membershipSymbol
+            membershipCounter++, membershipAddress, loyaltyAddress, membershipName, membershipSymbol
         );
     }
 
@@ -116,14 +115,14 @@ contract TronicAdmin {
     /// @param symbol The symbol of the token.
     /// @param uri The URI for the cloned contract.
     /// @return erc721CloneAddress The address of the newly cloned ERC721 contract.
-    function _deployMembershipERC721(
+    function _deployMembership(
         string memory name,
         string memory symbol,
         string memory uri,
         uint256 maxSupply
     ) private returns (address erc721CloneAddress) {
         erc721CloneAddress = Clones.clone(address(tronicERC721));
-        ERC721CloneableTBA erc721Clone = ERC721CloneableTBA(erc721CloneAddress);
+        TronicMembership erc721Clone = TronicMembership(erc721CloneAddress);
         erc721Clone.initialize(
             tbaAccountImplementation, address(registry), name, symbol, uri, maxSupply, tronicAdmin
         );
@@ -131,9 +130,9 @@ contract TronicAdmin {
 
     /// @notice Clones the ERC1155 implementation and initializes it.
     /// @return erc1155cloneAddress The address of the newly cloned ERC1155 contract.
-    function _deployMembershipERC1155() private returns (address erc1155cloneAddress) {
+    function _deployLoyalty() private returns (address erc1155cloneAddress) {
         erc1155cloneAddress = Clones.clone(address(tronicERC1155));
-        ERC1155Cloneable erc1155clone = ERC1155Cloneable(erc1155cloneAddress);
+        TronicLoyalty erc1155clone = TronicLoyalty(erc1155cloneAddress);
         erc1155clone.initialize(tronicAdmin);
     }
 
@@ -153,9 +152,8 @@ contract TronicAdmin {
         returns (uint256)
     {
         MembershipInfo memory membership = memberships[membershipId];
-        require(membership.erc1155Address != address(0), "Membership does not exist");
-        return
-            ERC1155Cloneable(membership.erc1155Address).createFungibleType(uint64(maxSupply), uri);
+        require(membership.loyaltyAddress != address(0), "Membership does not exist");
+        return TronicLoyalty(membership.loyaltyAddress).createFungibleType(uint64(maxSupply), uri);
     }
 
     /// @notice Creates a new ERC1155 non-fungible token type for a membership.
@@ -169,8 +167,8 @@ contract TronicAdmin {
         uint256 membershipId
     ) external onlyAdmin returns (uint256 nftTypeID) {
         MembershipInfo memory membership = memberships[membershipId];
-        require(membership.erc1155Address != address(0), "Membership does not exist");
-        nftTypeID = ERC1155Cloneable(membership.erc1155Address).createNFTType(baseUri, maxMintable);
+        require(membership.loyaltyAddress != address(0), "Membership does not exist");
+        nftTypeID = TronicLoyalty(membership.loyaltyAddress).createNFTType(baseUri, maxMintable);
     }
 
     /// @notice Mints a new ERC721 token.
@@ -183,8 +181,8 @@ contract TronicAdmin {
         returns (address payable)
     {
         MembershipInfo memory membership = memberships[_membershipId];
-        require(membership.erc721Address != address(0), "Membership does not exist");
-        return ERC721CloneableTBA(membership.erc721Address).mint(_recipient);
+        require(membership.membershipAddress != address(0), "Membership does not exist");
+        return TronicMembership(membership.membershipAddress).mint(_recipient);
     }
 
     /// @notice Mints a new ERC1155 token.
@@ -199,8 +197,8 @@ contract TronicAdmin {
         uint64 _amount
     ) external onlyAdmin {
         MembershipInfo memory membership = memberships[_membershipId];
-        require(membership.erc1155Address != address(0), "Membership does not exist");
-        ERC1155Cloneable(membership.erc1155Address).mintFungible(_recipient, _tokenId, _amount);
+        require(membership.loyaltyAddress != address(0), "Membership does not exist");
+        TronicLoyalty(membership.loyaltyAddress).mintFungible(_recipient, _tokenId, _amount);
     }
 
     /// @notice Mints a new nonfungible ERC1155 token.
@@ -215,8 +213,8 @@ contract TronicAdmin {
         uint256 _amount
     ) external onlyAdmin {
         MembershipInfo memory membership = memberships[_membershipId];
-        require(membership.erc1155Address != address(0), "Membership does not exist");
-        ERC1155Cloneable(membership.erc1155Address).mintNFTs(_typeId, _recipient, _amount);
+        require(membership.loyaltyAddress != address(0), "Membership does not exist");
+        TronicLoyalty(membership.loyaltyAddress).mintNFTs(_typeId, _recipient, _amount);
     }
 
     /// @notice Processes multiple minting operations for both ERC1155 and ERC721 tokens on behalf of memberships.
@@ -254,11 +252,11 @@ contract TronicAdmin {
 
                 for (uint256 k = 0; k < _contractTypes[i][j].length; k++) {
                     if (_contractTypes[i][j][k] == TokenType.ERC1155) {
-                        ERC1155Cloneable(membership.erc1155Address).mintBatch(
+                        TronicLoyalty(membership.loyaltyAddress).mintBatch(
                             recipient, _tokenTypes[i][j][k], _amounts[i][j][k], ""
                         );
                     } else if (_contractTypes[i][j][k] == TokenType.ERC721) {
-                        ERC721CloneableTBA(membership.erc721Address).mint(recipient);
+                        TronicMembership(membership.membershipAddress).mint(recipient);
                     }
                 }
             }
@@ -268,13 +266,13 @@ contract TronicAdmin {
     /// @notice Sets the ERC721 implementation address, callable only by the owner.
     /// @param newImplementation The address of the new ERC721 implementation.
     function setERC721Implementation(address newImplementation) external onlyOwner {
-        tronicERC721 = ERC721CloneableTBA(newImplementation);
+        tronicERC721 = TronicMembership(newImplementation);
     }
 
     /// @notice Sets the ERC1155 implementation address, callable only by the owner.
     /// @param newImplementation The address of the new ERC1155 implementation.
     function setERC1155Implementation(address newImplementation) external onlyOwner {
-        tronicERC1155 = ERC1155Cloneable(newImplementation);
+        tronicERC1155 = TronicLoyalty(newImplementation);
     }
 
     /// @notice Sets the account implementation address, callable only by the owner.

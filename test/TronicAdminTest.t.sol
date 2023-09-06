@@ -19,10 +19,10 @@ contract TronicAdminTest is TronicTestBase {
         console.log("clone1155AddressY: ", clone1155AddressY);
 
         // check that the membership details are correctly set
-        assertEq(membershipX.erc721Address, clone721AddressX);
-        assertEq(membershipX.erc1155Address, clone1155AddressX);
-        assertEq(membershipY.erc721Address, clone721AddressY);
-        assertEq(membershipY.erc1155Address, clone1155AddressY);
+        assertEq(membershipX.membershipAddress, clone721AddressX);
+        assertEq(membershipX.loyaltyAddress, clone1155AddressX);
+        assertEq(membershipY.membershipAddress, clone721AddressY);
+        assertEq(membershipY.loyaltyAddress, clone1155AddressY);
 
         //assert that TronicAdmin Contract is the owner of membership erc721 and erc1155 token contracts
         assertEq(tronicAdmin, membershipXERC721.owner());
@@ -55,7 +55,7 @@ contract TronicAdminTest is TronicTestBase {
         vm.stopPrank();
 
         // Verify that the new token type has the correct attributes
-        ERC1155Cloneable.FungibleTokenInfo memory tokenInfo =
+        TronicLoyalty.FungibleTokenInfo memory tokenInfo =
             membershipXERC1155.getFungibleTokenInfo(fungibleIDX);
 
         assertEq(tokenInfo.maxSupply, initialMaxSupply, "Incorrect maxSupply");
@@ -64,7 +64,7 @@ contract TronicAdminTest is TronicTestBase {
         assertEq(tokenInfo.totalBurned, 0, "Incorrect totalBurned");
 
         // Verify that the new token type has the correct attributes
-        ERC1155Cloneable.FungibleTokenInfo memory tokenInfoY =
+        TronicLoyalty.FungibleTokenInfo memory tokenInfoY =
             membershipYERC1155.getFungibleTokenInfo(fungibleIDY);
 
         assertEq(tokenInfoY.maxSupply, initialMaxSupply, "Incorrect maxSupply");
@@ -97,7 +97,7 @@ contract TronicAdminTest is TronicTestBase {
         vm.stopPrank();
 
         // Verify that the new token type has the correct attributes
-        ERC1155Cloneable.NFTTokenInfo memory tokenInfo =
+        TronicLoyalty.NFTTokenInfo memory tokenInfo =
             membershipXERC1155.getNFTTokenInfo(nonFungibleIDX);
 
         assertEq(tokenInfo.baseURI, initialUriX, "Incorrect URI");
@@ -105,7 +105,7 @@ contract TronicAdminTest is TronicTestBase {
         assertEq(tokenInfo.totalMinted, 0, "Incorrect totalMinted");
 
         // Verify that the new token type has the correct attributes
-        ERC1155Cloneable.NFTTokenInfo memory tokenInfoY =
+        TronicLoyalty.NFTTokenInfo memory tokenInfoY =
             membershipYERC1155.getNFTTokenInfo(nonFungibleIDY);
 
         assertEq(tokenInfoY.baseURI, initialUriY, "Incorrect URI");
@@ -141,12 +141,12 @@ contract TronicAdminTest is TronicTestBase {
             tronicAdminContract.deployMembership(name721, symbol721, uri721, maxSupply);
 
         // Retrieve the added membership's details
-        TronicAdmin.MembershipInfo memory membership =
+        TronicMain.MembershipInfo memory membership =
             tronicAdminContract.getMembershipInfo(membershipCount);
 
         // Assert that the membership's details are correctly set
-        assertEq(membership.erc721Address, testClone721Address);
-        assertEq(membership.erc1155Address, testClone1155AddressY);
+        assertEq(membership.membershipAddress, testClone721Address);
+        assertEq(membership.loyaltyAddress, testClone1155AddressY);
         assertEq(membership.membershipName, name721);
 
         // TODO: check that MembershipAdded event was emitted

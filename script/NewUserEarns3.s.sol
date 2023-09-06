@@ -3,13 +3,13 @@ pragma solidity ^0.8.13;
 
 // Imports
 import "forge-std/Script.sol";
-import "../src/ERC1155Cloneable.sol";
+import "../src/TronicLoyalty.sol";
 
 contract NewUserEarns3 is Script {
     // Deployments
-    ERC1155Cloneable public tronicERC1155;
-    ERC1155Cloneable public erc1155CloneX;
-    ERC1155Cloneable public erc1155CloneY;
+    TronicLoyalty public tronicERC1155;
+    TronicLoyalty public erc1155CloneX;
+    TronicLoyalty public erc1155CloneY;
 
     address payable public tbaAccount = payable(vm.envAddress("TOKENBOUND_ACCOUNT_TOKENID_1"));
     address payable public tbaAccountX =
@@ -27,9 +27,9 @@ contract NewUserEarns3 is Script {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY_TRONIC_ADMIN");
 
         // get project contracts
-        tronicERC1155 = ERC1155Cloneable(erc1155Address);
-        erc1155CloneX = ERC1155Cloneable(clonedERC1155AddressX);
-        erc1155CloneY = ERC1155Cloneable(clonedERC1155AddressY);
+        tronicERC1155 = TronicLoyalty(erc1155Address);
+        erc1155CloneX = TronicLoyalty(clonedERC1155AddressX);
+        erc1155CloneY = TronicLoyalty(clonedERC1155AddressY);
 
         vm.startBroadcast(deployerPrivateKey);
 

@@ -3,12 +3,12 @@ pragma solidity ^0.8.13;
 
 // Imports
 import "forge-std/Script.sol";
-import "../src/ERC721CloneableTBA.sol";
+import "../src/TronicMembership.sol";
 
 contract NewUserEarns1 is Script {
     // Deployments
-    ERC721CloneableTBA public erc721X;
-    ERC721CloneableTBA public erc721Y;
+    TronicMembership public erc721X;
+    TronicMembership public erc721Y;
 
     address payable public tbaAddress = payable(vm.envAddress("TOKENBOUND_ACCOUNT_TOKENID_1"));
 
@@ -21,8 +21,8 @@ contract NewUserEarns1 is Script {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY_TRONIC_ADMIN");
 
         // get project contracts
-        erc721X = ERC721CloneableTBA(clonedERC721AddressX);
-        erc721Y = ERC721CloneableTBA(clonedERC721AddressY);
+        erc721X = TronicMembership(clonedERC721AddressX);
+        erc721Y = TronicMembership(clonedERC721AddressY);
 
         vm.startBroadcast(deployerPrivateKey);
 

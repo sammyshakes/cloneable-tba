@@ -3,20 +3,20 @@
 pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
-import "../src/TronicAdmin.sol";
+import "../src/TronicMain.sol";
 import "../src/interfaces/IERC6551Account.sol";
 
-/// @dev Sets up the initial state for testing the TronicAdmin system
-/// @notice Deploys the core TronicAdmin, ERC721, and ERC1155 contracts
+/// @dev Sets up the initial state for testing the TronicMain system
+/// @notice Deploys the core TronicMain, ERC721, and ERC1155 contracts
 /// @notice Creates user accounts, default memberships, and initial token types
 /// @notice Should be called automatically by any contract inheriting TronicTestBase
 ///
 /// Details:
 ///
-/// - Deploys TronicAdmin and assigns roles
-///   - tronicAdminContract: The main TronicAdmin contract
-///   - tronicOwner: Owner account for TronicAdmin
-///   - tronicAdmin: Admin account for TronicAdmin
+/// - Deploys TronicMain and assigns roles
+///   - tronicAdminContract: The main TronicMain contract
+///   - tronicOwner: Owner account for TronicMain
+///   - tronicAdmin: Admin account for TronicMain
 ///
 /// - Deploys TronicERC721 and TronicERC1155 implementations
 ///   - tronicERC721: The Tronic ERC721 token contract
@@ -47,21 +47,21 @@ contract TronicTestBase is Test {
         address[] recipients;
         uint256[][][] tokenIds;
         uint256[][][] amounts;
-        TronicAdmin.TokenType[][] tokenTypes;
+        TronicMain.TokenType[][] tokenTypes;
     }
 
-    TronicAdmin tronicAdminContract;
-    ERC721CloneableTBA tronicERC721;
-    ERC1155Cloneable tronicERC1155;
+    TronicMain tronicAdminContract;
+    TronicMembership tronicERC721;
+    TronicLoyalty tronicERC1155;
     IERC6551Account tbaCloneable;
 
-    ERC721CloneableTBA membershipXERC721;
-    ERC1155Cloneable membershipXERC1155;
-    ERC721CloneableTBA membershipYERC721;
-    ERC1155Cloneable membershipYERC1155;
+    TronicMembership membershipXERC721;
+    TronicLoyalty membershipXERC1155;
+    TronicMembership membershipYERC721;
+    TronicLoyalty membershipYERC1155;
 
-    TronicAdmin.MembershipInfo membershipX;
-    TronicAdmin.MembershipInfo membershipY;
+    TronicMain.MembershipInfo membershipX;
+    TronicMain.MembershipInfo membershipY;
 
     uint256 membershipIDX = 0;
     uint256 membershipIDY = 1;
@@ -106,11 +106,11 @@ contract TronicTestBase is Test {
 
         //deploy tronic contracts
         vm.startPrank(tronicOwner);
-        tronicERC721 = new ERC721CloneableTBA();
-        tronicERC1155 = new ERC1155Cloneable();
+        tronicERC721 = new TronicMembership();
+        tronicERC1155 = new TronicLoyalty();
 
         tronicAdminContract =
-        new TronicAdmin(tronicAdmin, address(tronicERC721), address(tronicERC1155), registryAddress, tbaAddress);
+        new TronicMain(tronicAdmin, address(tronicERC721), address(tronicERC1155), registryAddress, tbaAddress);
 
         //initialize Tronic erc1155
         tronicERC1155.initialize(address(tronicAdminContract));
@@ -172,7 +172,7 @@ contract TronicTestBase is Test {
 
         vm.startPrank(address(tronicAdminContract));
 
-        //mint tronic erc721cloneabletba membership nfts to users 1-4
+        //mint TronicMembership nfts to users 1-4
         user1TBA = tronicERC721.mint(user1);
         user2TBA = tronicERC721.mint(user2);
         user3TBA = tronicERC721.mint(user3);
@@ -192,10 +192,10 @@ contract TronicTestBase is Test {
         membershipY = tronicAdminContract.getMembershipInfo(membershipIDY);
 
         // get membership contracts
-        membershipXERC721 = ERC721CloneableTBA(membershipX.erc721Address);
-        membershipXERC1155 = ERC1155Cloneable(membershipX.erc1155Address);
-        membershipYERC721 = ERC721CloneableTBA(membershipY.erc721Address);
-        membershipYERC1155 = ERC1155Cloneable(membershipY.erc1155Address);
+        membershipXERC721 = TronicMembership(membershipX.membershipAddress);
+        membershipXERC1155 = TronicLoyalty(membershipX.loyaltyAddress);
+        membershipYERC721 = TronicMembership(membershipY.membershipAddress);
+        membershipYERC1155 = TronicLoyalty(membershipY.loyaltyAddress);
     }
 
     // Implement the helper function to create instances of BatchMintOrder
@@ -204,7 +204,7 @@ contract TronicTestBase is Test {
         address[] memory _recipients,
         uint256[][][] memory _tokenIds,
         uint256[][][] memory _amounts,
-        TronicAdmin.TokenType[][] memory _tokenTypes
+        TronicMain.TokenType[][] memory _tokenTypes
     ) public pure returns (BatchMintOrder memory order) {
         order = BatchMintOrder({
             membershipId: _membershipId,
@@ -223,7 +223,7 @@ contract TronicTestBase is Test {
             address[][] memory recipients,
             uint256[][][][] memory tokenIds,
             uint256[][][][] memory amounts,
-            TronicAdmin.TokenType[][][] memory tokenTypes
+            TronicMain.TokenType[][][] memory tokenTypes
         )
     {
         uint256 orderCount = orders.length;
@@ -233,7 +233,7 @@ contract TronicTestBase is Test {
         recipients = new address[][](orderCount);
         tokenIds = new uint256[][][][](orderCount);
         amounts = new uint256[][][][](orderCount);
-        tokenTypes = new TronicAdmin.TokenType[][][](orderCount);
+        tokenTypes = new TronicMain.TokenType[][][](orderCount);
 
         // Populate the arrays based on the input orders
         for (uint256 i = 0; i < orderCount; i++) {

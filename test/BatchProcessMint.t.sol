@@ -61,12 +61,12 @@ contract BatchProcessMint is TronicTestBase {
         _amounts[1][0][0] = 1000; // amount for user2's erc1155 fungible tokenId
         _amounts[1][0][1] = 1; // amount for user2 erc1155 nonfungible tokenid
 
-        TronicAdmin.TokenType[][] memory _tokenTypes = new TronicAdmin.TokenType[][](2);
-        _tokenTypes[0] = new TronicAdmin.TokenType[](2);
-        _tokenTypes[0][0] = TronicAdmin.TokenType.ERC721;
-        _tokenTypes[0][1] = TronicAdmin.TokenType.ERC1155;
-        _tokenTypes[1] = new TronicAdmin.TokenType[](1);
-        _tokenTypes[1][0] = TronicAdmin.TokenType.ERC1155;
+        TronicMain.TokenType[][] memory _tokenTypes = new TronicMain.TokenType[][](2);
+        _tokenTypes[0] = new TronicMain.TokenType[](2);
+        _tokenTypes[0][0] = TronicMain.TokenType.ERC721;
+        _tokenTypes[0][1] = TronicMain.TokenType.ERC1155;
+        _tokenTypes[1] = new TronicMain.TokenType[](1);
+        _tokenTypes[1][0] = TronicMain.TokenType.ERC1155;
 
         BatchMintOrder memory order1 = createBatchMintOrder(
             membershipIDX, // membershipIdX
@@ -96,9 +96,9 @@ contract BatchProcessMint is TronicTestBase {
         _amounts[0][0][0] = 10; // amount for user3's first tokenId
         _amounts[0][0][1] = 20; // amount for user3's second tokenId
 
-        _tokenTypes = new TronicAdmin.TokenType[][](1);
-        _tokenTypes[0] = new TronicAdmin.TokenType[](1);
-        _tokenTypes[0][0] = TronicAdmin.TokenType.ERC1155; // type for user3's first and second tokenId
+        _tokenTypes = new TronicMain.TokenType[][](1);
+        _tokenTypes[0] = new TronicMain.TokenType[](1);
+        _tokenTypes[0][0] = TronicMain.TokenType.ERC1155; // type for user3's first and second tokenId
 
         BatchMintOrder memory order2 = createBatchMintOrder(
             membershipIDY, // membershipIdY
@@ -118,7 +118,7 @@ contract BatchProcessMint is TronicTestBase {
             address[][] memory recipients,
             uint256[][][][] memory tokenIds,
             uint256[][][][] memory amounts,
-            TronicAdmin.TokenType[][][] memory tokenTypes
+            TronicMain.TokenType[][][] memory tokenTypes
         ) = prepareBatchProcessData(orders);
 
         // Execute the batchProcess function
@@ -138,7 +138,7 @@ contract BatchProcessMint is TronicTestBase {
         assertEq(membershipYERC1155.balanceOf(user3, fungibleTypeIdY1), 10);
         assertEq(membershipYERC1155.balanceOf(user3, _tokenIds[0][0][1]), 20);
 
-        ERC1155Cloneable.NFTTokenInfo memory nonFungibleX1 =
+        TronicLoyalty.NFTTokenInfo memory nonFungibleX1 =
             membershipXERC1155.getNFTTokenInfo(nonFungibleTypeIdX1);
 
         console.log("nonFungibleTypeIdX1 ", nonFungibleTypeIdX1);

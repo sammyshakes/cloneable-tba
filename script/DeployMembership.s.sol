@@ -3,11 +3,11 @@ pragma solidity ^0.8.13;
 
 // Imports
 import "forge-std/Script.sol";
-import "../src/TronicAdmin.sol";
+import "../src/TronicMain.sol";
 
-contract NewProjectEntry is Script {
+contract DeployMembership is Script {
     // Deployments
-    TronicAdmin public tronicAdminContract;
+    TronicMain public tronicAdminContract;
 
     // max Supply for membership x and y's erc721 tokens
     uint256 public maxSupply = 10_000;
@@ -33,7 +33,7 @@ contract NewProjectEntry is Script {
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY_TRONIC_ADMIN");
 
-        tronicAdminContract = TronicAdmin(tronicAdminContractAddress);
+        tronicAdminContract = TronicMain(tronicAdminContractAddress);
 
         vm.startBroadcast(deployerPrivateKey);
 

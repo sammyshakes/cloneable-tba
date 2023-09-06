@@ -3,13 +3,13 @@ pragma solidity ^0.8.13;
 
 // Imports
 import "forge-std/Script.sol";
-import "../src/ERC721CloneableTBA.sol";
-import "../src/ERC1155Cloneable.sol";
+import "../src/TronicMembership.sol";
+import "../src/TronicLoyalty.sol";
 
 contract NewUserEntry is Script {
     // Deployments
-    ERC721CloneableTBA public erc721;
-    ERC1155Cloneable public tronicERC1155;
+    TronicMembership public erc721;
+    TronicLoyalty public tronicERC1155;
 
     address public erc721Address = vm.envAddress("TRONIC_MEMBER_ERC721_ADDRESS");
     address public erc1155Address = vm.envAddress("TRONIC_REWARDS_ERC1155_ADDRESS");
@@ -22,8 +22,8 @@ contract NewUserEntry is Script {
 
     // this script mints an erc721 token to the user address
     function run() external {
-        erc721 = ERC721CloneableTBA(erc721Address);
-        tronicERC1155 = ERC1155Cloneable(erc1155Address);
+        erc721 = TronicMembership(erc721Address);
+        tronicERC1155 = TronicLoyalty(erc1155Address);
 
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY_TRONIC_ADMIN");
 
