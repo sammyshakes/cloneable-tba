@@ -7,8 +7,9 @@ import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
 /// @title TronicToken
-/// @notice A contract for managing ERC1155 fungible and non-fungible tokens (NFTs).
-/// @dev It includes functionalities to create, mint, and burn tokens.
+/// @notice This contract represents the fungible and non-fungible tokens (NFTs) for the Tronic ecosystem.
+/// @dev This contract is based on the ERC1155 standard.
+/// @dev This contract is cloneable.
 contract TronicToken is ERC1155, Initializable {
     using Strings for uint256;
 
@@ -25,6 +26,10 @@ contract TronicToken is ERC1155, Initializable {
         uint64 maxMintable;
         string baseURI;
     }
+
+    event FungibleTokenTypeCreated(uint256 indexed typeId, uint64 maxSupply, string uri);
+
+    event NFTokenTypeCreated(uint256 indexed typeId, uint64 maxMintable, string baseURI);
 
     uint32 private _tokenTypeCounter;
     uint64 private _nextNFTTypeStartId = 100_000;
@@ -57,6 +62,7 @@ contract TronicToken is ERC1155, Initializable {
 
     /// @notice Initializes the contract with tronic Admin address.
     /// @param _tronicAdmin Address of the Tronic admin.
+    /// @dev This function is called by the TronicMain contract.
     function initialize(address _tronicAdmin) external initializer {
         owner = _tronicAdmin;
         _admins[_tronicAdmin] = true;
@@ -87,6 +93,7 @@ contract TronicToken is ERC1155, Initializable {
     /// @param maxMintable Max mintable for the NFT type.
     /// @return nftTypeId The ID of the new NFT type.
     /// @dev Only callable by admin.
+    /// @dev Requires that the max mintable is greater than 0.
     function createNFTType(string memory baseURI, uint64 maxMintable)
         external
         onlyAdmin
@@ -102,6 +109,8 @@ contract TronicToken is ERC1155, Initializable {
             totalMinted: 0,
             maxMintable: maxMintable
         });
+
+        emit NFTokenTypeCreated(nftTypeId, maxMintable, baseURI);
     }
 
     /// @notice Creates a new fungible token type.
@@ -109,6 +118,7 @@ contract TronicToken is ERC1155, Initializable {
     /// @param _uri URI for the token type's metadata.
     /// @return fungibleTokenId The ID of the new fungible token type.
     /// @dev Only callable by admin.
+    /// @dev Requires that the max supply is greater than 0.
     function createFungibleType(uint64 _maxSupply, string memory _uri)
         external
         onlyAdmin
@@ -120,15 +130,8 @@ contract TronicToken is ERC1155, Initializable {
         // Set Fungible Tokens struct for the new token ID.
         _fungibleTokens[fungibleTokenId] =
             FungibleTokenInfo({uri: _uri, maxSupply: _maxSupply, totalMinted: 0, totalBurned: 0});
-    }
 
-    /// @notice Updates the URI of a fungible token type.
-    /// @param id The ID of the token type to update.
-    /// @param uri_ The new URI for the token type.
-    /// @dev Requires that the token type exists.
-    function setFungibleURI(uint256 id, string memory uri_) external onlyAdmin {
-        require((bytes(_fungibleTokenURIs[id]).length > 0), "Token type does not exists");
-        _fungibleTokenURIs[id] = uri_;
+        emit FungibleTokenTypeCreated(fungibleTokenId, _maxSupply, _uri);
     }
 
     /// @notice Mints fungible tokens to a specific address.
@@ -151,9 +154,10 @@ contract TronicToken is ERC1155, Initializable {
     }
 
     /// @notice Mints a non-fungible token (NFT) to a specific address.
-    /// @param to Address to mint the NFT to.
     /// @param typeId Type ID of the NFT.
+    /// @param to Address to mint the NFT to.
     /// @dev Requires that the NFT type already exists.
+    /// @dev Requires that the amount does not exceed the max mintable for the NFT type.
     function mintNFT(uint256 typeId, address to) external onlyAdmin {
         //get memory instance of NFT type
         NFTokenInfo memory nftType = _nftTypes[typeId];

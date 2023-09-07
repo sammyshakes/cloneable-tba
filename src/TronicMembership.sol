@@ -7,22 +7,20 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 
 /// @title TronicMembership
-/// @notice A contract for managing ERC721 tokens with additional functionalities such as admin control.
+/// @notice This contract represents the membership token for the Tronic ecosystem.
 contract TronicMembership is ERC721Enumerable, Initializable {
-    IERC6551Registry public registry;
-    address public accountImplementation;
     address public owner;
-
-    uint256 private _totalMinted;
+    address public accountImplementation;
     uint256 public maxSupply;
-
-    mapping(uint256 => string) private tokenIdToMembershipTierId;
-    mapping(address => bool) private _admins;
-
-    // Token name, symbol and base uri
+    uint256 private _totalMinted;
     string private _name;
     string private _symbol;
     string private _baseURI_;
+
+    IERC6551Registry public registry;
+
+    mapping(uint256 => string) private _tokenIdToMembershipTierId;
+    mapping(address => bool) private _admins;
 
     /// @dev Modifier to ensure only the owner can call certain functions.
     modifier onlyOwner() {
@@ -48,6 +46,7 @@ contract TronicMembership is ERC721Enumerable, Initializable {
     /// @param symbol_ Symbol of the token.
     /// @param uri Base URI of the token.
     /// @param tronicAdmin Address of the initial admin.
+    /// @dev This function is called by the tronicMain contract.
     function initialize(
         address payable _accountImplementation,
         address _registry,
@@ -71,6 +70,7 @@ contract TronicMembership is ERC721Enumerable, Initializable {
     /// @notice Mints a new token.
     /// @param to Address to mint the token to.
     /// @return tbaAccount The payable address of the created tokenbound account.
+    /// @dev The tokenbound account is created using the registry contract.
     function mint(address to) public onlyAdmin returns (address payable tbaAccount) {
         require(_totalMinted < maxSupply, "Max supply reached");
         // Deploy token account
@@ -124,24 +124,15 @@ contract TronicMembership is ERC721Enumerable, Initializable {
     /// @param tokenId The ID of the token.
     /// @return The membership tier of the token.
     function getMembershipTier(uint256 tokenId) external view returns (string memory) {
-        return tokenIdToMembershipTierId[tokenId];
+        return _tokenIdToMembershipTierId[tokenId];
     }
 
     /// @notice Sets the membership tier of a given token ID.
     /// @param tokenId The ID of the token.
     /// @param newTierId The new membership tier ID.
     function setMembershipTier(uint256 tokenId, string memory newTierId) external onlyAdmin {
-        tokenIdToMembershipTierId[tokenId] = newTierId;
+        _tokenIdToMembershipTierId[tokenId] = newTierId;
     }
-
-    // /// @notice Returns the URI for a given token ID.
-    // /// @param _id The token ID.
-    // /// @return The complete URI of the token.
-    // function tokenURI(uint256 _id) public view override returns (string memory) {
-    //     require(exists(_id), "Token does not exist");
-
-    //     return string(abi.encodePacked(_baseURI_, Strings.toString(_id)));
-    // }
 
     /// @notice Adds an admin.
     /// @param _admin The address of the new admin.

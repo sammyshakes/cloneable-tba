@@ -24,6 +24,8 @@ contract TronicMain {
         address indexed tokenAddress
     );
 
+    event MembershipRemoved(uint256 indexed membershipId);
+
     address public owner;
     address public tronicAdmin;
     address payable public tbaAccountImplementation;
@@ -37,38 +39,43 @@ contract TronicMain {
     mapping(uint256 => MembershipInfo) public memberships;
     mapping(address => bool) private _admins;
 
-    /// @notice Constructs the CloneFactory contract.
+    /// @notice Constructs the TronicMain contract.
     /// @param _admin The address of the Tronic admin.
     /// @param _tronicMembership The address of the Tronic Membership contract (ERC721 implementation).
     /// @param _tronicToken The address of the Tronic Token contract (ERC1155 implementation).
     /// @param _registry The address of the registry contract.
-    /// @param _tbaAccountImplementation The address of the tokenbound account implementation.
+    /// @param _tbaImplementation The address of the tokenbound account implementation.
     constructor(
         address _admin,
         address _tronicMembership,
         address _tronicToken,
         address _registry,
-        address _tbaAccountImplementation
+        address _tbaImplementation
     ) {
         owner = msg.sender;
         tronicAdmin = _admin;
         tronicERC1155 = TronicToken(_tronicToken);
         tronicERC721 = TronicMembership(_tronicMembership);
         registry = IERC6551Registry(_registry);
-        tbaAccountImplementation = payable(_tbaAccountImplementation);
+        tbaAccountImplementation = payable(_tbaImplementation);
     }
 
-    // Modifiers for access control
+    /// @notice Checks if the caller is the owner.
     modifier onlyOwner() {
         require(msg.sender == owner, "Only owner");
         _;
     }
 
+    /// @notice Checks if the caller is an admin.
     modifier onlyAdmin() {
         require(_admins[msg.sender] || msg.sender == tronicAdmin, "Only admin");
         _;
     }
 
+    /// @notice Gets MembershipInfo for a given membership ID.
+    /// @param membershipId The ID of the membership to get info for.
+    /// @return The MembershipInfo struct for the given membership ID.
+    /// @dev The membership ID is the index of the membership in the memberships mapping.
     function getMembershipInfo(uint256 membershipId)
         external
         view
@@ -125,14 +132,15 @@ contract TronicMain {
     }
 
     /// @notice Clones the ERC1155 implementation and initializes it.
-    /// @return erc1155cloneAddress The address of the newly cloned ERC1155 contract.
-    function _deployToken() private returns (address erc1155cloneAddress) {
-        erc1155cloneAddress = Clones.clone(address(tronicERC1155));
-        TronicToken erc1155clone = TronicToken(erc1155cloneAddress);
+    /// @return tokenAddress The address of the newly cloned ERC1155 contract.
+    function _deployToken() private returns (address tokenAddress) {
+        tokenAddress = Clones.clone(address(tronicERC1155));
+        TronicToken erc1155clone = TronicToken(tokenAddress);
         erc1155clone.initialize(tronicAdmin);
     }
 
-    // Function to remove a membership's contracts (considering the challenges of removing from a mapping)
+    /// @notice Removes a membership from the contract.
+    /// @param _membershipId The ID of the membership to remove.
     function removeMembership(uint256 _membershipId) external onlyAdmin {
         delete memberships[_membershipId];
     }
@@ -182,10 +190,10 @@ contract TronicMain {
     }
 
     /// @notice Mints a fungible ERC1155 token.
+    /// @param _membershipId The ID of the membership to mint the token for.
     /// @param _recipient The address to mint the token to.
     /// @param _tokenId The tokenID (same as typeID for fungibles) of the token to mint.
     /// @param _amount The amount of the token to mint.
-    /// @param _membershipId The ID of the membership to mint the token for.
     function mintFungibleToken(
         uint256 _membershipId,
         address _recipient,
@@ -198,9 +206,9 @@ contract TronicMain {
     }
 
     /// @notice Mints a new nonfungible ERC1155 token.
+    /// @param _membershipId The ID of the membership to mint the token for.
     /// @param _recipient The address to mint the token to.
     /// @param _typeId The typeID of the token to mint.
-    /// @param _membershipId The ID of the membership to mint the token for.
     /// @param _amount The amount of the token to mint.
     function mintNonFungibleToken(
         uint256 _membershipId,
@@ -216,24 +224,24 @@ contract TronicMain {
     /// @notice Processes multiple minting operations for both ERC1155 and ERC721 tokens on behalf of memberships.
     /// @param _membershipIds   Array of membership IDs corresponding to each minting operation.
     /// @param _recipients   2D array of recipient addresses for each minting operation.
-    /// @param _tokenTypes     4D array of token Typess to mint for each membership.
+    /// @param _tokenTypeIDs     4D array of token TypeIDs to mint for each membership.
     ///                      For ERC1155, it could be multiple IDs, and for ERC721, it should contain a single ID.
     /// @param _amounts      4D array of token amounts to mint for each membership.
     ///                      For ERC1155, it represents the quantities of each token ID, and for ERC721, it should be either [1] (to mint) or [0] (to skip).
     /// @param _contractTypes   3D array specifying the type of each token contract (either ERC1155 or ERC721) to determine the minting logic.
     /// @dev Requires that all input arrays have matching lengths.
     ///      For ERC721 minting, the inner arrays of _tokenTypes and _amounts should have a length of 1.
-    /// @dev array indexes: _tokenTypes[membershipId][recipient][contractType][tokenType]
+    /// @dev array indexes: _tokenTypeIDs[membershipId][recipient][contractType][tokenTypeIDs]
     /// @dev array indexes: _amounts[membershipId][recipient][contractType][amounts]
     function batchProcess(
         uint256[] memory _membershipIds,
         address[][] memory _recipients,
-        uint256[][][][] memory _tokenTypes,
+        uint256[][][][] memory _tokenTypeIDs,
         uint256[][][][] memory _amounts,
         TokenType[][][] memory _contractTypes
     ) external {
         require(
-            _membershipIds.length == _tokenTypes.length && _tokenTypes.length == _amounts.length
+            _membershipIds.length == _tokenTypeIDs.length && _tokenTypeIDs.length == _amounts.length
                 && _amounts.length == _recipients.length && _recipients.length == _contractTypes.length,
             "Outer arrays must have the same length"
         );
@@ -249,7 +257,7 @@ contract TronicMain {
                 for (uint256 k = 0; k < _contractTypes[i][j].length; k++) {
                     if (_contractTypes[i][j][k] == TokenType.ERC1155) {
                         TronicToken(membership.tokenAddress).mintBatch(
-                            recipient, _tokenTypes[i][j][k], _amounts[i][j][k], ""
+                            recipient, _tokenTypeIDs[i][j][k], _amounts[i][j][k], ""
                         );
                     } else if (_contractTypes[i][j][k] == TokenType.ERC721) {
                         TronicMembership(membership.membershipAddress).mint(recipient);
