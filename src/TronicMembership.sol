@@ -72,14 +72,14 @@ contract TronicMembership is ERC721Enumerable, Initializable {
     /// @return tbaAccount The payable address of the created tokenbound account.
     /// @dev The tokenbound account is created using the registry contract.
     function mint(address to) public onlyAdmin returns (address payable tbaAccount) {
-        require(_totalMinted < maxSupply, "Max supply reached");
+        require(++_totalMinted <= maxSupply, "Max supply reached");
         // Deploy token account
         tbaAccount = payable(
             registry.createAccount(
                 accountImplementation,
                 block.chainid,
                 address(this),
-                ++_totalMinted,
+                _totalMinted,
                 0, // salt
                 abi.encodeWithSignature("initialize()") // init data
             )

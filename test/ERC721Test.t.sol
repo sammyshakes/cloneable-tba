@@ -6,7 +6,7 @@ import "./TronicTestBase.t.sol";
 
 contract ERC721Test is TronicTestBase {
     function testMinting721() public {
-        console.log("SETUP - tokenbound account address: ", tbaAddress);
+        console.log("SETUP - tokenbound account address: ", defaultTBAImplementationAddress);
         console.log("SETUP - Tronic erc721 token address: ", address(tronicERC721));
         console.log("SETUP - Tronic erc1155 token address: ", address(tronicERC1155));
         console.log("SETUP - registry address: ", registryAddress);
@@ -66,7 +66,7 @@ contract ERC721Test is TronicTestBase {
     }
 
     // test get tba address for a user's owned token
-    // function testGetTbaAddress721() public {
+    // function testGetdefaultTBAImplementationAddress721() public {
     //   //vars for tokenids
     //     uint256 tokenId1 = 1;
     //     uint256 tokenId2 = 2;
@@ -84,6 +84,6 @@ contract ERC721Test is TronicTestBase {
     //     tronicERC721.mint(user3);
 
     //     // get tba address
-    //     assertEq(tronicERC721.getTBAccount(tokenId1), tbaAddress);
-    //     assertEq(tronicERC721.getTBAccount(tokenId2), tbaAddress);
+    //     assertEq(tronicERC721.getTBAccount(tokenId1), defaultTBAImplementationAddress);
+    //     assertEq(tronicERC721.getTBAccount(tokenId2), defaultTBAImplementationAddress);
 }

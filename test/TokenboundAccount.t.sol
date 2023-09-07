@@ -3,19 +3,9 @@ pragma solidity ^0.8.13;
 
 import "./TronicTestBase.t.sol";
 
-contract MockERC721 is ERC721 {
-    constructor() ERC721("MockERC721", "M721") {}
-
-    function mint(address to, uint256 tokenId) external {
-        _safeMint(to, tokenId);
-    }
-}
-
 contract TokenboundAccountTest is TronicTestBase {
-    MockERC721 nft = new MockERC721();
-
     function testBasicTBA() public {
-        console.log("SETUP - tokenbound account address: ", tbaAddress);
+        console.log("SETUP - tokenbound account address: ", defaultTBAImplementationAddress);
         console.log("SETUP - Tronic erc721 token address: ", address(tronicERC721));
         console.log("SETUP - Tronic erc1155 token address: ", address(tronicERC1155));
         console.log("SETUP - registry address: ", registryAddress);

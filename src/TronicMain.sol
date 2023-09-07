@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 
 import "./TronicToken.sol";
 import "./TronicMembership.sol";
+import "./interfaces/IERC6551Account.sol";
 import "@openzeppelin/contracts/proxy/Clones.sol";
 
 contract TronicMain {
@@ -113,20 +114,19 @@ contract TronicMain {
         emit MembershipAdded(membershipCounter++, membershipAddress, tokenAddress);
     }
 
-    /// @notice Clones the ERC721 implementation and initializes it.
+    /// @notice Clones the Tronic Membership (ERC721) implementation and initializes it.
     /// @param name The name of the token.
     /// @param symbol The symbol of the token.
     /// @param uri The URI for the cloned contract.
-    /// @return erc721CloneAddress The address of the newly cloned ERC721 contract.
+    /// @return membershipAddress The address of the newly cloned Membership contract.
     function _deployMembership(
         string memory name,
         string memory symbol,
         string memory uri,
         uint256 maxSupply
-    ) private returns (address erc721CloneAddress) {
-        erc721CloneAddress = Clones.clone(address(tronicERC721));
-        TronicMembership erc721Clone = TronicMembership(erc721CloneAddress);
-        erc721Clone.initialize(
+    ) private returns (address membershipAddress) {
+        membershipAddress = Clones.clone(address(tronicERC721));
+        TronicMembership(membershipAddress).initialize(
             tbaAccountImplementation, address(registry), name, symbol, uri, maxSupply, tronicAdmin
         );
     }
@@ -135,8 +135,7 @@ contract TronicMain {
     /// @return tokenAddress The address of the newly cloned ERC1155 contract.
     function _deployToken() private returns (address tokenAddress) {
         tokenAddress = Clones.clone(address(tronicERC1155));
-        TronicToken erc1155clone = TronicToken(tokenAddress);
-        erc1155clone.initialize(tronicAdmin);
+        TronicToken(tokenAddress).initialize(tronicAdmin);
     }
 
     /// @notice Removes a membership from the contract.
@@ -149,15 +148,15 @@ contract TronicMain {
     /// @param maxSupply The maximum supply of the token type.
     /// @param uri The URI for the token type.
     /// @param membershipId The ID of the membership to create the token type for.
-    /// @return The ID of the newly created token type.
+    /// @return typeId The ID of the newly created token type.
     function createFungibleTokenType(uint256 maxSupply, string memory uri, uint256 membershipId)
         external
         onlyAdmin
-        returns (uint256)
+        returns (uint256 typeId)
     {
         MembershipInfo memory membership = memberships[membershipId];
         require(membership.tokenAddress != address(0), "Membership does not exist");
-        return TronicToken(membership.tokenAddress).createFungibleType(uint64(maxSupply), uri);
+        typeId = TronicToken(membership.tokenAddress).createFungibleType(uint64(maxSupply), uri);
     }
 
     /// @notice Creates a new ERC1155 non-fungible token type for a membership.
@@ -239,7 +238,7 @@ contract TronicMain {
         uint256[][][][] memory _tokenTypeIDs,
         uint256[][][][] memory _amounts,
         TokenType[][][] memory _contractTypes
-    ) external {
+    ) external onlyAdmin {
         require(
             _membershipIds.length == _tokenTypeIDs.length && _tokenTypeIDs.length == _amounts.length
                 && _amounts.length == _recipients.length && _recipients.length == _contractTypes.length,
@@ -265,6 +264,55 @@ contract TronicMain {
                 }
             }
         }
+    }
+
+    /// @notice transfers tokens from a membership TBA to a specified address
+    /// @param _tronicTokenId The ID of the tronic token that owns the Tronic TBA
+    /// @param _membershipId The ID of the membership that issued the membership TBA
+    /// @param _membershipTokenId The ID of the membership TBA
+    /// @param _to The address to transfer the tokens to
+    /// @param _transferTokenId The ID of the token to transfer
+    /// @param _amount The amount of tokens to transfer
+    /// @dev This contract address must be granted permissions to transfer tokens from the membership TBA
+    function transferTokensFromMembershipTBA(
+        uint256 _tronicTokenId,
+        uint256 _membershipId,
+        uint256 _membershipTokenId,
+        address _to,
+        uint256 _transferTokenId,
+        uint256 _amount
+    ) external {
+        address payable tronicTbaAddress = payable(tronicERC721.getTBAccount(_tronicTokenId));
+        IERC6551Account tronicTBA = IERC6551Account(tronicTbaAddress);
+        //ensure caller is either admin or authorized to transfer tokens
+        require(
+            tronicTBA.isAuthorized(msg.sender) || _admins[msg.sender] || msg.sender == tronicAdmin,
+            "Unauthorized caller"
+        );
+        // get membership info
+        MembershipInfo memory membership = memberships[_membershipId];
+        require(membership.tokenAddress != address(0), "Membership does not exist");
+
+        // get Membership TBA address
+        address membershipTbaAddress =
+            TronicMembership(membership.membershipAddress).getTBAccount(_membershipTokenId);
+
+        // construct SafeTransferCall for membership ERC1155
+        bytes memory tokenTransferCall = abi.encodeWithSignature(
+            "safeTransferFrom(address,address,uint256,uint256,bytes)",
+            membershipTbaAddress,
+            _to,
+            _transferTokenId,
+            _amount,
+            ""
+        );
+
+        // construct execute call for membership tbaAddress to execute tokenTransferCall
+        bytes memory executeCall = abi.encodeWithSignature(
+            "executeCall(address,uint256,bytes)", membership.tokenAddress, 0, tokenTransferCall
+        );
+
+        tronicTBA.executeCall(membershipTbaAddress, 0, executeCall);
     }
 
     /// @notice Sets the ERC721 implementation address, callable only by the owner.

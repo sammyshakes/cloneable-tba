@@ -27,17 +27,19 @@ contract DeployMembership is TronicTestBase {
         // get membership tier
         console.log("membershipXERC721 membership tier: ", membershipXERC721.getMembershipTier(1));
 
-        address user1TBAmembershipX = tronicAdminContract.mintMembership(user1TBA, membershipIDX);
+        address user1TBAmembershipX =
+            tronicAdminContract.mintMembership(tronicTokenId1TBA, membershipIDX);
         // get tba account address
         address tbaAccount = membershipXERC721.getTBAccount(1);
         console.log("tbaAccount: ", tbaAccount);
         assertEq(tbaAccount, user1TBAmembershipX);
 
         // verify that user1TBA owns token
-        assertEq(membershipXERC721.ownerOf(1), user1TBA);
+        assertEq(membershipXERC721.ownerOf(1), tronicTokenId1TBA);
 
         // Membership Y onboards a new user
-        address user2TBAmembershipY = tronicAdminContract.mintMembership(user2TBA, membershipIDY);
+        address user2TBAmembershipY =
+            tronicAdminContract.mintMembership(tronicTokenId2TBA, membershipIDY);
 
         // get tba account address
         address tbaAccountY = membershipYERC721.getTBAccount(1);
@@ -45,7 +47,7 @@ contract DeployMembership is TronicTestBase {
         assert(tbaAccountY == user2TBAmembershipY);
 
         // verify that user2TBA owns token
-        assertEq(membershipYERC721.ownerOf(1), user2TBA);
+        assertEq(membershipYERC721.ownerOf(1), tronicTokenId2TBA);
 
         // mint fungible tokens id=0 to user1TBAmembershipX and user2TBAmembershipY
         membershipXERC1155.mintFungible(user1TBAmembershipX, 0, 100);

@@ -25,7 +25,7 @@ import "../src/interfaces/IERC6551Account.sol";
 /// - Initializes Tronic contracts and assigns admin
 ///
 /// - Deploys mock TokenBoundAccount implementation
-///   - tbaAddress: Address of mock TBA implementation
+///   - defaultTBAImplementationAddress: Address of default TBA implementation
 ///   - tbaCloneable: Interface to mock TBA
 ///
 /// - Creates user accounts
@@ -81,7 +81,7 @@ contract TronicTestBase is Test {
 
     address public membershipAdmin = address(0x7);
 
-    address payable public tbaAddress =
+    address payable public defaultTBAImplementationAddress =
         payable(vm.envAddress("TOKENBOUND_ACCOUNT_DEFAULT_IMPLEMENTATION_ADDRESS"));
 
     address public registryAddress = vm.envAddress("ERC6551_REGISTRY_ADDRESS");
@@ -91,10 +91,10 @@ contract TronicTestBase is Test {
     address public clone721AddressY;
     address public clone1155AddressY;
 
-    address public user1TBA;
-    address public user2TBA;
-    address public user3TBA;
-    address public user4TBA;
+    address public tronicTokenId1TBA;
+    address public tronicTokenId2TBA;
+    address public tronicTokenId3TBA;
+    address public tronicTokenId4TBA;
 
     uint256 fungibleTypeIdX1;
     uint256 fungibleTypeIdY1;
@@ -102,7 +102,7 @@ contract TronicTestBase is Test {
     uint256 nonFungibleTypeIdY1;
 
     function setUp() public {
-        tbaCloneable = IERC6551Account(tbaAddress);
+        tbaCloneable = IERC6551Account(defaultTBAImplementationAddress);
 
         //deploy tronic contracts
         vm.startPrank(tronicOwner);
@@ -110,14 +110,14 @@ contract TronicTestBase is Test {
         tronicERC1155 = new TronicToken();
 
         tronicAdminContract =
-        new TronicMain(tronicAdmin, address(tronicERC721), address(tronicERC1155), registryAddress, tbaAddress);
+        new TronicMain(tronicAdmin, address(tronicERC721), address(tronicERC1155), registryAddress, defaultTBAImplementationAddress);
 
         //initialize Tronic erc1155
         tronicERC1155.initialize(address(tronicAdminContract));
 
         //initialize tronicERC721
         tronicERC721.initialize(
-            tbaAddress,
+            defaultTBAImplementationAddress,
             registryAddress,
             "Original721",
             "OR721",
@@ -173,10 +173,10 @@ contract TronicTestBase is Test {
         vm.startPrank(address(tronicAdminContract));
 
         //mint TronicMembership nfts to users 1-4
-        user1TBA = tronicERC721.mint(user1);
-        user2TBA = tronicERC721.mint(user2);
-        user3TBA = tronicERC721.mint(user3);
-        user4TBA = tronicERC721.mint(user4);
+        tronicTokenId1TBA = tronicERC721.mint(user1);
+        tronicTokenId2TBA = tronicERC721.mint(user2);
+        tronicTokenId3TBA = tronicERC721.mint(user3);
+        tronicTokenId4TBA = tronicERC721.mint(user4);
 
         //set tronic Membership tiers based on some external factores
         //here token ids 1 and 2 are tier1, and ids 3 and 4 are tier2

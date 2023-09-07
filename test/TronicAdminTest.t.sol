@@ -11,7 +11,7 @@ contract TronicAdminTest is TronicTestBase {
         console.log("tronicAdminContract address: ", address(tronicAdminContract));
         console.log("tronicERC721 address: ", address(tronicERC721));
         console.log("tronicERC1155 address: ", address(tronicERC1155));
-        console.log("tbaAddress: ", tbaAddress);
+        console.log("defaultTBAImplementationAddress: ", defaultTBAImplementationAddress);
         console.log("registryAddress: ", registryAddress);
         console.log("clone721AddressX: ", clone721AddressX);
         console.log("clone1155AddressX: ", clone1155AddressX);
@@ -74,9 +74,9 @@ contract TronicAdminTest is TronicTestBase {
 
         // mint 100 tokens to user1's tba
         vm.prank(tronicAdmin);
-        tronicAdminContract.mintFungibleToken(membershipIDX, user1TBA, fungibleIDX, 100);
+        tronicAdminContract.mintFungibleToken(membershipIDX, tronicTokenId1TBA, fungibleIDX, 100);
 
-        assertEq(membershipXERC1155.balanceOf(user1TBA, fungibleIDX), 100);
+        assertEq(membershipXERC1155.balanceOf(tronicTokenId1TBA, fungibleIDX), 100);
     }
 
     function testCreateNonFungibleType() public {
@@ -159,7 +159,7 @@ contract TronicAdminTest is TronicTestBase {
         console.log("tokenbound account address: ", account);
 
         // check that the account is correct
-        assertEq(account, user1TBA);
+        assertEq(account, tronicTokenId1TBA);
     }
 
     // function testBatchProcessMinting() public {
