@@ -11,8 +11,8 @@ contract NewUserEntry is Script {
     TronicMembership public erc721;
     TronicToken public tronicERC1155;
 
-    address public erc721Address = vm.envAddress("TRONIC_MEMBER_ERC721_ADDRESS");
-    address public erc1155Address = vm.envAddress("TRONIC_REWARDS_ERC1155_ADDRESS");
+    address public erc721Address = vm.envAddress("TRONIC_MEMBERSHIP_ERC721_ADDRESS");
+    address public erc1155Address = vm.envAddress("TRONIC_TOKEN_ERC1155_ADDRESS");
 
     address public userAddress = vm.envAddress("TRONIC_ADMIN_ADDRESS");
     // address public userAddress = vm.envAddress("SAMPLE_USER_ADDRESS");

@@ -95,6 +95,7 @@ contract OnboardUser is TronicTestBase {
 
         vm.stopPrank();
 
+        //Transfer erc1155 tokens from nested membership TBA
         //TronicMain contract must be an approved user for tronic tba
         //we wil also approve the tronic admin address
         address[] memory approved = new address[](2);

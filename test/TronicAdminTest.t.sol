@@ -151,7 +151,7 @@ contract TronicAdminTest is TronicTestBase {
         // TODO: check that MembershipAdded event was emitted
     }
 
-    // test getAccount function from ERC721CloneableTBA
+    // test getAccount function from tronic membership contract
     function testGetAccount() public {
         // get the token bound account
         address account = tronicERC721.getTBAccount(1);

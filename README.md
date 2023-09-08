@@ -1,12 +1,25 @@
 # Tronic Membership Contract Scenario
 
-## Deploy Initial Contracts
+### Scripts executed in this order:
+
+1. `DeployTronic.s.sol`
+2. `InitializeTronic.s.sol`
+3. `DeployMembership.s.sol`
+4. `MembershipConfig.s.sol`
+5. `NewUserEntry.s.sol`
+6. `NewUserEarns1.s.sol`
+7. `NewUserEarns2.s.sol`
+8. `NewUserEarns3.s.sol`
+
+---
+
+### `DeployTronic.s.sol` - Deploy Initial Contracts
 
 ### Deploys:
 
-- Main Tronic Membership Contract (Cloneable ERC721)
-- Main Tronic Loyalty Contract (Cloneable ERC1155)
-- Main Tronic Admin Contract `TronicMain.sol`
+- `TronicMembership.sol` - Tronic Membership Contract (Cloneable ERC721)
+- `TronicToken.sol` - Tronic Token Contract (Cloneable ERC1155)
+- `TronicMain.sol` - Tronic Main Contract
 
 Verifies all contracts on etherscan
 
@@ -16,45 +29,45 @@ forge script script/DeployTronic.s.sol:DeployTronic -vvvv --rpc-url sepolia --br
 
 ```bash
 # tokenbound default contract addresses
-TOKENBOUND_DEFAULT_ACCOUNT_ADDRESS=0x2d25602551487c3f3354dd80d76d54383a243358
 ERC6551_REGISTRY_ADDRESS=0x02101dfB77FDE026414827Fdc604ddAF224F0921
+TOKENBOUND_ACCOUNT_DEFAULT_IMPLEMENTATION_ADDRESS=0x2d25602551487c3f3354dd80d76d54383a243358
 
 # deployed testnet contract addresses (sepolia)
-TRONIC_MEMBER_ERC721_ADDRESS=0xC1CB9608d159112c6A95e6a4d896B2Ba9f966705
-TRONIC_REWARDS_ERC1155_ADDRESS=0xEAB7a1e6244Ca96A537823be249B3b7bEfF4117F
-TRONIC_ADMIN_CONTRACT_ADDRESS=0x94a98A6E2027976f6BAdD05ae6fA933Da5fa6C49
+TRONIC_MEMBERSHIP_ERC721_ADDRESS=0x4fc90cca78D6971be88E444DF9e58376BcFe9663
+TRONIC_TOKEN_ERC1155_ADDRESS=0x99C5A36f52aeD8c554Ff752D5b48ae506F29C6b1
+TRONIC_MAIN_CONTRACT_ADDRESS=0x54bcA6bb74D54aa524819BcF1b99cd8DDEc7b650
 
 ```
 
 ## Initialize Tronic ERC721 and ERC1155
 
-- Initializes Tronic Member Nft Contract
-- Initializes Tronic Loyalty ERC1155 Contract
+- Initializes Tronic Membership ERC721 Contract
+- Initializes Tronic Token ERC1155 Contract
 - Creates 4 Fungible Reward Tokens for Tronic
 
 ```bash
-forge script script/Initialize.s.sol:Initialize -vvvv --rpc-url sepolia --broadcast
+forge script script/InitializeTronic.s.sol:InitializeTronic -vvvv --rpc-url sepolia --broadcast
 ```
 
 ## Deploy New Project/Partner/Brand (Project X)
 
-- Clones ERC721 and ERC1155 to Partner X
-- Clones ERC721 and ERC1155 to Partner Y
-- Initializes both projects
-- creates fungible reward tokens for both projects
+- Deploys Membership X (Clones ERC721 and ERC1155)
+- Deploys Membership Y (Clones ERC721 and ERC1155)
+- Initializes both memberships
+- Creates fungible loyalty tokens for both memberships
 
 ```bash
-forge script script/NewProjectEntry.s.sol:NewProjectEntry -vvvv --rpc-url sepolia --broadcast
+forge script script/DeployMembership.s.sol:DeployMembership -vvvv --rpc-url sepolia --broadcast
 ```
 
 ```bash
-# PARTNER x cloned contracts
-PARTNER_X_CLONED_ERC721_ADDRESS=0x952aA94B09ed02f3ae86b0EfD5427CE8B311B2cA
-PARTNER_X_CLONED_ERC1155_ADDRESS=0x88CDb8f97854F4a389F3482667d57f2B8a223812
+# MEMBERSHIP x contracts
+MEMBERSHIP_X_ERC721_ADDRESS=0xe95784D2C873687f5BC987bEaaa4df93E4EE7F2E
+MEMBERSHIP_X_ERC1155_ADDRESS=0x21E92158670054fcace580aFCd18fAC1c4c5472c
 
-# PARTNER y cloned contracts
-PARTNER_Y_CLONED_ERC721_ADDRESS=0xD06b9E6fa7234dF521d3ecC6E5987AD0449bfeb5
-PARTNER_Y_CLONED_ERC1155_ADDRESS=0x7c7f0b8dF108DC8C867016C3b203037d44409C30
+# MEMBERSHIP y contracts
+MEMBERSHIP_Y_ERC721_ADDRESS=0x82056c913Cfb1C4092EF8d81e6BEF18417f1c3da
+MEMBERSHIP_Y_ERC1155_ADDRESS=0x2E0FAAf0b21eedE2Cb96913309e072Fa97113e69
 ```
 
 ## Create Fungible Types for Partners X and Y
@@ -62,14 +75,14 @@ PARTNER_Y_CLONED_ERC1155_ADDRESS=0x7c7f0b8dF108DC8C867016C3b203037d44409C30
 - Creates three fungible reward tokens for both projects
 
 ```bash
-forge script script/NewProjectConfig.s.sol:NewProjectConfig -vvvv --rpc-url sepolia --broadcast
+forge script script/MembershipConfig.s.sol:MembershipConfig -vvvv --rpc-url sepolia --broadcast
 ```
 
 ## New User Entry
 
-- Mints a new Tronic MemberNFT to user
+- Mints a new Tronic Membership NFT to user
 - Creates a Tokenbound Account for this NFT
-- Mints 100 Tronic A Tokens to user
+- Mints 100 Tronic A Loyalty Tokens to user
 
 ```bash
 forge script script/NewUserEntry.s.sol:NewUserEntry -vvvv --rpc-url sepolia --broadcast
@@ -77,7 +90,7 @@ forge script script/NewUserEntry.s.sol:NewUserEntry -vvvv --rpc-url sepolia --br
 
 ```bash
 # Tokenbound Account
-TOKENBOUND_ACCOUNT_TOKENID_1=0x23aec166d19e8a11390445479267D7e07D550A66
+TOKENBOUND_ACCOUNT_TOKENID_1=0x09422CabAcCecf7b9670575Cb0425a519A713A97
 ```
 
 ## New User Earns (PART 1) Project NFTs from Project X and Project Y
@@ -93,8 +106,8 @@ forge script script/NewUserEarns1.s.sol:NewUserEarns1 -vvvv --rpc-url sepolia --
 
 ```bash
 # tokenbound accounts for project nfts
-PARTNER_X_TOKENBOUND_ACCOUNT_TOKENID_1=0x03B00190d8E2603B08dA94d8A6E0C8844842499F
-PARTNER_Y_TOKENBOUND_ACCOUNT_TOKENID_1=0x7261a238427d054c6Ec6f6b9b62618002a3225D3
+MEMBERSHIP_X_TOKENBOUND_ACCOUNT_TOKENID_1=0x312a5342d4E1764e2Ca4002Dea30298913fF82eE
+MEMBERSHIP_Y_TOKENBOUND_ACCOUNT_TOKENID_1=0xA906EE08b03EC0C3065a6bb5339eFFc7EC59655F
 ```
 
 ## New User Earns (PART 2) Loyalty Rewards from Project X and Project Y

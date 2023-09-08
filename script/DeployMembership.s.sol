@@ -23,7 +23,7 @@ contract DeployMembership is Script {
     string public erc721URIY = vm.envString("MEMBERSHIP_Y_ERC721_BASE_URI");
 
     address public tronicAddress = vm.envAddress("TRONIC_ADMIN_ADDRESS");
-    address public tronicAdminContractAddress = vm.envAddress("TRONIC_ADMIN_CONTRACT_ADDRESS");
+    address public tronicAdminContractAddress = vm.envAddress("TRONIC_MAIN_CONTRACT_ADDRESS");
     address public membershipAdminAddress = vm.envAddress("SAMPLE_USER_ADDRESS");
 
     string public erc115BaseURIX = vm.envString("MEMBERSHIP_X_ERC1155_BASE_URI");

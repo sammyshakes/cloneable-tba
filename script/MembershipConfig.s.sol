@@ -15,8 +15,8 @@ contract MembershipConfig is Script {
     string public erc115FungibleURI3Y = vm.envString("MEMBERSHIP_Y_FUNGIBLE_URI_3");
 
     // erc1155 clone adress
-    address public erc1155CloneX = vm.envAddress("MEMBERSHIP_X_CLONED_ERC1155_ADDRESS");
-    address public erc1155CloneY = vm.envAddress("MEMBERSHIP_Y_CLONED_ERC1155_ADDRESS");
+    address public erc1155CloneX = vm.envAddress("MEMBERSHIP_X_ERC1155_ADDRESS");
+    address public erc1155CloneY = vm.envAddress("MEMBERSHIP_Y_ERC1155_ADDRESS");
 
     // this script clones an erc1155 token for a membership x and membership y
     function run() external {

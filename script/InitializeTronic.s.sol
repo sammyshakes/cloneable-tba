@@ -17,8 +17,8 @@ contract InitializeTronic is Script {
     uint256 public maxSupply = 10_000;
 
     address public tronicAddress = vm.envAddress("TRONIC_ADMIN_ADDRESS");
-    address public erc721Address = vm.envAddress("TRONIC_MEMBER_ERC721_ADDRESS");
-    address public erc1155Address = vm.envAddress("TRONIC_REWARDS_ERC1155_ADDRESS");
+    address public erc721Address = vm.envAddress("TRONIC_MEMBERSHIP_ERC721_ADDRESS");
+    address public erc1155Address = vm.envAddress("TRONIC_TOKEN_ERC1155_ADDRESS");
     address public registryAddress = vm.envAddress("ERC6551_REGISTRY_ADDRESS");
     address payable public tbaAddress =
         payable(vm.envAddress("TOKENBOUND_ACCOUNT_DEFAULT_IMPLEMENTATION_ADDRESS"));

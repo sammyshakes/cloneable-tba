@@ -90,41 +90,4 @@ contract DeployMembership is TronicTestBase {
         console.log("nonFungibleTokenType.totalMinted: ", nonFungibleTokenType.totalMinted);
         console.log("nonFungibleTokenType.baseURI: ", nonFungibleTokenType.baseURI);
     }
-
-    // test deployMembership function
-    // function testDeployMembership() public {
-    //     // deploy membership
-    //     address membershipAddress = tronicAdminContract.deployMembership(
-    //         "membershipX", "CHX", "http://example.com/token/", "SetupMembershipX"
-    //     );
-
-    //     // get membership info
-    //     TronicAdmin.MembershipInfo memory membershipInfo = tronicAdminContract.getMembershipInfo(membershipIDX);
-
-    //     // get membership contracts
-    //     membershipXERC721 = ERC721CloneableTBA(membershipInfo.erc721Address);
-    //     membershipXERC1155 = ERC1155Cloneable(membershipInfo.erc1155Address);
-
-    //     // assert that tronicAdmin is the owner of membership erc721 and erc1155 token contracts
-    //     assertEq(tronicAdmin, membershipXERC721.owner());
-    //     assertEq(tronicAdmin, membershipXERC1155.owner());
-
-    //     // get name and symbol
-    //     console.log("membershipXERC721 name: ", membershipXERC721.name());
-    //     console.log("membershipXERC721 symbol: ", membershipXERC721.symbol());
-
-    //     // set membership tier
-    //     membershipXERC721.setMembershipTier(1, "tier1111");
-
-    //     // get membership tier
-    //     console.log("membershipXERC721 membership tier: ", membershipXERC721.getMembershipTier(1));
-
-    //     // mint fungible tokens id=0 to user1TBAmembershipX and user2TBAmembershipY
-    //     membershipXERC1155.mintFungible(user1TBAmembershipX, 0, 100);
-    //     membershipYERC1155.mintFungible(user2TBAmembershipY, 0, 100);
-
-    //     //verify that user1TBAmembershipX and user2TBAmembershipY have 100 tokens
-    //     assertEq(membershipXERC1155.balanceOf(user1TBAmembershipX, 0), 100);
-    //     assertEq(membershipYERC1155.balanceOf(user2TBAmembershipY, 0), 100);
-    // }
 }

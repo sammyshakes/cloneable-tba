@@ -14,7 +14,6 @@ contract TestnetTests is Test {
     IERC6551Account public accountTba;
     IERC6551Account public accountX;
     IERC6551Account public accountY;
-    IERC6551Account public accountTronic;
 
     IERC6551Registry public registry;
 
@@ -33,15 +32,15 @@ contract TestnetTests is Test {
     address public registryAddress = vm.envAddress("ERC6551_REGISTRY_ADDRESS");
 
     // deployed tronic contracts
-    address public tronicAdminContractAddress = vm.envAddress("TRONIC_ADMIN_CONTRACT_ADDRESS");
-    address public erc721Address = vm.envAddress("TRONIC_MEMBER_ERC721_ADDRESS");
-    address public erc1155Address = vm.envAddress("TRONIC_REWARDS_ERC1155_ADDRESS");
+    address public tronicAdminContractAddress = vm.envAddress("TRONIC_MAIN_CONTRACT_ADDRESS");
+    address public erc721Address = vm.envAddress("TRONIC_MEMBERSHIP_ERC721_ADDRESS");
+    address public erc1155Address = vm.envAddress("TRONIC_TOKEN_ERC1155_ADDRESS");
 
     // cloned project contracts
-    address public cloned1155AddressX = vm.envAddress("MEMBERSHIP_X_CLONED_ERC1155_ADDRESS");
-    address public cloned1155AddressY = vm.envAddress("MEMBERSHIP_Y_CLONED_ERC1155_ADDRESS");
-    address public cloned721AddressX = vm.envAddress("MEMBERSHIP_X_CLONED_ERC721_ADDRESS");
-    address public cloned721AddressY = vm.envAddress("MEMBERSHIP_Y_CLONED_ERC721_ADDRESS");
+    address public cloned1155AddressX = vm.envAddress("MEMBERSHIP_X_ERC1155_ADDRESS");
+    address public cloned1155AddressY = vm.envAddress("MEMBERSHIP_Y_ERC1155_ADDRESS");
+    address public cloned721AddressX = vm.envAddress("MEMBERSHIP_X_ERC721_ADDRESS");
+    address public cloned721AddressY = vm.envAddress("MEMBERSHIP_Y_ERC721_ADDRESS");
 
     // tokenbound accounts
     address public tbaAddressTokenID1 = vm.envAddress("TOKENBOUND_ACCOUNT_TOKENID_1");
@@ -49,7 +48,6 @@ contract TestnetTests is Test {
     address public tbaAddressYTokenID1 = vm.envAddress("MEMBERSHIP_Y_TOKENBOUND_ACCOUNT_TOKENID_1");
 
     function setUp() public {
-        vm.startPrank(tronicOwner);
         erc721 = TronicMembership(erc721Address);
         erc1155 = TronicToken(erc1155Address);
         registry = IERC6551Registry(registryAddress);
@@ -57,19 +55,14 @@ contract TestnetTests is Test {
         account = IERC6551Account(payable(tbaAddress));
         accountX = IERC6551Account(payable(tbaAddressXTokenID1));
         accountY = IERC6551Account(payable(tbaAddressYTokenID1));
-        accountTronic = IERC6551Account(payable(tbaAddressTokenID1));
         accountTba = IERC6551Account(payable(tbaAddressTokenID1));
 
         tbaAddress = payable(address(account));
 
         tronicAdminContract = TronicMain(tronicAdminContractAddress);
-        vm.stopPrank();
     }
 
     function testTransferERC1155FromNestedAccount() public {
-        address nestedTbaAddress = tbaAddressXTokenID1;
-        IERC6551Account nestedTba = accountX;
-
         (uint256 chainId, address tokenContractAddress, uint256 _tokenId) = accountTba.token();
         console.log("chainId: ", chainId);
         console.log("tokenContract: ", tokenContractAddress);
@@ -86,7 +79,7 @@ contract TestnetTests is Test {
 
         // Top level TBA owns tokenId 1 on clonedERC721X (erc721), `nestedTbaAddress`
         assertEq(clonedERC721X.ownerOf(1), address(accountTba));
-        assertEq(nestedTba.owner(), address(accountTba)); //  parent TBA owns nested TBA
+        assertEq(accountX.owner(), address(accountTba)); //  parent TBA owns nested TBA
         assertEq(tbaAddressTokenID1, address(accountTba));
 
         // construct SafeTransferCall for ERC721
@@ -94,7 +87,7 @@ contract TestnetTests is Test {
             "safeTransferFrom(address,address,uint256,bytes)", tbaAddressTokenID1, user1, 1, ""
         );
 
-        vm.prank(tbaOwner);
+        vm.prank(tbaOwner, tbaOwner);
         accountTba.executeCall(cloned721AddressX, 0, erc721TransferCall);
 
         // verify that user 1 now owns token
@@ -108,29 +101,29 @@ contract TestnetTests is Test {
         assertEq(clonedERC721X.ownerOf(1), tbaAddressTokenID1);
 
         //ERC1155
-        assertEq(clonedERC1155X.balanceOf(nestedTbaAddress, 1), 100);
+        assertEq(clonedERC1155X.balanceOf(tbaAddressXTokenID1, 1), 100);
 
         // construct SafeTransferCall for nested ERC1155
         bytes memory erc1155TransferCall = abi.encodeWithSignature(
             "safeTransferFrom(address,address,uint256,uint256,bytes)",
-            nestedTbaAddress,
+            tbaAddressXTokenID1,
             user1,
             1,
             10,
             ""
         );
 
-        // construct execute call for nestedTbaAddress to execute erc1155TransferCall
+        // construct execute call for tbaAddressXTokenID1 to execute erc1155TransferCall
         bytes memory executeCall = abi.encodeWithSignature(
             "executeCall(address,uint256,bytes)", cloned1155AddressX, 0, erc1155TransferCall
         );
 
         vm.prank(tbaOwner);
-        accountTba.executeCall(nestedTbaAddress, 0, executeCall);
+        accountTba.executeCall(tbaAddressXTokenID1, 0, executeCall);
 
         // verify that user 1 now owns 10 of token 1
         assertEq(clonedERC1155X.balanceOf(user1, 1), 10);
-        assertEq(clonedERC1155X.balanceOf(nestedTbaAddress, 1), 90);
+        assertEq(clonedERC1155X.balanceOf(tbaAddressXTokenID1, 1), 90);
 
         // approve user 2 to control tba
         address[] memory approved = new address[](1);
@@ -142,7 +135,7 @@ contract TestnetTests is Test {
         accountTba.setPermissions(approved, approvedValues);
 
         vm.prank(user2);
-        accountTba.executeCall(nestedTbaAddress, 0, executeCall);
+        accountTba.executeCall(tbaAddressXTokenID1, 0, executeCall);
     }
 
     function testTransferERC1155PostDeploy() public {
@@ -151,7 +144,7 @@ contract TestnetTests is Test {
         address accountCheck = registry.account(tbaAddress, 11_155_111, erc721Address, 1, 0);
         console.log("accountCheck: ", accountCheck);
 
-        (uint256 chainId, address tokenContract, uint256 _tokenId) = accountTronic.token();
+        (uint256 chainId, address tokenContract, uint256 _tokenId) = accountTba.token();
         console.log("chainId: ", chainId);
         console.log("tokenContract: ", tokenContract);
         console.log("tokenId: ", _tokenId);

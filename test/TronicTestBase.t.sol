@@ -26,7 +26,6 @@ import "../src/interfaces/IERC6551Account.sol";
 ///
 /// - Deploys mock TokenBoundAccount implementation
 ///   - defaultTBAImplementationAddress: Address of default TBA implementation
-///   - tbaCloneable: Interface to mock TBA
 ///
 /// - Creates user accounts
 ///   - user1, user2, user3: Sample user accounts
@@ -53,7 +52,6 @@ contract TronicTestBase is Test {
     TronicMain tronicAdminContract;
     TronicMembership tronicERC721;
     TronicToken tronicERC1155;
-    IERC6551Account tbaCloneable;
 
     TronicMembership membershipXERC721;
     TronicToken membershipXERC1155;
@@ -103,8 +101,6 @@ contract TronicTestBase is Test {
     uint256 nonFungibleTypeIdY1;
 
     function setUp() public {
-        tbaCloneable = IERC6551Account(defaultTBAImplementationAddress);
-
         //deploy tronic contracts
         vm.startPrank(tronicOwner);
         tronicERC721 = new TronicMembership();
