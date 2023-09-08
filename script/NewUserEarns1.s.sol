@@ -7,30 +7,30 @@ import "../src/TronicMembership.sol";
 
 contract NewUserEarns1 is Script {
     // Deployments
-    TronicMembership public erc721X;
-    TronicMembership public erc721Y;
+    TronicMembership public membershipX;
+    TronicMembership public membershipY;
 
     address payable public tbaAddress = payable(vm.envAddress("TOKENBOUND_ACCOUNT_TOKENID_1"));
 
-    address public clonedERC721AddressX = vm.envAddress("MEMBERSHIP_X_ERC721_ADDRESS");
-    address public clonedERC721AddressY = vm.envAddress("MEMBERSHIP_Y_ERC721_ADDRESS");
+    address public membershipAddressX = vm.envAddress("MEMBERSHIP_X_ERC721_ADDRESS");
+    address public membershipAddressY = vm.envAddress("MEMBERSHIP_Y_ERC721_ADDRESS");
 
     // this script mints an erc721 token to the tbaAddress address for each project,
     // which will be used to mint a tokenbound nft for each project
     function run() external {
-        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY_TRONIC_ADMIN");
+        uint256 adminPrivateKey = vm.envUint("TRONIC_ADMIN_PRIVATE_KEY");
 
         // get project contracts
-        erc721X = TronicMembership(clonedERC721AddressX);
-        erc721Y = TronicMembership(clonedERC721AddressY);
+        membershipX = TronicMembership(membershipAddressX);
+        membershipY = TronicMembership(membershipAddressY);
 
-        vm.startBroadcast(deployerPrivateKey);
+        vm.startBroadcast(adminPrivateKey);
 
-        //mint erc721 to tbaAddress for project x
-        erc721X.mint(tbaAddress);
+        //mint membership to tbaAddress for project x
+        membershipX.mint(tbaAddress);
 
-        //mint erc721 to tbaAddress for project y
-        erc721Y.mint(tbaAddress);
+        //mint membership to tbaAddress for project y
+        membershipY.mint(tbaAddress);
 
         vm.stopBroadcast();
     }

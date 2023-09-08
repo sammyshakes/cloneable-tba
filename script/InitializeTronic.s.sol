@@ -10,46 +10,54 @@ import "../src/TronicToken.sol";
 //This script deploys the clone factory and initializes the erc721 token
 contract InitializeTronic is Script {
     // Deployments
-    TronicMembership public erc721;
-    TronicToken public erc1155;
+    TronicMembership public tronicMembership;
+    TronicToken public tronicToken;
 
     // max Supply
     uint256 public maxSupply = 10_000;
 
-    address public tronicAddress = vm.envAddress("TRONIC_ADMIN_ADDRESS");
-    address public erc721Address = vm.envAddress("TRONIC_MEMBERSHIP_ERC721_ADDRESS");
-    address public erc1155Address = vm.envAddress("TRONIC_TOKEN_ERC1155_ADDRESS");
+    address public tronicAdminAddress = vm.envAddress("TRONIC_ADMIN_ADDRESS");
+    address public tronicMembershipAddress = vm.envAddress("TRONIC_MEMBERSHIP_ERC721_ADDRESS");
+    address public tronicTokenAddress = vm.envAddress("TRONIC_TOKEN_ERC1155_ADDRESS");
     address public registryAddress = vm.envAddress("ERC6551_REGISTRY_ADDRESS");
     address payable public tbaAddress =
         payable(vm.envAddress("TOKENBOUND_ACCOUNT_DEFAULT_IMPLEMENTATION_ADDRESS"));
 
     string public baseURI = vm.envString("ERC721_BASE_URI");
-    string public erc1155BaseURI = vm.envString("TRONIC_ERC1155_BASE_URI");
     string public tronicFungibleUri1 = vm.envString("TRONIC_FUNGIBLE_URI_1");
     string public tronicFungibleUri2 = vm.envString("TRONIC_FUNGIBLE_URI_2");
     string public tronicFungibleUri3 = vm.envString("TRONIC_FUNGIBLE_URI_3");
     string public tronicFungibleUri4 = vm.envString("TRONIC_FUNGIBLE_URI_4");
 
-    function run() external {
-        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY_TRONIC_ADMIN");
+    string public tronicMembershipName = "Tronic Membership Program";
+    string public tronicMembershipSymbol = "TRONIC";
 
-        erc721 = TronicMembership(erc721Address);
-        erc1155 = TronicToken(erc1155Address);
+    function run() external {
+        uint256 deployerPrivateKey = vm.envUint("TRONIC_DEPLOYER_PRIVATE_KEY");
+
+        tronicMembership = TronicMembership(tronicMembershipAddress);
+        tronicToken = TronicToken(tronicTokenAddress);
 
         vm.startBroadcast(deployerPrivateKey);
 
         //initialize erc721 for tronic member nfts
-        erc721.initialize(
-            tbaAddress, registryAddress, "Tronic Members", "TRON", baseURI, maxSupply, tronicAddress
+        tronicMembership.initialize(
+            tbaAddress,
+            registryAddress,
+            tronicMembershipName,
+            tronicMembershipSymbol,
+            baseURI,
+            maxSupply,
+            tronicAdminAddress
         );
         //initialize erc1155 for tronic token points
-        erc1155.initialize(tronicAddress);
+        tronicToken.initialize(tronicAdminAddress);
 
         //create fungible token types for tronic
-        erc1155.createFungibleType(1_000_000, tronicFungibleUri1);
-        erc1155.createFungibleType(500_000, tronicFungibleUri2);
-        erc1155.createFungibleType(250_000, tronicFungibleUri3);
-        erc1155.createFungibleType(125_000, tronicFungibleUri4);
+        tronicToken.createFungibleType(1_000_000, tronicFungibleUri1); //typeId = 1
+        tronicToken.createFungibleType(500_000, tronicFungibleUri2); //typeId = 2
+        tronicToken.createFungibleType(250_000, tronicFungibleUri3); //typeId = 3
+        tronicToken.createFungibleType(125_000, tronicFungibleUri4); //typeId = 4
 
         vm.stopBroadcast();
     }

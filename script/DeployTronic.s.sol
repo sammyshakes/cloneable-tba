@@ -7,29 +7,29 @@ import "../src/TronicMain.sol";
 
 contract DeployTronic is Script {
     // Deployments
-    TronicMembership public erc721;
-    TronicToken public erc1155;
-    TronicMain public tronicAdminContract;
+    TronicMembership public tronicMembership;
+    TronicToken public tronicToken;
+    TronicMain public tronicMainContract;
 
-    address public tronicAddress = vm.envAddress("TRONIC_ADMIN_ADDRESS");
+    address public tronicAdminAddress = vm.envAddress("TRONIC_ADMIN_ADDRESS");
     address public registryAddress = vm.envAddress("ERC6551_REGISTRY_ADDRESS");
     address payable public tbaAddress =
         payable(vm.envAddress("TOKENBOUND_ACCOUNT_DEFAULT_IMPLEMENTATION_ADDRESS"));
 
     function run() external {
-        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY_TRONIC_ADMIN");
+        uint256 deployerPrivateKey = vm.envUint("TRONIC_DEPLOYER_PRIVATE_KEY");
 
         //Deploy Tronic Master Contracts
         vm.startBroadcast(deployerPrivateKey);
 
-        erc721 = new TronicMembership();
-        erc1155 = new TronicToken();
+        tronicMembership = new TronicMembership();
+        tronicToken = new TronicToken();
 
         // deploy new Tronic Admin Contract
-        tronicAdminContract = new TronicMain(
-            tronicAddress,
-            address(erc721),
-            address(erc1155),
+        tronicMainContract = new TronicMain(
+            tronicAdminAddress,
+            address(tronicMembership),
+            address(tronicToken),
             registryAddress,
             tbaAddress
         );

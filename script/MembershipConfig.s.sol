@@ -6,32 +6,35 @@ import "forge-std/Script.sol";
 import "../src/TronicToken.sol";
 
 contract MembershipConfig is Script {
-    string public erc115FungibleURI1X = vm.envString("MEMBERSHIP_X_FUNGIBLE_URI_1");
-    string public erc115FungibleURI2X = vm.envString("MEMBERSHIP_X_FUNGIBLE_URI_2");
-    string public erc115FungibleURI3X = vm.envString("MEMBERSHIP_X_FUNGIBLE_URI_3");
+    string public FungibleURI1X = vm.envString("MEMBERSHIP_X_FUNGIBLE_URI_1");
+    string public FungibleURI2X = vm.envString("MEMBERSHIP_X_FUNGIBLE_URI_2");
+    string public FungibleURI3X = vm.envString("MEMBERSHIP_X_FUNGIBLE_URI_3");
 
-    string public erc115FungibleURI1Y = vm.envString("MEMBERSHIP_Y_FUNGIBLE_URI_1");
-    string public erc115FungibleURI2Y = vm.envString("MEMBERSHIP_Y_FUNGIBLE_URI_2");
-    string public erc115FungibleURI3Y = vm.envString("MEMBERSHIP_Y_FUNGIBLE_URI_3");
+    string public FungibleURI1Y = vm.envString("MEMBERSHIP_Y_FUNGIBLE_URI_1");
+    string public FungibleURI2Y = vm.envString("MEMBERSHIP_Y_FUNGIBLE_URI_2");
+    string public FungibleURI3Y = vm.envString("MEMBERSHIP_Y_FUNGIBLE_URI_3");
 
-    // erc1155 clone adress
-    address public erc1155CloneX = vm.envAddress("MEMBERSHIP_X_ERC1155_ADDRESS");
-    address public erc1155CloneY = vm.envAddress("MEMBERSHIP_Y_ERC1155_ADDRESS");
+    // Membership Loyalty Token adresses
+    address public tokenXAddress = vm.envAddress("MEMBERSHIP_X_ERC1155_ADDRESS");
+    address public tokenYAddress = vm.envAddress("MEMBERSHIP_Y_ERC1155_ADDRESS");
 
     // this script clones an erc1155 token for a membership x and membership y
     function run() external {
-        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY_TRONIC_ADMIN");
+        uint256 adminPrivateKey = vm.envUint("TRONIC_ADMIN_PRIVATE_KEY");
 
-        vm.startBroadcast(deployerPrivateKey);
+        TronicToken tokenX = TronicToken(tokenXAddress);
+        TronicToken tokenY = TronicToken(tokenYAddress);
+
+        vm.startBroadcast(adminPrivateKey);
 
         //create fungible token types
-        TronicToken(erc1155CloneX).createFungibleType(1_000_000, erc115FungibleURI1X);
-        TronicToken(erc1155CloneX).createFungibleType(500_000, erc115FungibleURI2X);
-        TronicToken(erc1155CloneX).createFungibleType(250_000, erc115FungibleURI3X);
+        tokenX.createFungibleType(1_000_000, FungibleURI1X);
+        tokenX.createFungibleType(500_000, FungibleURI2X);
+        tokenX.createFungibleType(250_000, FungibleURI3X);
 
-        TronicToken(erc1155CloneY).createFungibleType(10_000_000, erc115FungibleURI1Y);
-        TronicToken(erc1155CloneY).createFungibleType(5_000_000, erc115FungibleURI2Y);
-        TronicToken(erc1155CloneY).createFungibleType(2_000_000, erc115FungibleURI3Y);
+        tokenY.createFungibleType(10_000_000, FungibleURI1Y);
+        tokenY.createFungibleType(5_000_000, FungibleURI2Y);
+        tokenY.createFungibleType(2_000_000, FungibleURI3Y);
 
         vm.stopBroadcast();
     }

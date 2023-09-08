@@ -8,32 +8,30 @@ import "../src/TronicToken.sol";
 
 contract NewUserEntry is Script {
     // Deployments
-    TronicMembership public erc721;
-    TronicToken public tronicERC1155;
+    TronicMembership public tronicMembership;
+    TronicToken public tronicToken;
 
-    address public erc721Address = vm.envAddress("TRONIC_MEMBERSHIP_ERC721_ADDRESS");
-    address public erc1155Address = vm.envAddress("TRONIC_TOKEN_ERC1155_ADDRESS");
+    address public tronicMembershipAddress = vm.envAddress("TRONIC_MEMBERSHIP_ERC721_ADDRESS");
+    address public tronicTokenAddress = vm.envAddress("TRONIC_TOKEN_ERC1155_ADDRESS");
 
-    address public userAddress = vm.envAddress("TRONIC_ADMIN_ADDRESS");
-    // address public userAddress = vm.envAddress("SAMPLE_USER_ADDRESS");
-
-    // increment this for each new token
-    uint256 public tokenId = 1;
+    address public userAddress = vm.envAddress("SAMPLE_USER1_ADDRESS");
 
     // this script mints an erc721 token to the user address
     function run() external {
-        erc721 = TronicMembership(erc721Address);
-        tronicERC1155 = TronicToken(erc1155Address);
+        tronicMembership = TronicMembership(tronicMembershipAddress);
+        tronicToken = TronicToken(tronicTokenAddress);
 
-        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY_TRONIC_ADMIN");
+        uint256 adminPrivateKey = vm.envUint("TRONIC_ADMIN_PRIVATE_KEY");
 
-        vm.startBroadcast(deployerPrivateKey);
+        vm.startBroadcast(adminPrivateKey);
 
-        //mint erc721 to userAddress
-        address tba = erc721.mint(userAddress);
+        //mint tronic membership erc721 to sample userAddress
+        // which returns tokenbound account address for user's minted token id
+        address tba = tronicMembership.mint(userAddress);
 
-        // do we also mint some initial tronic tokens to the new tba?
-        tronicERC1155.mintFungible(tba, 1, 1000);
+        // let's also mint 1000 tronic loyalty tokens (token typeID = 1) to the new tba
+        //note: for fungible types, the token ID = typeId
+        tronicToken.mintFungible(tba, 1, 1000);
 
         vm.stopBroadcast();
     }
