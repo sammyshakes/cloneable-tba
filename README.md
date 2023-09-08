@@ -33,13 +33,13 @@ ERC6551_REGISTRY_ADDRESS=0x02101dfB77FDE026414827Fdc604ddAF224F0921
 TOKENBOUND_ACCOUNT_DEFAULT_IMPLEMENTATION_ADDRESS=0x2d25602551487c3f3354dd80d76d54383a243358
 
 # deployed testnet contract addresses (sepolia)
-TRONIC_MEMBERSHIP_ERC721_ADDRESS=0x4fc90cca78D6971be88E444DF9e58376BcFe9663
-TRONIC_TOKEN_ERC1155_ADDRESS=0x99C5A36f52aeD8c554Ff752D5b48ae506F29C6b1
-TRONIC_MAIN_CONTRACT_ADDRESS=0x54bcA6bb74D54aa524819BcF1b99cd8DDEc7b650
+TRONIC_MEMBERSHIP_ERC721_ADDRESS=0xa23161C76f1f5E91607Da899e909A1355C4dAAcb
+TRONIC_TOKEN_ERC1155_ADDRESS=0x704Bb35954f1b425B8D1Ca5cD4a8219ac5B1C2E1
+TRONIC_MAIN_CONTRACT_ADDRESS=0x10900dA08f0515dC93C589169953B5ef87E33adc
 
 ```
 
-## Initialize Tronic ERC721 and ERC1155
+## `InitializeTronic.s.sol` - Initializes Tronic Membership (ERC721) and Tronic Token (ERC1155)
 
 - Initializes Tronic Membership ERC721 Contract
 - Initializes Tronic Token ERC1155 Contract
@@ -49,10 +49,10 @@ TRONIC_MAIN_CONTRACT_ADDRESS=0x54bcA6bb74D54aa524819BcF1b99cd8DDEc7b650
 forge script script/InitializeTronic.s.sol:InitializeTronic -vvvv --rpc-url sepolia --broadcast
 ```
 
-## Deploy New Project/Partner/Brand (Project X)
+## `DeployMembership.s.sol` - Deploys New Memberships (Memberships X and Y)
 
-- Deploys Membership X (Clones ERC721 and ERC1155)
-- Deploys Membership Y (Clones ERC721 and ERC1155)
+- Deploys Membership X (Clones Membership ERC721 and Token ERC1155)
+- Deploys Membership Y (Clones Membership ERC721 and Token ERC1155)
 - Initializes both memberships
 - Creates fungible loyalty tokens for both memberships
 
@@ -62,23 +62,23 @@ forge script script/DeployMembership.s.sol:DeployMembership -vvvv --rpc-url sepo
 
 ```bash
 # MEMBERSHIP x contracts
-MEMBERSHIP_X_ERC721_ADDRESS=0xe95784D2C873687f5BC987bEaaa4df93E4EE7F2E
-MEMBERSHIP_X_ERC1155_ADDRESS=0x21E92158670054fcace580aFCd18fAC1c4c5472c
+MEMBERSHIP_X_ERC721_ADDRESS=0x21F11833D2450104e5A1Dd3293E0A6c13D4399b0
+MEMBERSHIP_X_ERC1155_ADDRESS=0xF4dF35e96EFC1C93052C1dEd5410Ab773f91b3EE
 
 # MEMBERSHIP y contracts
-MEMBERSHIP_Y_ERC721_ADDRESS=0x82056c913Cfb1C4092EF8d81e6BEF18417f1c3da
-MEMBERSHIP_Y_ERC1155_ADDRESS=0x2E0FAAf0b21eedE2Cb96913309e072Fa97113e69
+MEMBERSHIP_Y_ERC721_ADDRESS=0x461810Fae978FceEC93AD0E064784C273077ecDf
+MEMBERSHIP_Y_ERC1155_ADDRESS=0x38d9f66AbD4c8Ae50FA578bfA8715B5dBc409B5C
 ```
 
-## Create Fungible Types for Partners X and Y
+## `MembershipConfig.s.sol` - Creates Fungible Types for Memberships X and Y
 
-- Creates three fungible reward tokens for both projects
+- Creates three fungible reward tokens for both Memberships
 
 ```bash
 forge script script/MembershipConfig.s.sol:MembershipConfig -vvvv --rpc-url sepolia --broadcast
 ```
 
-## New User Entry
+## `NewUserEntry.s.sol` - A New User subscribes to Tronic Membership
 
 - Mints a new Tronic Membership NFT to user
 - Creates a Tokenbound Account for this NFT
@@ -90,15 +90,15 @@ forge script script/NewUserEntry.s.sol:NewUserEntry -vvvv --rpc-url sepolia --br
 
 ```bash
 # Tokenbound Account
-TOKENBOUND_ACCOUNT_TOKENID_1=0x09422CabAcCecf7b9670575Cb0425a519A713A97
+TOKENBOUND_ACCOUNT_TOKENID_1=0xd457c3844F38A971933120AcfE9Eaf132FEFa011
 ```
 
-## New User Earns (PART 1) Project NFTs from Project X and Project Y
+## `NewUserEarns1.s.sol` - New User Earns (PART 1) - Subscribes to Memberships X and Y
 
-- User receives NFT from Project X
-- User receives NFT from Project Y
+- User receives NFT from Membership X
+- User receives NFT from Membership Y
 
-NOTE: This will create tokenbound accounts for each project nft
+NOTE: This will create tokenbound accounts for each membership nft
 
 ```bash
 forge script script/NewUserEarns1.s.sol:NewUserEarns1 -vvvv --rpc-url sepolia --broadcast
@@ -106,24 +106,24 @@ forge script script/NewUserEarns1.s.sol:NewUserEarns1 -vvvv --rpc-url sepolia --
 
 ```bash
 # tokenbound accounts for project nfts
-MEMBERSHIP_X_TOKENBOUND_ACCOUNT_TOKENID_1=0x312a5342d4E1764e2Ca4002Dea30298913fF82eE
-MEMBERSHIP_Y_TOKENBOUND_ACCOUNT_TOKENID_1=0xA906EE08b03EC0C3065a6bb5339eFFc7EC59655F
+MEMBERSHIP_X_TOKENBOUND_ACCOUNT_TOKENID_1=0xb6cC24E5b1c98B767FB743e55168c96C2E13C755
+MEMBERSHIP_Y_TOKENBOUND_ACCOUNT_TOKENID_1=0x7b3BD48f6906Fa4aF24fBE991242039135d180C8
 ```
 
-## New User Earns (PART 2) Loyalty Rewards from Project X and Project Y
+## `NewUserEarns2.s.sol` - New User Earns (PART 2) - Loyalty Tokens from Memberships X and Y
 
-- User receives 100 Project X Loyalty A Tokens
-- User receives 50 Project X Loyalty B Tokens
-- User receives 100 Project Y Loyalty A Tokens
-- User receives 50 Project Y Loyalty B Tokens
+- User receives 100 Membership X Loyalty A Tokens
+- User receives 50 Membership X Loyalty B Tokens
+- User receives 100 Membership Y Loyalty A Tokens
+- User receives 50 Membership Y Loyalty B Tokens
 
 ```bash
 forge script script/NewUserEarns2.s.sol:NewUserEarns2 -vvvv --rpc-url sepolia --broadcast
 ```
 
-## New User Earns (PART 3) Loyalty Rewards from Project X and TRONIC
+## `NewUserEarns3.s.sol` - New User Earns (PART 3) - Loyalty Tokens from Membership X and TRONIC
 
-- User receives 25 Project X Loyalty C Tokens
+- User receives 25 Membership X Loyalty C Tokens
 - User receives 10 TRONIC Loyalty B Tokens
 
 ```bash

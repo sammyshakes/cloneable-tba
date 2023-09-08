@@ -33,7 +33,7 @@ contract TronicMain {
 
     // Deployments
     IERC6551Registry public registry;
-    TronicMembership public tronicERC721;
+    TronicMembership public tronicMembership;
     TronicToken public tronicERC1155;
 
     uint256 public membershipCounter;
@@ -56,7 +56,7 @@ contract TronicMain {
         owner = msg.sender;
         tronicAdmin = _admin;
         tronicERC1155 = TronicToken(_tronicToken);
-        tronicERC721 = TronicMembership(_tronicMembership);
+        tronicMembership = TronicMembership(_tronicMembership);
         registry = IERC6551Registry(_registry);
         tbaAccountImplementation = payable(_tbaImplementation);
     }
@@ -104,7 +104,6 @@ contract TronicMain {
         onlyAdmin
         returns (uint256 memberId, address membershipAddress, address tokenAddress)
     {
-        // Membership Ids start with 1
         memberId = membershipCounter++;
 
         // Deploy the membership's contracts
@@ -133,7 +132,7 @@ contract TronicMain {
         string memory uri,
         uint256 maxSupply
     ) private returns (address membershipAddress) {
-        membershipAddress = Clones.clone(address(tronicERC721));
+        membershipAddress = Clones.clone(address(tronicMembership));
         TronicMembership(membershipAddress).initialize(
             tbaAccountImplementation, address(registry), name, symbol, uri, maxSupply, tronicAdmin
         );
@@ -293,7 +292,7 @@ contract TronicMain {
         uint256 _amount
     ) public {
         // get Tronic TBA address for tronic token id
-        address payable tronicTbaAddress = payable(tronicERC721.getTBAccount(_tronicTokenId));
+        address payable tronicTbaAddress = payable(tronicMembership.getTBAccount(_tronicTokenId));
         IERC6551Account tronicTBA = IERC6551Account(tronicTbaAddress);
 
         //ensure caller is tronic admin or authorized to transfer tokens
@@ -343,7 +342,7 @@ contract TronicMain {
         address _to
     ) external {
         // get Tronic TBA address for tronic token id
-        address payable tronicTbaAddress = payable(tronicERC721.getTBAccount(_tronicTokenId));
+        address payable tronicTbaAddress = payable(tronicMembership.getTBAccount(_tronicTokenId));
         IERC6551Account tronicTBA = IERC6551Account(tronicTbaAddress);
 
         //ensure caller is tronic admin or authorized to transfer tokens
@@ -379,7 +378,7 @@ contract TronicMain {
         address _to
     ) external {
         // get Tronic TBA address for tronic token id
-        address payable tronicTbaAddress = payable(tronicERC721.getTBAccount(_tronicTokenId));
+        address payable tronicTbaAddress = payable(tronicMembership.getTBAccount(_tronicTokenId));
         IERC6551Account tronicTBA = IERC6551Account(tronicTbaAddress);
         //ensure caller is either admin or authorized to transfer tokens
         require(
@@ -402,7 +401,7 @@ contract TronicMain {
     /// @notice Sets the ERC721 implementation address, callable only by the owner.
     /// @param newImplementation The address of the new ERC721 implementation.
     function setERC721Implementation(address newImplementation) external onlyOwner {
-        tronicERC721 = TronicMembership(newImplementation);
+        tronicMembership = TronicMembership(newImplementation);
     }
 
     /// @notice Sets the ERC1155 implementation address, callable only by the owner.
