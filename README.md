@@ -66,7 +66,7 @@ forge script script/InitializeTronic.s.sol:InitializeTronic -vvvv --rpc-url sepo
 forge script script/DeployMembership.s.sol:DeployMembership -vvvv --rpc-url sepolia --broadcast
 ```
 
-```bash
+```r
 # MEMBERSHIP x contracts
 MEMBERSHIP_X_ERC721_ADDRESS=0x21F11833D2450104e5A1Dd3293E0A6c13D4399b0
 MEMBERSHIP_X_ERC1155_ADDRESS=0xF4dF35e96EFC1C93052C1dEd5410Ab773f91b3EE
@@ -94,7 +94,7 @@ forge script script/MembershipConfig.s.sol:MembershipConfig -vvvv --rpc-url sepo
 forge script script/NewUserEntry.s.sol:NewUserEntry -vvvv --rpc-url sepolia --broadcast
 ```
 
-```bash
+```r
 # Tokenbound Account
 TOKENBOUND_ACCOUNT_TOKENID_1=0xd457c3844F38A971933120AcfE9Eaf132FEFa011
 ```
@@ -110,7 +110,7 @@ NOTE: This will create tokenbound accounts for each membership nft
 forge script script/NewUserEarns1.s.sol:NewUserEarns1 -vvvv --rpc-url sepolia --broadcast
 ```
 
-```bash
+```r
 # tokenbound accounts for project nfts
 MEMBERSHIP_X_TOKENBOUND_ACCOUNT_TOKENID_1=0xb6cC24E5b1c98B767FB743e55168c96C2E13C755
 MEMBERSHIP_Y_TOKENBOUND_ACCOUNT_TOKENID_1=0x7b3BD48f6906Fa4aF24fBE991242039135d180C8
