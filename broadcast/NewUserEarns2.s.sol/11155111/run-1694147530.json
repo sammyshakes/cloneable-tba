@@ -1,0 +1,113 @@
+{
+  "transactions": [
+    {
+      "hash": "0x70f955f68745cb2b41b09db7c97ab42c9859e55d43572709ee0f7234a32eb4d5",
+      "transactionType": "CALL",
+      "contractName": "TronicToken",
+      "contractAddress": "0x21E92158670054fcace580aFCd18fAC1c4c5472c",
+      "function": "mintFungible(address,uint256,uint64)",
+      "arguments": [
+        "0x312a5342d4E1764e2Ca4002Dea30298913fF82eE",
+        "1",
+        "100"
+      ],
+      "transaction": {
+        "type": "0x02",
+        "from": "0x42c7ef198f8ac9888e2b1b73e5b71f1d4535194a",
+        "to": "0x21e92158670054fcace580afcd18fac1c4c5472c",
+        "gas": "0x1f3f2",
+        "value": "0x0",
+        "data": "0x6dcb111d000000000000000000000000312a5342d4e1764e2ca4002dea30298913ff82ee00000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000064",
+        "nonce": "0xb1",
+        "accessList": []
+      },
+      "additionalContracts": [],
+      "isFixedGasLimit": false
+    },
+    {
+      "hash": "0x2b3506f2bb84df7541332516f0bb3e87b8b10fca4f6d1df953e4a38436828adf",
+      "transactionType": "CALL",
+      "contractName": "TronicToken",
+      "contractAddress": "0x21E92158670054fcace580aFCd18fAC1c4c5472c",
+      "function": "mintFungible(address,uint256,uint64)",
+      "arguments": [
+        "0x312a5342d4E1764e2Ca4002Dea30298913fF82eE",
+        "2",
+        "50"
+      ],
+      "transaction": {
+        "type": "0x02",
+        "from": "0x42c7ef198f8ac9888e2b1b73e5b71f1d4535194a",
+        "to": "0x21e92158670054fcace580afcd18fac1c4c5472c",
+        "gas": "0x1f3f2",
+        "value": "0x0",
+        "data": "0x6dcb111d000000000000000000000000312a5342d4e1764e2ca4002dea30298913ff82ee00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000032",
+        "nonce": "0xb2",
+        "accessList": []
+      },
+      "additionalContracts": [],
+      "isFixedGasLimit": false
+    },
+    {
+      "hash": "0xcc26b3abd178859fab247c89a063f52e678afc724128f6bee7f3ad08bb1292e5",
+      "transactionType": "CALL",
+      "contractName": "TronicToken",
+      "contractAddress": "0x2E0FAAf0b21eedE2Cb96913309e072Fa97113e69",
+      "function": "mintFungible(address,uint256,uint64)",
+      "arguments": [
+        "0xA906EE08b03EC0C3065a6bb5339eFFc7EC59655F",
+        "1",
+        "100"
+      ],
+      "transaction": {
+        "type": "0x02",
+        "from": "0x42c7ef198f8ac9888e2b1b73e5b71f1d4535194a",
+        "to": "0x2e0faaf0b21eede2cb96913309e072fa97113e69",
+        "gas": "0x1f403",
+        "value": "0x0",
+        "data": "0x6dcb111d000000000000000000000000a906ee08b03ec0c3065a6bb5339effc7ec59655f00000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000064",
+        "nonce": "0xb3",
+        "accessList": []
+      },
+      "additionalContracts": [],
+      "isFixedGasLimit": false
+    },
+    {
+      "hash": "0x272cee31ec9b9d1db739bbd8c9a3016ac9f23598e7631d27db14e782594d9381",
+      "transactionType": "CALL",
+      "contractName": "TronicToken",
+      "contractAddress": "0x2E0FAAf0b21eedE2Cb96913309e072Fa97113e69",
+      "function": "mintFungible(address,uint256,uint64)",
+      "arguments": [
+        "0xA906EE08b03EC0C3065a6bb5339eFFc7EC59655F",
+        "2",
+        "50"
+      ],
+      "transaction": {
+        "type": "0x02",
+        "from": "0x42c7ef198f8ac9888e2b1b73e5b71f1d4535194a",
+        "to": "0x2e0faaf0b21eede2cb96913309e072fa97113e69",
+        "gas": "0x1f403",
+        "value": "0x0",
+        "data": "0x6dcb111d000000000000000000000000a906ee08b03ec0c3065a6bb5339effc7ec59655f00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000032",
+        "nonce": "0xb4",
+        "accessList": []
+      },
+      "additionalContracts": [],
+      "isFixedGasLimit": false
+    }
+  ],
+  "receipts": [],
+  "libraries": [],
+  "pending": [
+    "0x70f955f68745cb2b41b09db7c97ab42c9859e55d43572709ee0f7234a32eb4d5",
+    "0x2b3506f2bb84df7541332516f0bb3e87b8b10fca4f6d1df953e4a38436828adf",
+    "0xcc26b3abd178859fab247c89a063f52e678afc724128f6bee7f3ad08bb1292e5",
+    "0x272cee31ec9b9d1db739bbd8c9a3016ac9f23598e7631d27db14e782594d9381"
+  ],
+  "returns": {},
+  "timestamp": 1694147530,
+  "chain": 11155111,
+  "multi": false,
+  "commit": "8b71fec"
+}

@@ -52,12 +52,9 @@ contract TestnetTests is Test {
         erc1155 = TronicToken(erc1155Address);
         registry = IERC6551Registry(registryAddress);
 
-        account = IERC6551Account(payable(tbaAddress));
+        accountTba = IERC6551Account(payable(tbaAddressTokenID1));
         accountX = IERC6551Account(payable(tbaAddressXTokenID1));
         accountY = IERC6551Account(payable(tbaAddressYTokenID1));
-        accountTba = IERC6551Account(payable(tbaAddressTokenID1));
-
-        tbaAddress = payable(address(account));
 
         tronicAdminContract = TronicMain(tronicAdminContractAddress);
     }
@@ -68,14 +65,32 @@ contract TestnetTests is Test {
         console.log("tokenContract: ", tokenContractAddress);
         console.log("tokenId: ", _tokenId);
 
+        (, address tokenContractAddressaccountX, uint256 _tokenIdaccountX) = accountX.token();
+        console.log("tokenContract accountX: ", tokenContractAddressaccountX);
+        console.log("tokenId accountX: ", _tokenIdaccountX);
+
+        (, address tokenContractAddressaccountY, uint256 _tokenIdaccountY) = accountY.token();
+        console.log("tokenContract accountY: ", tokenContractAddressaccountY);
+        console.log("tokenId accountY: ", _tokenIdaccountY);
+
         TronicMembership tokenContract = TronicMembership(tokenContractAddress); // Parent TBA ERC721 token contract
         TronicMembership clonedERC721X = TronicMembership(cloned721AddressX); // Nested TBA ERC721 token contract
         TronicToken clonedERC1155X = TronicToken(cloned1155AddressX); // assets owned by nested TBA
+
+        console.log("accountTba: ", address(accountTba));
+        console.log("accountTba owner: ", accountTba.owner());
+        console.log("accountX: ", address(accountX));
+        console.log("accountX owner: ", accountX.owner());
+
+        console.log("accountY owner: ", accountY.owner());
+        console.log("clonedERC721X.ownerOf(1): ", clonedERC721X.ownerOf(1));
 
         // Top level TBA is owned by tbaOwner (a random user),
         assertEq(_tokenId, 1);
         assertEq(tokenContract.ownerOf(_tokenId), tbaOwner);
         assertEq(accountTba.owner(), tbaOwner);
+
+        assertEq(tokenContractAddress, erc721Address);
 
         // Top level TBA owns tokenId 1 on clonedERC721X (erc721), `nestedTbaAddress`
         assertEq(clonedERC721X.ownerOf(1), address(accountTba));
@@ -176,24 +191,6 @@ contract TestnetTests is Test {
         //transfer token to tbaAddressTokenID1
         vm.prank(user1);
         clonedERC1155X.safeTransferFrom(user1, tbaAddressTokenID1, 1, 1, "");
-
-        // bytes memory erc1155TransferCall = abi.encodeWithSignature(
-        //     "safeTransferFrom(address,address,uint256,uint256,bytes)", user1, user2, 1, 10, ""
-        // );
-        // vm.prank(user1);
-        // account.execute(payable(cloned1155AddressX), 0, erc1155TransferCall, 0);
-
-        // // mint token to tbaAddressTokenID1
-        // vm.prank(tronicOwner);
-        // clonedERC1155.mintFungible(tbaAddressTokenID1, tokenId, 10);
-
-        // assertEq(clonedERC1155.balanceOf(tbaAddressTokenID1, 1), 10);
-
-        // IERC6551Account account = IERC6551Account(payable(tbaAddressTokenID1));
-        // bytes memory erc1155TransferCall =
-        //     abi.encodeWithSignature("mintFungible(address,uint256,uint256)", user1, 1, 10);
-        // vm.prank(tronicOwner);
-        // account.execute(cloned1155Address, 0, erc1155TransferCall, 0);
     }
 
     function testUnauthorizedCloning() public {

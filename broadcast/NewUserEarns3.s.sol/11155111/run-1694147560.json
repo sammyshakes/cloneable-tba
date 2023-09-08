@@ -1,0 +1,63 @@
+{
+  "transactions": [
+    {
+      "hash": "0xda2d6dc100ee989002978bd18fbc59b1d9d00bff92e127bf0f35549dc1ee434f",
+      "transactionType": "CALL",
+      "contractName": "TronicToken",
+      "contractAddress": "0x21E92158670054fcace580aFCd18fAC1c4c5472c",
+      "function": "mintFungible(address,uint256,uint64)",
+      "arguments": [
+        "0x312a5342d4E1764e2Ca4002Dea30298913fF82eE",
+        "0",
+        "25"
+      ],
+      "transaction": {
+        "type": "0x02",
+        "from": "0x42c7ef198f8ac9888e2b1b73e5b71f1d4535194a",
+        "to": "0x21e92158670054fcace580afcd18fac1c4c5472c",
+        "gas": "0x1f3e1",
+        "value": "0x0",
+        "data": "0x6dcb111d000000000000000000000000312a5342d4e1764e2ca4002dea30298913ff82ee00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000019",
+        "nonce": "0xb5",
+        "accessList": []
+      },
+      "additionalContracts": [],
+      "isFixedGasLimit": false
+    },
+    {
+      "hash": "0x2cdd977f8c1c8b3de11962bb0ea4919ae77667cad623bd113cc13363b87fb23e",
+      "transactionType": "CALL",
+      "contractName": "TronicToken",
+      "contractAddress": "0x99C5A36f52aeD8c554Ff752D5b48ae506F29C6b1",
+      "function": "mintFungible(address,uint256,uint64)",
+      "arguments": [
+        "0x09422CabAcCecf7b9670575Cb0425a519A713A97",
+        "0",
+        "50"
+      ],
+      "transaction": {
+        "type": "0x02",
+        "from": "0x42c7ef198f8ac9888e2b1b73e5b71f1d4535194a",
+        "to": "0x99c5a36f52aed8c554ff752d5b48ae506f29c6b1",
+        "gas": "0x17acc",
+        "value": "0x0",
+        "data": "0x6dcb111d00000000000000000000000009422cabaccecf7b9670575cb0425a519a713a9700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000032",
+        "nonce": "0xb6",
+        "accessList": []
+      },
+      "additionalContracts": [],
+      "isFixedGasLimit": false
+    }
+  ],
+  "receipts": [],
+  "libraries": [],
+  "pending": [
+    "0xda2d6dc100ee989002978bd18fbc59b1d9d00bff92e127bf0f35549dc1ee434f",
+    "0x2cdd977f8c1c8b3de11962bb0ea4919ae77667cad623bd113cc13363b87fb23e"
+  ],
+  "returns": {},
+  "timestamp": 1694147560,
+  "chain": 11155111,
+  "multi": false,
+  "commit": "8b71fec"
+}
