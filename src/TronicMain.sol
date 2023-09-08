@@ -89,6 +89,8 @@ contract TronicMain {
     /// @param membershipName The membership name for the ERC721 token.
     /// @param membershipSymbol The membership symbol for the ERC721 token.
     /// @param membershipBaseURI The base URI for the membership ERC721 token.
+    /// @param maxMintable The maximum number of memberships that can be minted.
+    /// @return memberId The ID of the newly created membership.
     /// @return membershipAddress The address of the deployed membership ERC721 contract.
     /// @return tokenAddress The address of the deployed token ERC1155 contract.
     /// @dev The membership ID is the index of the membership in the memberships mapping.
@@ -97,21 +99,27 @@ contract TronicMain {
         string memory membershipSymbol,
         string memory membershipBaseURI,
         uint256 maxMintable
-    ) external onlyAdmin returns (address membershipAddress, address tokenAddress) {
-        // Question: Will we know the TierIds beforehand?
+    )
+        external
+        onlyAdmin
+        returns (uint256 memberId, address membershipAddress, address tokenAddress)
+    {
+        // Membership Ids start with 1
+        memberId = membershipCounter++;
+
         // Deploy the membership's contracts
         membershipAddress =
             _deployMembership(membershipName, membershipSymbol, membershipBaseURI, maxMintable);
         tokenAddress = _deployToken();
 
         // Assign membership id and associate the deployed contracts with the membership
-        memberships[membershipCounter] = MembershipInfo({
+        memberships[memberId] = MembershipInfo({
             membershipAddress: membershipAddress,
             tokenAddress: tokenAddress,
             membershipName: membershipName
         });
 
-        emit MembershipAdded(membershipCounter++, membershipAddress, tokenAddress);
+        emit MembershipAdded(memberId, membershipAddress, tokenAddress);
     }
 
     /// @notice Clones the Tronic Membership (ERC721) implementation and initializes it.
@@ -274,6 +282,8 @@ contract TronicMain {
     /// @param _transferTokenId The ID of the token to transfer
     /// @param _amount The amount of tokens to transfer
     /// @dev This contract address must be granted permissions to transfer tokens from the membership TBA
+    /// @dev The membership TBA must be owned by the Tronic tokenId TBA
+    /// @dev This function is only callable by the tronic admin or an authorized account
     function transferTokensFromMembershipTBA(
         uint256 _tronicTokenId,
         uint256 _membershipId,
@@ -281,14 +291,17 @@ contract TronicMain {
         address _to,
         uint256 _transferTokenId,
         uint256 _amount
-    ) external {
+    ) public {
+        // get Tronic TBA address for tronic token id
         address payable tronicTbaAddress = payable(tronicERC721.getTBAccount(_tronicTokenId));
         IERC6551Account tronicTBA = IERC6551Account(tronicTbaAddress);
-        //ensure caller is either admin or authorized to transfer tokens
+
+        //ensure caller is tronic admin or authorized to transfer tokens
         require(
             tronicTBA.isAuthorized(msg.sender) || _admins[msg.sender] || msg.sender == tronicAdmin,
             "Unauthorized caller"
         );
+
         // get membership info
         MembershipInfo memory membership = memberships[_membershipId];
         require(membership.tokenAddress != address(0), "Membership does not exist");
@@ -313,6 +326,77 @@ contract TronicMain {
         );
 
         tronicTBA.executeCall(membershipTbaAddress, 0, executeCall);
+    }
+
+    /// @notice transfers tokens from a tronic TBA to a specified address
+    /// @param _tronicTokenId The ID of the tronic token that owns the Tronic TBA
+    /// @param _transferTokenId The ID of the token to transfer
+    /// @param _amount The amount of tokens to transfer
+    /// @param _to The address to transfer the tokens to
+    /// @dev This contract address must be granted permissions to transfer tokens from the Tronic token TBA
+    /// @dev The tronic TBA must be owned by the Tronic tokenId TBA
+    /// @dev This function is only callable by the tronic admin or an authorized account
+    function transferTokensFromTronicTBA(
+        uint256 _tronicTokenId,
+        uint256 _transferTokenId,
+        uint256 _amount,
+        address _to
+    ) external {
+        // get Tronic TBA address for tronic token id
+        address payable tronicTbaAddress = payable(tronicERC721.getTBAccount(_tronicTokenId));
+        IERC6551Account tronicTBA = IERC6551Account(tronicTbaAddress);
+
+        //ensure caller is tronic admin or authorized to transfer tokens
+        require(
+            tronicTBA.isAuthorized(msg.sender) || _admins[msg.sender] || msg.sender == tronicAdmin,
+            "Unauthorized caller"
+        );
+
+        // construct SafeTransferCall for tronic ERC1155
+        bytes memory tokenTransferCall = abi.encodeWithSignature(
+            "safeTransferFrom(address,address,uint256,uint256,bytes)",
+            tronicTbaAddress,
+            _to,
+            _transferTokenId,
+            _amount,
+            ""
+        );
+
+        tronicTBA.executeCall(address(tronicERC1155), 0, tokenTransferCall);
+    }
+
+    /// @notice transfers membership from a tronic TBA to a specified address
+    /// @param _tronicTokenId The ID of the tronic token that owns the Tronic TBA
+    /// @param _membershipId The ID of the membership that issued the membership TBA
+    /// @param _membershipTokenId The ID of the membership TBA
+    /// @param _to The address to transfer the membership to
+    /// @dev This contract address must be granted permissions to transfer tokens from the Tronic token TBA
+    /// @dev The membership token TBA must be owned by the Tronic token TBA
+    function transferMembershipFromTronicTBA(
+        uint256 _tronicTokenId,
+        uint256 _membershipId,
+        uint256 _membershipTokenId,
+        address _to
+    ) external {
+        // get Tronic TBA address for tronic token id
+        address payable tronicTbaAddress = payable(tronicERC721.getTBAccount(_tronicTokenId));
+        IERC6551Account tronicTBA = IERC6551Account(tronicTbaAddress);
+        //ensure caller is either admin or authorized to transfer tokens
+        require(
+            tronicTBA.isAuthorized(msg.sender) || _admins[msg.sender] || msg.sender == tronicAdmin,
+            "Unauthorized caller"
+        );
+
+        // get membership contract address
+        address membershipAddress = memberships[_membershipId].membershipAddress;
+        require(membershipAddress != address(0), "Membership does not exist");
+
+        // construct and execute SafeTransferCall for membership ERC721
+        bytes memory membershipTransferCall = abi.encodeWithSignature(
+            "safeTransferFrom(address,address,uint256)", tronicTbaAddress, _to, _membershipTokenId
+        );
+
+        tronicTBA.executeCall(membershipAddress, 0, membershipTransferCall);
     }
 
     /// @notice Sets the ERC721 implementation address, callable only by the owner.

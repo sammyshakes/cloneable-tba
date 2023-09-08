@@ -136,7 +136,7 @@ contract TronicAdminTest is TronicTestBase {
         vm.prank(tronicAdmin);
 
         // Call the deployAndAddMembership function
-        (address testClone721Address, address testClone1155AddressY) =
+        (uint256 membershipIDX, address testClone721Address, address testClone1155AddressY) =
             tronicAdminContract.deployMembership(name721, symbol721, uri721, maxSupply);
 
         // Retrieve the added membership's details

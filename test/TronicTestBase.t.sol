@@ -63,23 +63,24 @@ contract TronicTestBase is Test {
     TronicMain.MembershipInfo membershipX;
     TronicMain.MembershipInfo membershipY;
 
-    uint256 membershipIDX = 0;
-    uint256 membershipIDY = 1;
+    uint256 membershipIDX;
+    uint256 membershipIDY;
 
     // set users
     address public user1 = address(0x1);
     address public user2 = address(0x2);
     address public user3 = address(0x3);
     address public user4 = address(0x4);
+    address public user5 = address(0x5);
     // new address for an unauthorized user
     address public unauthorizedUser = address(0x666);
 
-    address public tronicOwner = address(0x5);
+    address public tronicOwner = address(0x6);
 
     //tronicAdmin will be some privatekey stored on backend
-    address public tronicAdmin = address(0x6);
+    address public tronicAdmin = address(0x7);
 
-    address public membershipAdmin = address(0x7);
+    address public membershipAdmin = address(0x8);
 
     address payable public defaultTBAImplementationAddress =
         payable(vm.envAddress("TOKENBOUND_ACCOUNT_DEFAULT_IMPLEMENTATION_ADDRESS"));
@@ -134,11 +135,11 @@ contract TronicTestBase is Test {
         //set admin
         tronicERC721.addAdmin(address(tronicAdminContract));
 
-        (clone721AddressX, clone1155AddressX) = tronicAdminContract.deployMembership(
+        (membershipIDX, clone721AddressX, clone1155AddressX) = tronicAdminContract.deployMembership(
             "XClone721", "XCL721", "http://Xclone721.com/", 10_000
         );
 
-        (clone721AddressY, clone1155AddressY) = tronicAdminContract.deployMembership(
+        (membershipIDY, clone721AddressY, clone1155AddressY) = tronicAdminContract.deployMembership(
             "YClone721", "YCL721", "http://Yclone721.com/", 10_000
         );
 
