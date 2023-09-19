@@ -56,14 +56,14 @@ contract ERC721Test is TronicTestBase {
         assertEq(tronicERC721.isAdmin(user1), false);
     }
 
-    // test membership tier functions
-    function testMembershipTier721() public {
-        // get membership tier
-        assertEq(tronicERC721.getMembershipTier(1), "tier1");
-        assertEq(tronicERC721.getMembershipTier(2), "tier1");
-        assertEq(tronicERC721.getMembershipTier(3), "tier2");
-        assertEq(tronicERC721.getMembershipTier(4), "tier2");
-    }
+    // // test membership tier functions
+    // function testMembershipTier721() public {
+    //     // get membership tier
+    //     assertEq(tronicERC721.getMembershipTier(1), "tier1");
+    //     assertEq(tronicERC721.getMembershipTier(2), "tier1");
+    //     assertEq(tronicERC721.getMembershipTier(3), "tier2");
+    //     assertEq(tronicERC721.getMembershipTier(4), "tier2");
+    // }
 
     // test get tba address for a user's owned token
     // function testGetdefaultTBAImplementationAddress721() public {

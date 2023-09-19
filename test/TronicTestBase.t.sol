@@ -119,6 +119,7 @@ contract TronicTestBase is Test {
             "Original721",
             "OR721",
             "http://example721.com/",
+            10,
             10_000,
             tronicAdmin
         );
@@ -177,10 +178,10 @@ contract TronicTestBase is Test {
 
         //set tronic Membership tiers based on some external factores
         //here token ids 1 and 2 are tier1, and ids 3 and 4 are tier2
-        tronicERC721.setMembershipTier(tokenId1, "tier1");
-        tronicERC721.setMembershipTier(tokenId2, "tier1");
-        tronicERC721.setMembershipTier(tokenId3, "tier2");
-        tronicERC721.setMembershipTier(tokenId4, "tier2");
+        // tronicERC721.setMembershipTier(tokenId1, 0);
+        // tronicERC721.setMembershipTier(tokenId2, 0);
+        // tronicERC721.setMembershipTier(tokenId3, 0);
+        // tronicERC721.setMembershipTier(tokenId4, 0);
 
         vm.stopPrank();
 
@@ -195,7 +196,7 @@ contract TronicTestBase is Test {
         membershipYERC1155 = TronicToken(membershipY.tokenAddress);
     }
 
-    // Implement the helper function to create instances of BatchMintOrder
+    // helper function to create instances of BatchMintOrder
     function createBatchMintOrder(
         uint256 _membershipId,
         address[] memory _recipients,

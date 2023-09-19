@@ -16,6 +16,9 @@ contract InitializeTronic is Script {
     // max Supply
     uint256 public maxSupply = 10_000;
 
+    //max tiers
+    uint8 public maxTiers = 10;
+
     address public tronicAdminAddress = vm.envAddress("TRONIC_ADMIN_ADDRESS");
     address public tronicMembershipAddress = vm.envAddress("TRONIC_MEMBERSHIP_ERC721_ADDRESS");
     address public tronicTokenAddress = vm.envAddress("TRONIC_TOKEN_ERC1155_ADDRESS");
@@ -47,6 +50,7 @@ contract InitializeTronic is Script {
             tronicMembershipName,
             tronicMembershipSymbol,
             baseURI,
+            maxTiers,
             maxSupply,
             tronicAdminAddress
         );

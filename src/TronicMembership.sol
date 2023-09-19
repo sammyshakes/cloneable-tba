@@ -9,17 +9,32 @@ import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 /// @title TronicMembership
 /// @notice This contract represents the membership token for the Tronic ecosystem.
 contract TronicMembership is ERC721Enumerable, Initializable {
-    address public owner;
-    address public accountImplementation;
-    uint256 public maxSupply;
-    uint256 private _totalMinted;
+    struct MembershipTier {
+        string tierId;
+        uint128 duration;
+        bool isOpen;
+    }
+
+    struct TokenMembership {
+        uint8 tierIndex;
+        uint128 timestamp;
+    }
+
     string private _name;
     string private _symbol;
     string private _baseURI_;
 
+    address public owner;
+    address public accountImplementation;
+    uint8 private _numTiers;
+    uint8 private _maxTiers;
+    uint256 public maxSupply;
+    uint256 private _totalMinted;
+
     IERC6551Registry public registry;
 
-    mapping(uint256 => string) private _tokenIdToMembershipTierId;
+    mapping(uint8 => MembershipTier) private _membershipTiers;
+    mapping(uint256 => TokenMembership) private _tokenMemberships;
     mapping(address => bool) private _admins;
 
     /// @dev Modifier to ensure only the owner can call certain functions.
@@ -53,6 +68,7 @@ contract TronicMembership is ERC721Enumerable, Initializable {
         string memory name_,
         string memory symbol_,
         string memory uri,
+        uint8 _maxMembershipTiers,
         uint256 _maxSupply,
         address tronicAdmin
     ) external initializer {
@@ -64,6 +80,7 @@ contract TronicMembership is ERC721Enumerable, Initializable {
         _name = name_;
         _symbol = symbol_;
         _baseURI_ = uri;
+        _maxTiers = _maxMembershipTiers;
         maxSupply = _maxSupply;
     }
 
@@ -87,6 +104,103 @@ contract TronicMembership is ERC721Enumerable, Initializable {
 
         // Mint token
         _mint(to, _totalMinted);
+    }
+
+    /// @notice Creates a new membership tier.
+    /// @param tierId The ID of the new tier.
+    /// @param duration The duration of the new tier in seconds.
+    /// @param isOpen Whether the tier is open or closed.
+    /// @dev Only callable by admin.
+    function createMembershipTier(string memory tierId, uint128 duration, bool isOpen)
+        external
+        onlyAdmin
+    {
+        require(++_numTiers <= _maxTiers, "Max Tier limit reached");
+        _membershipTiers[_numTiers] =
+            MembershipTier({tierId: tierId, duration: duration, isOpen: isOpen});
+    }
+
+    /// @notice Creates multiple new membership tiers.
+    /// @param tierIds The IDs of the new tiers.
+    /// @param durations The durations of the new tiers in seconds.
+    /// @param isOpens Whether the tiers are open or closed.
+    /// @dev Only callable by admin. Arrays must all have the same length.
+    function createMembershipTiers(
+        string[] memory tierIds,
+        uint128[] memory durations,
+        bool[] memory isOpens
+    ) external onlyAdmin {
+        require(
+            isOpens.length == tierIds.length && tierIds.length == durations.length,
+            "Input array mismatch"
+        );
+        require(_numTiers + tierIds.length <= _maxTiers, "Max Tier limit reached");
+
+        for (uint256 i = 0; i < tierIds.length; i++) {
+            _membershipTiers[++_numTiers] =
+                MembershipTier({tierId: tierIds[i], duration: durations[i], isOpen: isOpens[i]});
+        }
+    }
+
+    /// @notice Sets the open status of a membership tier.
+    /// @param tierIndex The index of the tier to update.
+    /// @param isOpen The new open status.
+    /// @dev Only callable by admin.
+    function setMembershipTierOpenStatus(uint8 tierIndex, bool isOpen) external onlyAdmin {
+        require(tierIndex <= _numTiers, "Tier does not exist");
+        _membershipTiers[tierIndex].isOpen = isOpen;
+    }
+
+    /// @notice Sets the ID of a membership tier.
+    /// @param tierIndex The index of the tier to update.
+    /// @param tierId The new tier ID.
+    /// @dev Only callable by admin.
+    function setMembershipTierId(uint8 tierIndex, string memory tierId) external onlyAdmin {
+        require(tierIndex <= _numTiers, "Tier does not exist");
+        _membershipTiers[tierIndex].tierId = tierId;
+    }
+
+    /// @notice Sets the duration of a membership tier.
+    /// @param tierIndex The index of the tier to update.
+    /// @param duration The new duration in seconds.
+    /// @dev Only callable by admin.
+    function setMembershipTierDuration(uint8 tierIndex, uint128 duration) external onlyAdmin {
+        require(tierIndex <= _numTiers, "Tier does not exist");
+        _membershipTiers[tierIndex].duration = duration;
+    }
+
+    /// @notice Retrieves the details of a membership tier.
+    /// @param tierIndex The index of the tier to retrieve.
+    /// @return The details of the tier.
+    function getMembershipTierDetails(uint8 tierIndex)
+        external
+        view
+        returns (MembershipTier memory)
+    {
+        return _membershipTiers[tierIndex];
+    }
+
+    /// @notice Retrieves the ID of a membership tier.
+    /// @param tierIndex The index of the tier to retrieve.
+    /// @return The ID of the tier.
+    function getMembershipTierId(uint8 tierIndex) external view returns (string memory) {
+        return _membershipTiers[tierIndex].tierId;
+    }
+
+    /// @notice Sets the membership details of a specific token.
+    /// @param tokenId The ID of the token whose membership details are to be set.
+    /// @param tierIndex The index of the membership tier to associate with the token.
+    /// @dev This function can only be called by an admin.
+    function setTokenMembership(uint256 tokenId, uint8 tierIndex) external onlyAdmin {
+        require(tierIndex <= _numTiers, "Tier does not exist");
+        _tokenMemberships[tokenId] = TokenMembership(tierIndex, uint128(block.timestamp));
+    }
+
+    /// @notice Retrieves the membership details of a specific token.
+    /// @param tokenId The ID of the token whose membership details are to be retrieved.
+    /// @return The membership details of the token, represented by a `TokenMembership` struct.
+    function getTokenMembership(uint256 tokenId) external view returns (TokenMembership memory) {
+        return _tokenMemberships[tokenId];
     }
 
     /// @notice Retrieves the tokenbound account of a given token ID.
@@ -118,20 +232,6 @@ contract TronicMembership is ERC721Enumerable, Initializable {
     /// @return The symbol of the token.
     function symbol() public view override returns (string memory) {
         return _symbol;
-    }
-
-    /// @notice Retrieves the membership tier of a given token ID.
-    /// @param tokenId The ID of the token.
-    /// @return The membership tier of the token.
-    function getMembershipTier(uint256 tokenId) external view returns (string memory) {
-        return _tokenIdToMembershipTierId[tokenId];
-    }
-
-    /// @notice Sets the membership tier of a given token ID.
-    /// @param tokenId The ID of the token.
-    /// @param newTierId The new membership tier ID.
-    function setMembershipTier(uint256 tokenId, string memory newTierId) external onlyAdmin {
-        _tokenIdToMembershipTierId[tokenId] = newTierId;
     }
 
     /// @notice Adds an admin.

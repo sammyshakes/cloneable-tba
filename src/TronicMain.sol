@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: MIT
-
 pragma solidity ^0.8.13;
 
 import "./TronicToken.sol";
@@ -31,14 +30,16 @@ contract TronicMain {
     address public tronicAdmin;
     address payable public tbaAccountImplementation;
 
-    // Deployments
-    IERC6551Registry public registry;
-    TronicMembership public tronicMembership;
-    TronicToken public tronicERC1155;
+    uint8 public maxTiersPerMembership = 10;
 
     uint256 public membershipCounter;
     mapping(uint256 => MembershipInfo) public memberships;
     mapping(address => bool) private _admins;
+
+    // Deployments
+    IERC6551Registry public registry;
+    TronicMembership public tronicMembership;
+    TronicToken public tronicERC1155;
 
     /// @notice Constructs the TronicMain contract.
     /// @param _admin The address of the Tronic admin.
@@ -134,7 +135,14 @@ contract TronicMain {
     ) private returns (address membershipAddress) {
         membershipAddress = Clones.clone(address(tronicMembership));
         TronicMembership(membershipAddress).initialize(
-            tbaAccountImplementation, address(registry), name, symbol, uri, maxSupply, tronicAdmin
+            tbaAccountImplementation,
+            address(registry),
+            name,
+            symbol,
+            uri,
+            maxTiersPerMembership,
+            maxSupply,
+            tronicAdmin
         );
     }
 

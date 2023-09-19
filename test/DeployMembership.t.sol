@@ -21,11 +21,11 @@ contract DeployMembership is TronicTestBase {
         console.log("membershipXERC721 symbol: ", membershipXERC721.symbol());
 
         vm.startPrank(tronicAdmin);
-        // set membership tier
-        membershipXERC721.setMembershipTier(1, "tier1111");
+        // // set membership tier
+        // membershipXERC721.setMembershipTier(1, "tier1111");
 
-        // get membership tier
-        console.log("membershipXERC721 membership tier: ", membershipXERC721.getMembershipTier(1));
+        // // get membership tier
+        // console.log("membershipXERC721 membership tier: ", membershipXERC721.getMembershipTier(1));
 
         address user1TBAmembershipX =
             tronicAdminContract.mintMembership(tronicTokenId1TBA, membershipIDX);
