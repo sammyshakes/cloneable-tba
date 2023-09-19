@@ -49,6 +49,12 @@ contract TronicTestBase is Test {
         TronicMain.TokenType[][] tokenTypes;
     }
 
+    //vars for tokenids
+    uint256 public constant tokenId1 = 1;
+    uint256 public constant tokenId2 = 2;
+    uint256 public constant tokenId3 = 3;
+    uint256 public constant tokenId4 = 4;
+
     TronicMain tronicAdminContract;
     TronicMembership tronicERC721;
     TronicToken tronicERC1155;
@@ -162,28 +168,30 @@ contract TronicTestBase is Test {
 
         vm.stopPrank();
 
-        //setup some initial users
-        //vars for tokenids
-        uint256 tokenId1 = 1;
-        uint256 tokenId2 = 2;
-        uint256 tokenId3 = 3;
-        uint256 tokenId4 = 4;
-
         vm.startPrank(address(tronicAdminContract));
 
-        //mint TronicMembership nfts to users 1-4
+        //mint TronicMembership nfts to users 1-4 and return their tbas
         tronicTokenId1TBA = tronicERC721.mint(user1);
         tronicTokenId2TBA = tronicERC721.mint(user2);
         tronicTokenId3TBA = tronicERC721.mint(user3);
         tronicTokenId4TBA = tronicERC721.mint(user4);
 
-        //set tronic Membership tiers based on some external factores
-        //here token ids 1 and 2 are tier1, and ids 3 and 4 are tier2
-        // tronicERC721.setMembershipTier(tokenId1, 0);
-        // tronicERC721.setMembershipTier(tokenId2, 0);
-        // tronicERC721.setMembershipTier(tokenId3, 0);
-        // tronicERC721.setMembershipTier(tokenId4, 0);
+        //create membership tiers for tronicERC721
+        string[] memory tierIds = new string[](2);
+        tierIds[0] = "tierX";
+        tierIds[1] = "tierY";
 
+        uint128[] memory durations = new uint128[](2);
+        durations[0] = 30 days;
+        durations[1] = 120 days;
+
+        bool[] memory isOpens = new bool[](2);
+        isOpens[0] = true;
+        isOpens[1] = false;
+
+        tronicERC721.createMembershipTiers(tierIds, durations, isOpens);
+
+        tronicERC721.setTokenMembership(tokenId1, 1);
         vm.stopPrank();
 
         // get membership x and y details, membership ids: x=0 and y=1
@@ -214,6 +222,7 @@ contract TronicTestBase is Test {
         });
     }
 
+    // helper function to prepare data for batch minting
     function prepareBatchProcessData(BatchMintOrder[] memory orders)
         internal
         pure

@@ -55,35 +55,4 @@ contract ERC721Test is TronicTestBase {
         tronicERC721.removeAdmin(user1);
         assertEq(tronicERC721.isAdmin(user1), false);
     }
-
-    // // test membership tier functions
-    // function testMembershipTier721() public {
-    //     // get membership tier
-    //     assertEq(tronicERC721.getMembershipTier(1), "tier1");
-    //     assertEq(tronicERC721.getMembershipTier(2), "tier1");
-    //     assertEq(tronicERC721.getMembershipTier(3), "tier2");
-    //     assertEq(tronicERC721.getMembershipTier(4), "tier2");
-    // }
-
-    // test get tba address for a user's owned token
-    // function testGetdefaultTBAImplementationAddress721() public {
-    //   //vars for tokenids
-    //     uint256 tokenId1 = 1;
-    //     uint256 tokenId2 = 2;
-    //     uint256 tokenId3 = 3;
-    //     uint256 tokenId4 = 4;
-
-    //     // mint token to user1
-    //     vm.startPrank(address(tronicAdminContract));
-    //     tronicERC721.mint(user1);
-
-    //     // mint token to user2
-    //     tronicERC721.mint(user2);
-
-    //     // mint token to user3
-    //     tronicERC721.mint(user3);
-
-    //     // get tba address
-    //     assertEq(tronicERC721.getTBAccount(tokenId1), defaultTBAImplementationAddress);
-    //     assertEq(tronicERC721.getTBAccount(tokenId2), defaultTBAImplementationAddress);
 }

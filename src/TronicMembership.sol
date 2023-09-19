@@ -50,6 +50,13 @@ contract TronicMembership is ERC721Enumerable, Initializable {
         _;
     }
 
+    /// @dev Modifier to ensure a tier exists.
+    /// @param tierIndex The index of the tier to check.
+    modifier tierExists(uint8 tierIndex) {
+        require(tierIndex <= _numTiers, "Tier does not exist");
+        _;
+    }
+
     /// @notice Constructor initializes the ERC721 with empty name and symbol.
     /// @dev The name and symbol can be set using the initialize function.
     /// @dev The constructor is left empty because of the proxy pattern used.
@@ -149,8 +156,12 @@ contract TronicMembership is ERC721Enumerable, Initializable {
     /// @param tierIndex The index of the tier to update.
     /// @param isOpen The new open status.
     /// @dev Only callable by admin.
-    function setMembershipTierOpenStatus(uint8 tierIndex, bool isOpen) external onlyAdmin {
-        require(tierIndex <= _numTiers, "Tier does not exist");
+    /// @dev the tier must exist.
+    function setMembershipTierOpenStatus(uint8 tierIndex, bool isOpen)
+        external
+        onlyAdmin
+        tierExists(tierIndex)
+    {
         _membershipTiers[tierIndex].isOpen = isOpen;
     }
 
@@ -158,8 +169,12 @@ contract TronicMembership is ERC721Enumerable, Initializable {
     /// @param tierIndex The index of the tier to update.
     /// @param tierId The new tier ID.
     /// @dev Only callable by admin.
-    function setMembershipTierId(uint8 tierIndex, string memory tierId) external onlyAdmin {
-        require(tierIndex <= _numTiers, "Tier does not exist");
+    /// @dev the tier must exist.
+    function setMembershipTierId(uint8 tierIndex, string memory tierId)
+        external
+        onlyAdmin
+        tierExists(tierIndex)
+    {
         _membershipTiers[tierIndex].tierId = tierId;
     }
 
@@ -167,8 +182,12 @@ contract TronicMembership is ERC721Enumerable, Initializable {
     /// @param tierIndex The index of the tier to update.
     /// @param duration The new duration in seconds.
     /// @dev Only callable by admin.
-    function setMembershipTierDuration(uint8 tierIndex, uint128 duration) external onlyAdmin {
-        require(tierIndex <= _numTiers, "Tier does not exist");
+    /// @dev the tier must exist.
+    function setMembershipTierDuration(uint8 tierIndex, uint128 duration)
+        external
+        onlyAdmin
+        tierExists(tierIndex)
+    {
         _membershipTiers[tierIndex].duration = duration;
     }
 
@@ -194,8 +213,12 @@ contract TronicMembership is ERC721Enumerable, Initializable {
     /// @param tokenId The ID of the token whose membership details are to be set.
     /// @param tierIndex The index of the membership tier to associate with the token.
     /// @dev This function can only be called by an admin.
-    function setTokenMembership(uint256 tokenId, uint8 tierIndex) external onlyAdmin {
-        require(tierIndex <= _numTiers, "Tier does not exist");
+    /// @dev The tier must exist.
+    function setTokenMembership(uint256 tokenId, uint8 tierIndex)
+        external
+        onlyAdmin
+        tierExists(tierIndex)
+    {
         _tokenMemberships[tokenId] = TokenMembership(tierIndex, uint128(block.timestamp));
     }
 
