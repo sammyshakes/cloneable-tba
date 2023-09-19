@@ -55,6 +55,9 @@ contract TronicTestBase is Test {
     uint256 public constant tokenId3 = 3;
     uint256 public constant tokenId4 = 4;
 
+    uint8 public constant TronicTier1Index = 1;
+    uint8 public constant TronicTier2Index = 2;
+
     TronicMain tronicAdminContract;
     TronicMembership tronicERC721;
     TronicToken tronicERC1155;
@@ -191,7 +194,10 @@ contract TronicTestBase is Test {
 
         tronicERC721.createMembershipTiers(tierIds, durations, isOpens);
 
-        tronicERC721.setTokenMembership(tokenId1, 1);
+        tronicERC721.setTokenMembership(tokenId1, TronicTier1Index);
+        tronicERC721.setTokenMembership(tokenId2, TronicTier1Index);
+        tronicERC721.setTokenMembership(tokenId3, TronicTier2Index);
+        tronicERC721.setTokenMembership(tokenId4, TronicTier2Index);
         vm.stopPrank();
 
         // get membership x and y details, membership ids: x=0 and y=1

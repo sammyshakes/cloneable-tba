@@ -33,7 +33,7 @@ contract TronicMain {
     uint8 public maxTiersPerMembership = 10;
 
     uint256 public membershipCounter;
-    mapping(uint256 => MembershipInfo) public memberships;
+    mapping(uint256 => MembershipInfo) private memberships;
     mapping(address => bool) private _admins;
 
     // Deployments
