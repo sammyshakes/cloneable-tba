@@ -236,6 +236,22 @@ contract TronicMembership is ERC721Enumerable, Initializable {
         return registry.account(accountImplementation, block.chainid, address(this), tokenId, 0);
     }
 
+    /// @notice Retrieves tier index of a given tier ID.
+    /// @param tierId The ID of the tier.
+    /// @return The index of the tier.
+    /// @dev Returns 0 if the tier does not exist.
+    function getTierIndexByTierId(string memory tierId) external view returns (uint8) {
+        for (uint8 i = 1; i <= _numTiers; i++) {
+            string memory candidateTierId = _membershipTiers[i].tierId;
+            if (keccak256(abi.encodePacked(candidateTierId)) == keccak256(abi.encodePacked(tierId)))
+            {
+                return i;
+            }
+        }
+
+        return 0;
+    }
+
     /// @notice Burns a token with the given ID.
     /// @param tokenId ID of the token to burn.
     function burn(uint256 tokenId) public onlyAdmin {
