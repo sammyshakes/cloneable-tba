@@ -28,6 +28,7 @@ contract TronicMembership is ERC721Enumerable, Initializable {
     address public accountImplementation;
     uint8 private _numTiers;
     uint8 private _maxTiers;
+    bool public isElastic;
     uint256 public maxSupply;
     uint256 private _totalMinted;
 
@@ -70,6 +71,7 @@ contract TronicMembership is ERC721Enumerable, Initializable {
         string memory uri,
         uint8 _maxMembershipTiers,
         uint256 _maxSupply,
+        bool _isElastic,
         address tronicAdmin
     ) external initializer {
         accountImplementation = _accountImplementation;
@@ -82,6 +84,7 @@ contract TronicMembership is ERC721Enumerable, Initializable {
         _baseURI_ = uri;
         _maxTiers = _maxMembershipTiers;
         maxSupply = _maxSupply;
+        isElastic = _isElastic;
     }
 
     /// @notice Mints a new token.
@@ -214,6 +217,17 @@ contract TronicMembership is ERC721Enumerable, Initializable {
     /// @param tokenId ID of the token to burn.
     function burn(uint256 tokenId) public onlyAdmin {
         _burn(tokenId);
+    }
+
+    /// @notice Sets the max supply of the token.
+    /// @param _maxSupply The new max supply.
+    /// @dev Only callable by admin.
+    /// @dev Only callable for elastic tokens.
+    /// @dev The max supply must be greater than the total minted.
+    function setMaxSupply(uint256 _maxSupply) external onlyAdmin {
+        require(isElastic, "Max supply can only be set for elastic tokens");
+        require(_maxSupply > _totalMinted, "Max supply must be greater than total minted");
+        maxSupply = _maxSupply;
     }
 
     /// @notice Sets the base URI for the token.

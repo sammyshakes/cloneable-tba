@@ -99,7 +99,8 @@ contract TronicMain {
         string memory membershipName,
         string memory membershipSymbol,
         string memory membershipBaseURI,
-        uint256 maxMintable
+        uint256 maxMintable,
+        bool isElastic
     )
         external
         onlyAdmin
@@ -108,8 +109,9 @@ contract TronicMain {
         memberId = membershipCounter++;
 
         // Deploy the membership's contracts
-        membershipAddress =
-            _deployMembership(membershipName, membershipSymbol, membershipBaseURI, maxMintable);
+        membershipAddress = _deployMembership(
+            membershipName, membershipSymbol, membershipBaseURI, maxMintable, isElastic
+        );
         tokenAddress = _deployToken();
 
         // Assign membership id and associate the deployed contracts with the membership
@@ -131,7 +133,8 @@ contract TronicMain {
         string memory name,
         string memory symbol,
         string memory uri,
-        uint256 maxSupply
+        uint256 maxSupply,
+        bool isElastic
     ) private returns (address membershipAddress) {
         membershipAddress = Clones.clone(address(tronicMembership));
         TronicMembership(membershipAddress).initialize(
@@ -142,6 +145,7 @@ contract TronicMain {
             uri,
             maxTiersPerMembership,
             maxSupply,
+            isElastic,
             tronicAdmin
         );
     }

@@ -52,6 +52,7 @@ contract InitializeTronic is Script {
             baseURI,
             maxTiers,
             maxSupply,
+            false, //not elastic
             tronicAdminAddress
         );
         //initialize erc1155 for tronic token points

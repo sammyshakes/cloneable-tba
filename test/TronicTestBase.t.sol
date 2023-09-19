@@ -119,8 +119,9 @@ contract TronicTestBase is Test {
             "Original721",
             "OR721",
             "http://example721.com/",
-            10,
-            10_000,
+            10, //max tiers
+            10_000, //max supply
+            true, //isElastic
             tronicAdmin
         );
 
@@ -133,11 +134,11 @@ contract TronicTestBase is Test {
         tronicERC721.addAdmin(address(tronicAdminContract));
 
         (membershipIDX, clone721AddressX, clone1155AddressX) = tronicAdminContract.deployMembership(
-            "XClone721", "XCL721", "http://Xclone721.com/", 10_000
+            "XClone721", "XCL721", "http://Xclone721.com/", 10_000, true
         );
 
         (membershipIDY, clone721AddressY, clone1155AddressY) = tronicAdminContract.deployMembership(
-            "YClone721", "YCL721", "http://Yclone721.com/", 10_000
+            "YClone721", "YCL721", "http://Yclone721.com/", 10_000, true
         );
 
         // Set up initial state

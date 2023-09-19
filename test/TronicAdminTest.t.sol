@@ -137,7 +137,7 @@ contract TronicAdminTest is TronicTestBase {
 
         // Call the deployAndAddMembership function
         (uint256 membershipIDX, address testClone721Address, address testClone1155AddressY) =
-            tronicAdminContract.deployMembership(name721, symbol721, uri721, maxSupply);
+            tronicAdminContract.deployMembership(name721, symbol721, uri721, maxSupply, true);
 
         // Retrieve the added membership's details
         TronicMain.MembershipInfo memory membership =

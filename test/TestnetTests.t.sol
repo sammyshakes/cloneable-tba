@@ -199,12 +199,12 @@ contract TestnetTests is Test {
 
         // Expect the cloneERC1155 function to be reverted due to unauthorized access
         vm.expectRevert();
-        tronicAdminContract.deployMembership("", "", "", 0);
+        tronicAdminContract.deployMembership("", "", "", 0, false);
 
         // Expect the cloneERC721 function to be reverted due to unauthorized access
         vm.expectRevert();
         tronicAdminContract.deployMembership(
-            "Unauthorized721", "UN721", "http://unauthorized721.com/", 10_000
+            "Unauthorized721", "UN721", "http://unauthorized721.com/", 10_000, false
         );
     }
 }
