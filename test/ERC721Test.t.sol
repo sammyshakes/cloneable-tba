@@ -57,12 +57,4 @@ contract ERC721Test is TronicTestBase {
     }
 
     function testMembershipTiers() public {}
-
-    function testAdminMembershipTierControls() public {
-        // 1. Test that an admin can control membership tiers correctly
-        // (Add tests here that check that admins can control tiers correctly)
-
-        // 2. Test that a non-admin cannot control membership tiers
-        // (Add tests here that check non-admins cannot control tiers)
-    }
 }

@@ -9,12 +9,19 @@ import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 /// @title TronicMembership
 /// @notice This contract represents the membership token for the Tronic ecosystem.
 contract TronicMembership is ERC721Enumerable, Initializable {
+    /// @dev Struct representing a membership tier.
+    /// @param tierId The ID of the tier.
+    /// @param duration The duration of the tier in seconds.
+    /// @param isOpen Whether the tier is open or closed.
     struct MembershipTier {
         string tierId;
         uint128 duration;
         bool isOpen;
     }
 
+    /// @dev Struct representing the membership details of a token.
+    /// @param tierIndex The index of the membership tier.
+    /// @param timestamp The timestamp of the membership.
     struct TokenMembership {
         uint8 tierIndex;
         uint128 timestamp;
@@ -250,6 +257,17 @@ contract TronicMembership is ERC721Enumerable, Initializable {
         }
 
         return 0;
+    }
+
+    //function to determine if a token has an expired membership
+    /// @notice Checks if a token has an expired membership.
+    /// @param tokenId The ID of the token.
+    /// @return True if the token has an expired membership, false otherwise.
+    function isExpired(uint256 tokenId) external view returns (bool) {
+        TokenMembership memory membership = _tokenMemberships[tokenId];
+        MembershipTier memory tier = _membershipTiers[membership.tierIndex];
+        return membership.timestamp + tier.duration < block.timestamp && membership.timestamp != 0
+            && tier.duration != 0;
     }
 
     /// @notice Burns a token with the given ID.
