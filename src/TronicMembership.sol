@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.13;
+pragma solidity 0.8.20;
 
 import "./interfaces/IERC6551Registry.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 
 /// @title TronicMembership
 /// @notice This contract represents the membership token for the Tronic ecosystem.
-contract TronicMembership is ERC721Enumerable, Initializable {
+contract TronicMembership is ERC721, Initializable {
     /// @dev Struct representing a membership tier.
     /// @param tierId The ID of the tier.
     /// @param duration The duration of the tier in seconds.
@@ -36,7 +36,9 @@ contract TronicMembership is ERC721Enumerable, Initializable {
     uint8 private _numTiers;
     uint8 private _maxTiers;
     bool public isElastic;
+    bool public isBound;
     uint256 public maxSupply;
+    uint256 private _totalBurned;
     uint256 private _totalMinted;
 
     IERC6551Registry public registry;
@@ -64,6 +66,13 @@ contract TronicMembership is ERC721Enumerable, Initializable {
         _;
     }
 
+    /// @dev Modifier to ensure a token exists.
+    /// @param tokenId The ID of the token to check.
+    modifier tokenExists(uint256 tokenId) {
+        require(_ownerOf(tokenId) != address(0), "Token does not exist");
+        _;
+    }
+
     /// @notice Constructor initializes the ERC721 with empty name and symbol.
     /// @dev The name and symbol can be set using the initialize function.
     /// @dev The constructor is left empty because of the proxy pattern used.
@@ -75,6 +84,10 @@ contract TronicMembership is ERC721Enumerable, Initializable {
     /// @param name_ Name of the token.
     /// @param symbol_ Symbol of the token.
     /// @param uri Base URI of the token.
+    /// @param _maxMembershipTiers Maximum number of membership tiers.
+    /// @param _maxSupply Maximum supply of the token.
+    /// @param _isElastic Whether the max token supply is elastic or not.
+    /// @param _isBound Whether the token is soulbound or not.
     /// @param tronicAdmin Address of the initial admin.
     /// @dev This function is called by the tronicMain contract.
     function initialize(
@@ -86,6 +99,7 @@ contract TronicMembership is ERC721Enumerable, Initializable {
         uint8 _maxMembershipTiers,
         uint256 _maxSupply,
         bool _isElastic,
+        bool _isBound,
         address tronicAdmin
     ) external initializer {
         accountImplementation = _accountImplementation;
@@ -99,6 +113,7 @@ contract TronicMembership is ERC721Enumerable, Initializable {
         _maxTiers = _maxMembershipTiers;
         maxSupply = _maxSupply;
         isElastic = _isElastic;
+        isBound = _isBound;
     }
 
     /// @notice Mints a new token.
@@ -272,7 +287,8 @@ contract TronicMembership is ERC721Enumerable, Initializable {
 
     /// @notice Burns a token with the given ID.
     /// @param tokenId ID of the token to burn.
-    function burn(uint256 tokenId) public onlyAdmin {
+    function burn(uint256 tokenId) external onlyAdmin {
+        ++_totalBurned;
         _burn(tokenId);
     }
 
@@ -307,12 +323,14 @@ contract TronicMembership is ERC721Enumerable, Initializable {
 
     /// @notice Adds an admin.
     /// @param _admin The address of the new admin.
+    /// @dev Only callable by owner.
     function addAdmin(address _admin) external onlyOwner {
         _admins[_admin] = true;
     }
 
     /// @notice Removes an admin.
     /// @param _admin The address of the admin to remove.
+    /// @dev Only callable by owner.
     function removeAdmin(address _admin) external onlyOwner {
         _admins[_admin] = false;
     }
@@ -326,6 +344,7 @@ contract TronicMembership is ERC721Enumerable, Initializable {
 
     /// @notice Updates the implementation of the account.
     /// @param _accountImplementation The new account implementation address.
+    /// @dev Only callable by owner.
     function updateImplementation(address payable _accountImplementation) external onlyOwner {
         accountImplementation = _accountImplementation;
     }
@@ -339,8 +358,26 @@ contract TronicMembership is ERC721Enumerable, Initializable {
 
     /// @notice Transfers ownership of the contract to a new owner.
     /// @param newOwner The address of the new owner.
+    /// @dev Only callable by owner.
     function transferOwnership(address newOwner) public onlyOwner {
         require(newOwner != address(0), "New owner address cannot be zero");
         owner = newOwner;
+    }
+
+    function transferFrom(address from, address to, uint256 tokenId) public override(ERC721) {
+        require(!isBound, "Token is bound");
+        super.transferFrom(from, to, tokenId);
+    }
+
+    function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory _data)
+        public
+        override(ERC721)
+    {
+        require(!isBound, "Token is bound");
+        super.safeTransferFrom(from, to, tokenId, _data);
+    }
+
+    function totalSupply() external view returns (uint256) {
+        return _totalMinted - _totalBurned;
     }
 }

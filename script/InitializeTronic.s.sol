@@ -16,6 +16,9 @@ contract InitializeTronic is Script {
     // max Supply
     uint256 public maxSupply = 10_000;
 
+    // is bound
+    bool public bound = false;
+
     //max tiers
     uint8 public maxTiers = 10;
 
@@ -53,6 +56,7 @@ contract InitializeTronic is Script {
             maxTiers,
             maxSupply,
             false, //not elastic
+            bound,
             tronicAdminAddress
         );
         //initialize erc1155 for tronic token points
