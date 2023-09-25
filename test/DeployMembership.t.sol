@@ -100,7 +100,7 @@ contract DeployMembership is TronicTestBase {
         );
 
         //instance of membershipZERC721
-        TronicMembership membershipZERC721 = TronicMembership(payable(address(membershipZ)));
+        TronicMembership membershipZERC721 = TronicMembership(membershipZ);
 
         // mint token to user1
         vm.prank(tronicAdmin);
@@ -119,5 +119,13 @@ contract DeployMembership is TronicTestBase {
         vm.prank(tronicAdmin);
         vm.expectRevert();
         membershipZERC721.ownerOf(1);
+
+        // test uri now that token is burned
+        vm.expectRevert();
+        membershipZERC721.tokenURI(1);
+
+        // get token membership tier
+        vm.expectRevert();
+        membershipZERC721.getTokenMembership(1);
     }
 }

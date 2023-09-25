@@ -236,10 +236,12 @@ contract TronicMembership is ERC721, Initializable {
     /// @param tierIndex The index of the membership tier to associate with the token.
     /// @dev This function can only be called by an admin.
     /// @dev The tier must exist.
+    /// @dev The token must exist.
     function setTokenMembership(uint256 tokenId, uint8 tierIndex)
         external
         onlyAdmin
         tierExists(tierIndex)
+        tokenExists(tokenId)
     {
         _tokenMemberships[tokenId] = TokenMembership(tierIndex, uint128(block.timestamp));
     }
@@ -247,7 +249,13 @@ contract TronicMembership is ERC721, Initializable {
     /// @notice Retrieves the membership details of a specific token.
     /// @param tokenId The ID of the token whose membership details are to be retrieved.
     /// @return The membership details of the token, represented by a `TokenMembership` struct.
-    function getTokenMembership(uint256 tokenId) external view returns (TokenMembership memory) {
+    /// @dev The token must exist.
+    function getTokenMembership(uint256 tokenId)
+        external
+        view
+        tokenExists(tokenId)
+        returns (TokenMembership memory)
+    {
         return _tokenMemberships[tokenId];
     }
 
@@ -278,11 +286,8 @@ contract TronicMembership is ERC721, Initializable {
     /// @notice Checks if a token has a valid membership.
     /// @param tokenId The ID of the token.
     /// @return True if the token has a valid membership, false otherwise.
-    function isValid(uint256 tokenId) external view returns (bool) {
-        // return false if token does not exist
-        if (_ownerOf(tokenId) == address(0)) {
-            return false;
-        }
+    /// @dev The token must exist.
+    function isValid(uint256 tokenId) external view tokenExists(tokenId) returns (bool) {
         TokenMembership memory membership = _tokenMemberships[tokenId];
         MembershipTier memory tier = _membershipTiers[membership.tierIndex];
         return membership.timestamp + tier.duration > block.timestamp;
@@ -292,6 +297,7 @@ contract TronicMembership is ERC721, Initializable {
     /// @param tokenId ID of the token to burn.
     function burn(uint256 tokenId) external onlyAdmin {
         ++_totalBurned;
+        _tokenMemberships[tokenId] = TokenMembership(0, 0);
         _burn(tokenId);
     }
 
