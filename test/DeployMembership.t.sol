@@ -90,4 +90,34 @@ contract DeployMembership is TronicTestBase {
         console.log("nonFungibleTokenType.totalMinted: ", nonFungibleTokenType.totalMinted);
         console.log("nonFungibleTokenType.baseURI: ", nonFungibleTokenType.baseURI);
     }
+
+    function testBoundMemberships() public {
+        bool isBound = true;
+        // deploy membership with isBound set to false
+        vm.prank(tronicAdmin);
+        (, address membershipZ,) = tronicAdminContract.deployMembership(
+            "membershipZ", "MEMZ", "http://example.com/token/", 10_000, false, isBound
+        );
+
+        //instance of membershipZERC721
+        TronicMembership membershipZERC721 = TronicMembership(payable(address(membershipZ)));
+
+        // mint token to user1
+        vm.prank(tronicAdmin);
+        membershipZERC721.mint(user1);
+
+        // try to transfer token to user2 (should revert because token is soulbound)
+        vm.prank(user1);
+        vm.expectRevert();
+        membershipZERC721.transferFrom(user1, user2, 1);
+
+        // have admin burn it
+        vm.prank(tronicAdmin);
+        membershipZERC721.burn(1);
+
+        // verify that token is burned
+        vm.prank(tronicAdmin);
+        vm.expectRevert();
+        membershipZERC721.ownerOf(1);
+    }
 }

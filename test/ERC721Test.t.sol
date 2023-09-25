@@ -54,6 +54,16 @@ contract ERC721Test is TronicTestBase {
         vm.prank(tronicAdmin);
         tronicERC721.removeAdmin(user1);
         assertEq(tronicERC721.isAdmin(user1), false);
+
+        // transfer ownership
+        vm.prank(tronicAdmin);
+        tronicERC721.transferOwnership(user1);
+        assertEq(tronicERC721.owner(), user1);
+
+        // transfer ownership back
+        vm.prank(user1);
+        tronicERC721.transferOwnership(tronicAdmin);
+        assertEq(tronicERC721.owner(), tronicAdmin);
     }
 
     function testMembershipTiers() public {}

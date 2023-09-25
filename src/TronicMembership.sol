@@ -274,15 +274,18 @@ contract TronicMembership is ERC721, Initializable {
         return 0;
     }
 
-    //function to determine if a token has an expired membership
-    /// @notice Checks if a token has an expired membership.
+    //function to determine if a token has a valid membership
+    /// @notice Checks if a token has a valid membership.
     /// @param tokenId The ID of the token.
-    /// @return True if the token has an expired membership, false otherwise.
-    function isExpired(uint256 tokenId) external view returns (bool) {
+    /// @return True if the token has a valid membership, false otherwise.
+    function isValid(uint256 tokenId) external view returns (bool) {
+        // return false if token does not exist
+        if (_ownerOf(tokenId) == address(0)) {
+            return false;
+        }
         TokenMembership memory membership = _tokenMemberships[tokenId];
         MembershipTier memory tier = _membershipTiers[membership.tierIndex];
-        return membership.timestamp + tier.duration < block.timestamp && membership.timestamp != 0
-            && tier.duration != 0;
+        return membership.timestamp + tier.duration > block.timestamp;
     }
 
     /// @notice Burns a token with the given ID.
@@ -364,11 +367,23 @@ contract TronicMembership is ERC721, Initializable {
         owner = newOwner;
     }
 
+    /// @notice Transfers a token from one address to another.
+    /// @param from The address to transfer the token from.
+    /// @param to The address to transfer the token to.
+    /// @param tokenId The ID of the token to transfer.
+    /// @dev This function overrides the transferFrom function of ERC721.
+    /// @dev it reverts if the token is bound.
     function transferFrom(address from, address to, uint256 tokenId) public override(ERC721) {
         require(!isBound, "Token is bound");
         super.transferFrom(from, to, tokenId);
     }
 
+    /// @notice Safely transfers a token from one address to another.
+    /// @param from The address to transfer the token from.
+    /// @param to The address to transfer the token to.
+    /// @param tokenId The ID of the token to transfer.
+    /// @dev This function overrides the safeTransferFrom function of ERC721.
+    /// @dev it reverts if the token is bound.
     function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory _data)
         public
         override(ERC721)
@@ -377,6 +392,8 @@ contract TronicMembership is ERC721, Initializable {
         super.safeTransferFrom(from, to, tokenId, _data);
     }
 
+    /// @notice Returns the total supply of the token.
+    /// @return The total supply of the token.
     function totalSupply() external view returns (uint256) {
         return _totalMinted - _totalBurned;
     }
