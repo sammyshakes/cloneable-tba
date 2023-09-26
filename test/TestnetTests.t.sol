@@ -7,7 +7,7 @@ import "../src/TronicMain.sol";
 import "../src/interfaces/IERC6551Account.sol";
 
 contract TestnetTests is Test {
-    TronicMain public tronicAdminContract;
+    TronicMain public tronicMainContract;
     TronicMembership public erc721;
     TronicToken public erc1155;
     IERC6551Account public account;
@@ -32,7 +32,7 @@ contract TestnetTests is Test {
     address public registryAddress = vm.envAddress("ERC6551_REGISTRY_ADDRESS");
 
     // deployed tronic contracts
-    address public tronicAdminContractAddress = vm.envAddress("TRONIC_MAIN_CONTRACT_ADDRESS");
+    address public tronicMainContractAddress = vm.envAddress("TRONIC_MAIN_CONTRACT_ADDRESS");
     address public erc721Address = vm.envAddress("TRONIC_MEMBERSHIP_ERC721_ADDRESS");
     address public erc1155Address = vm.envAddress("TRONIC_TOKEN_ERC1155_ADDRESS");
 
@@ -56,7 +56,7 @@ contract TestnetTests is Test {
         accountX = IERC6551Account(payable(tbaAddressXTokenID1));
         accountY = IERC6551Account(payable(tbaAddressYTokenID1));
 
-        tronicAdminContract = TronicMain(tronicAdminContractAddress);
+        tronicMainContract = TronicMain(tronicMainContractAddress);
     }
 
     function testTransferERC1155FromNestedAccount() public {
@@ -199,11 +199,11 @@ contract TestnetTests is Test {
 
         // Expect the cloneERC1155 function to be reverted due to unauthorized access
         vm.expectRevert();
-        tronicAdminContract.deployMembership("", "", "", 0, false, false);
+        tronicMainContract.deployMembership("", "", "", 0, false, false);
 
         // Expect the cloneERC721 function to be reverted due to unauthorized access
         vm.expectRevert();
-        tronicAdminContract.deployMembership(
+        tronicMainContract.deployMembership(
             "Unauthorized721", "UN721", "http://unauthorized721.com/", 10_000, false, false
         );
     }

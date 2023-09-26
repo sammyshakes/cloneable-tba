@@ -14,7 +14,7 @@ import "../src/interfaces/IERC6551Account.sol";
 /// Details:
 ///
 /// - Deploys TronicMain and assigns roles
-///   - tronicAdminContract: The main TronicMain contract
+///   - tronicMainContract: The main TronicMain contract
 ///   - tronicOwner: Owner account for TronicMain
 ///   - tronicAdmin: Admin account for TronicMain
 ///
@@ -58,7 +58,7 @@ contract TronicTestBase is Test {
     uint8 public constant TronicTier1Index = 1;
     uint8 public constant TronicTier2Index = 2;
 
-    TronicMain tronicAdminContract;
+    TronicMain tronicMainContract;
     TronicMembership tronicERC721;
     TronicToken tronicERC1155;
 
@@ -115,11 +115,11 @@ contract TronicTestBase is Test {
         tronicERC721 = new TronicMembership();
         tronicERC1155 = new TronicToken();
 
-        tronicAdminContract =
+        tronicMainContract =
         new TronicMain(tronicAdmin, address(tronicERC721), address(tronicERC1155), registryAddress, defaultTBAImplementationAddress);
 
         //initialize Tronic erc1155
-        tronicERC1155.initialize(address(tronicAdminContract));
+        tronicERC1155.initialize(address(tronicMainContract));
 
         //initialize tronicERC721
         tronicERC721.initialize(
@@ -141,13 +141,13 @@ contract TronicTestBase is Test {
         vm.startPrank(tronicAdmin);
 
         //set admin
-        tronicERC721.addAdmin(address(tronicAdminContract));
+        tronicERC721.addAdmin(address(tronicMainContract));
 
-        (membershipIDX, clone721AddressX, clone1155AddressX) = tronicAdminContract.deployMembership(
+        (membershipIDX, clone721AddressX, clone1155AddressX) = tronicMainContract.deployMembership(
             "XClone721", "XCL721", "http://Xclone721.com/", 10_000, true, false
         );
 
-        (membershipIDY, clone721AddressY, clone1155AddressY) = tronicAdminContract.deployMembership(
+        (membershipIDY, clone721AddressY, clone1155AddressY) = tronicMainContract.deployMembership(
             "YClone721", "YCL721", "http://Yclone721.com/", 10_000, true, false
         );
 
@@ -156,23 +156,21 @@ contract TronicTestBase is Test {
         string memory initialUriX = "http://setup-exampleX.com/token/";
         string memory initialUriY = "http://setup-exampleY.com/token/";
 
-        fungibleTypeIdX1 = tronicAdminContract.createFungibleTokenType(
-            initialMaxSupply, initialUriX, membershipIDX
-        );
+        fungibleTypeIdX1 =
+            tronicMainContract.createFungibleTokenType(initialMaxSupply, initialUriX, membershipIDX);
 
-        fungibleTypeIdY1 = tronicAdminContract.createFungibleTokenType(
-            initialMaxSupply, initialUriY, membershipIDY
-        );
+        fungibleTypeIdY1 =
+            tronicMainContract.createFungibleTokenType(initialMaxSupply, initialUriY, membershipIDY);
 
         nonFungibleTypeIdX1 =
-            tronicAdminContract.createNonFungibleTokenType(initialUriX, 1_000_000, membershipIDX);
+            tronicMainContract.createNonFungibleTokenType(initialUriX, 1_000_000, membershipIDX);
 
         nonFungibleTypeIdY1 =
-            tronicAdminContract.createNonFungibleTokenType(initialUriY, 25_000, membershipIDY);
+            tronicMainContract.createNonFungibleTokenType(initialUriY, 25_000, membershipIDY);
 
         vm.stopPrank();
 
-        vm.startPrank(address(tronicAdminContract));
+        vm.startPrank(address(tronicMainContract));
 
         //mint TronicMembership nfts to users 1-4 and return their tbas
         tronicTokenId1TBA = tronicERC721.mint(user1);
@@ -202,8 +200,8 @@ contract TronicTestBase is Test {
         vm.stopPrank();
 
         // get membership x and y details, membership ids: x=0 and y=1
-        membershipX = tronicAdminContract.getMembershipInfo(membershipIDX);
-        membershipY = tronicAdminContract.getMembershipInfo(membershipIDY);
+        membershipX = tronicMainContract.getMembershipInfo(membershipIDX);
+        membershipY = tronicMainContract.getMembershipInfo(membershipIDY);
 
         // get membership contracts
         membershipXERC721 = TronicMembership(membershipX.membershipAddress);

@@ -11,7 +11,7 @@ contract TokenboundAccountTest is TronicTestBase {
         console.log("SETUP - registry address: ", registryAddress);
 
         // Mint test token
-        vm.prank(address(tronicAdminContract));
+        vm.prank(address(tronicMainContract));
         //tokenid 1 was already minted in the setup function
         uint256 tokenId = 2;
         assertEq(tronicERC721.ownerOf(tokenId), user2);

@@ -9,7 +9,7 @@ contract MembershipTest is TronicTestBase {
         bool isBound = false;
         // deploy membership with isBound set to false
         vm.prank(tronicAdmin);
-        (, address membershipZ,) = tronicAdminContract.deployMembership(
+        (, address membershipZ,) = tronicMainContract.deployMembership(
             "membershipZ", "MEMZ", "http://example.com/token/", 10_000, false, isBound
         );
 
@@ -40,12 +40,10 @@ contract MembershipTest is TronicTestBase {
         // check if token membership is valid
         assertEq(membershipZERC721.isValid(1), true);
 
-        vm.warp(block.timestamp + 102);
+        // expire token membership
+        vm.warp(block.timestamp + 101);
 
-        // check if token membership is valid
+        // ensure token membership is expired
         assertEq(membershipZERC721.isValid(1), false);
-
-        //get token membership tier
-        membershipZERC721.getTokenMembership(1);
     }
 }

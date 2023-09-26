@@ -12,7 +12,7 @@ contract ERC721Test is TronicTestBase {
         console.log("SETUP - registry address: ", registryAddress);
 
         // Mint test token
-        vm.prank(address(tronicAdminContract));
+        vm.prank(address(tronicMainContract));
         //tokenids 1-4 were already minted in the setup function to users 1-4
         uint256 tokenId = 2;
 

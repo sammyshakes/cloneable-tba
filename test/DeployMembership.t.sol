@@ -12,9 +12,9 @@ contract DeployMembership is TronicTestBase {
         assertEq(tronicAdmin, membershipYERC721.owner());
         assertEq(tronicAdmin, membershipYERC1155.owner());
 
-        // check if tronicAdminContract isAdmin
-        assertEq(membershipXERC721.isAdmin(address(tronicAdminContract)), true);
-        assertEq(tronicAdminContract.isAdmin(tronicAdmin), true);
+        // check if tronicMainContract isAdmin
+        assertEq(membershipXERC721.isAdmin(address(tronicMainContract)), true);
+        assertEq(tronicMainContract.isAdmin(tronicAdmin), true);
 
         //get name and symbol
         console.log("membershipXERC721 name: ", membershipXERC721.name());
@@ -28,7 +28,7 @@ contract DeployMembership is TronicTestBase {
         // console.log("membershipXERC721 membership tier: ", membershipXERC721.getMembershipTier(1));
 
         address user1TBAmembershipX =
-            tronicAdminContract.mintMembership(tronicTokenId1TBA, membershipIDX);
+            tronicMainContract.mintMembership(tronicTokenId1TBA, membershipIDX);
         // get tba account address
         address tbaAccount = membershipXERC721.getTBAccount(1);
         console.log("tbaAccount: ", tbaAccount);
@@ -39,7 +39,7 @@ contract DeployMembership is TronicTestBase {
 
         // Membership Y onboards a new user
         address user2TBAmembershipY =
-            tronicAdminContract.mintMembership(tronicTokenId2TBA, membershipIDY);
+            tronicMainContract.mintMembership(tronicTokenId2TBA, membershipIDY);
 
         // get tba account address
         address tbaAccountY = membershipYERC721.getTBAccount(1);
@@ -63,7 +63,7 @@ contract DeployMembership is TronicTestBase {
     function testCreateTypesFromFromAdmin() public {
         vm.startPrank(tronicAdmin);
         // create fungible token type for membershipx
-        uint256 typeId = tronicAdminContract.createFungibleTokenType(
+        uint256 typeId = tronicMainContract.createFungibleTokenType(
             1000, "http://example.com/token/", membershipIDX
         );
 
@@ -77,7 +77,7 @@ contract DeployMembership is TronicTestBase {
         console.log("tokenType.totalBurned: ", tokenType.totalBurned);
 
         // create non fungible token type
-        typeId = tronicAdminContract.createNonFungibleTokenType(
+        typeId = tronicMainContract.createNonFungibleTokenType(
             "http://example.com/token/", 10_000, membershipIDX
         );
 
@@ -95,16 +95,16 @@ contract DeployMembership is TronicTestBase {
         bool isBound = true;
         // deploy membership with isBound set to false
         vm.prank(tronicAdmin);
-        (, address membershipZ,) = tronicAdminContract.deployMembership(
+        (, address membershipZ,) = tronicMainContract.deployMembership(
             "membershipZ", "MEMZ", "http://example.com/token/", 10_000, false, isBound
         );
 
         //instance of membershipZERC721
         TronicMembership membershipZERC721 = TronicMembership(membershipZ);
 
-        // mint token to user1
+        // mint token to user1's TBA
         vm.prank(tronicAdmin);
-        membershipZERC721.mint(user1);
+        membershipZERC721.mint(tronicTokenId1TBA);
 
         // try to transfer token to user2 (should revert because token is soulbound)
         vm.prank(user1);

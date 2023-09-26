@@ -379,7 +379,7 @@ contract TronicMembership is ERC721, Initializable {
     /// @param tokenId The ID of the token to transfer.
     /// @dev This function overrides the transferFrom function of ERC721.
     /// @dev it reverts if the token is bound.
-    function transferFrom(address from, address to, uint256 tokenId) public override(ERC721) {
+    function transferFrom(address from, address to, uint256 tokenId) public override {
         require(!isBound, "Token is bound");
         super.transferFrom(from, to, tokenId);
     }
@@ -392,7 +392,7 @@ contract TronicMembership is ERC721, Initializable {
     /// @dev it reverts if the token is bound.
     function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory _data)
         public
-        override(ERC721)
+        override
     {
         require(!isBound, "Token is bound");
         super.safeTransferFrom(from, to, tokenId, _data);
