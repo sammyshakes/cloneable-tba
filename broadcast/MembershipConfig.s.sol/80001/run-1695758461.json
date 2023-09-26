@@ -1,0 +1,157 @@
+{
+  "transactions": [
+    {
+      "hash": "0x6499439e4f29cc251c6335d92f54accc7c2cc1bc82ad0de7615800126d76fc53",
+      "transactionType": "CALL",
+      "contractName": "TronicToken",
+      "contractAddress": "0x9Eb6A0742c70A0Fc5288fB897eAb8A0aC1B651d4",
+      "function": "createFungibleType(uint64,string):(uint256)",
+      "arguments": [
+        "1000000",
+        "https://ipfs.io/ipfs/QmdFRfXc7gmqYv61ywsFdWkUuVktccZ1jkH8eNUBsyCBPf/1"
+      ],
+      "transaction": {
+        "type": "0x02",
+        "from": "0xddddf33b5301b9479cdcbcfff22946e9b54ea76d",
+        "to": "0x9eb6a0742c70a0fc5288fb897eab8a0ac1b651d4",
+        "gas": "0x321a0",
+        "value": "0x0",
+        "data": "0x2dfb9ff000000000000000000000000000000000000000000000000000000000000f42400000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000004568747470733a2f2f697066732e696f2f697066732f516d64465266586337676d71597636317977734664576b5575566b7463635a316a6b4838654e55427379434250662f31000000000000000000000000000000000000000000000000000000",
+        "nonce": "0x10",
+        "accessList": []
+      },
+      "additionalContracts": [],
+      "isFixedGasLimit": false
+    },
+    {
+      "hash": "0x242eae16fdefdcc77a9127b01ddedad6f15af5aebaf3c7c281f36ef76be08aef",
+      "transactionType": "CALL",
+      "contractName": "TronicToken",
+      "contractAddress": "0x9Eb6A0742c70A0Fc5288fB897eAb8A0aC1B651d4",
+      "function": "createFungibleType(uint64,string):(uint256)",
+      "arguments": [
+        "500000",
+        "https://ipfs.io/ipfs/QmdFRfXc7gmqYv61ywsFdWkUuVktccZ1jkH8eNUBsyCBPf/2"
+      ],
+      "transaction": {
+        "type": "0x02",
+        "from": "0xddddf33b5301b9479cdcbcfff22946e9b54ea76d",
+        "to": "0x9eb6a0742c70a0fc5288fb897eab8a0ac1b651d4",
+        "gas": "0x321a0",
+        "value": "0x0",
+        "data": "0x2dfb9ff0000000000000000000000000000000000000000000000000000000000007a1200000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000004568747470733a2f2f697066732e696f2f697066732f516d64465266586337676d71597636317977734664576b5575566b7463635a316a6b4838654e55427379434250662f32000000000000000000000000000000000000000000000000000000",
+        "nonce": "0x11",
+        "accessList": []
+      },
+      "additionalContracts": [],
+      "isFixedGasLimit": false
+    },
+    {
+      "hash": "0x6f9eeae8416d2728fcabcae9af5da38fbb1a02f53daeb4992a4d6aeb5b65e4be",
+      "transactionType": "CALL",
+      "contractName": "TronicToken",
+      "contractAddress": "0x9Eb6A0742c70A0Fc5288fB897eAb8A0aC1B651d4",
+      "function": "createFungibleType(uint64,string):(uint256)",
+      "arguments": [
+        "250000",
+        "https://ipfs.io/ipfs/QmdFRfXc7gmqYv61ywsFdWkUuVktccZ1jkH8eNUBsyCBPf/3"
+      ],
+      "transaction": {
+        "type": "0x02",
+        "from": "0xddddf33b5301b9479cdcbcfff22946e9b54ea76d",
+        "to": "0x9eb6a0742c70a0fc5288fb897eab8a0ac1b651d4",
+        "gas": "0x321a0",
+        "value": "0x0",
+        "data": "0x2dfb9ff0000000000000000000000000000000000000000000000000000000000003d0900000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000004568747470733a2f2f697066732e696f2f697066732f516d64465266586337676d71597636317977734664576b5575566b7463635a316a6b4838654e55427379434250662f33000000000000000000000000000000000000000000000000000000",
+        "nonce": "0x12",
+        "accessList": []
+      },
+      "additionalContracts": [],
+      "isFixedGasLimit": false
+    },
+    {
+      "hash": "0x75420ae394ad9b731306d778c8ebabfa0e8a43ac30e29c4d8fcff7ce6b9696a9",
+      "transactionType": "CALL",
+      "contractName": "TronicToken",
+      "contractAddress": "0x2AF8B8bE90A38E5Fb6c94A5043c942a4ffe3A658",
+      "function": "createFungibleType(uint64,string):(uint256)",
+      "arguments": [
+        "10000000",
+        "https://ipfs.io/ipfs/QmUU9wdedSCtrZFs5nPSeAggpoXeJ7WNKvtGJJLwa3czqn/1"
+      ],
+      "transaction": {
+        "type": "0x02",
+        "from": "0xddddf33b5301b9479cdcbcfff22946e9b54ea76d",
+        "to": "0x2af8b8be90a38e5fb6c94a5043c942a4ffe3a658",
+        "gas": "0x321a0",
+        "value": "0x0",
+        "data": "0x2dfb9ff000000000000000000000000000000000000000000000000000000000009896800000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000004568747470733a2f2f697066732e696f2f697066732f516d55553977646564534374725a4673356e505365416767706f58654a37574e4b7674474a4a4c776133637a716e2f31000000000000000000000000000000000000000000000000000000",
+        "nonce": "0x13",
+        "accessList": []
+      },
+      "additionalContracts": [],
+      "isFixedGasLimit": false
+    },
+    {
+      "hash": "0xece823d5bb3e3a3133b7cff8830510bc2eb96e5acbadf47969c6394f2d997d8c",
+      "transactionType": "CALL",
+      "contractName": "TronicToken",
+      "contractAddress": "0x2AF8B8bE90A38E5Fb6c94A5043c942a4ffe3A658",
+      "function": "createFungibleType(uint64,string):(uint256)",
+      "arguments": [
+        "5000000",
+        "https://ipfs.io/ipfs/QmUU9wdedSCtrZFs5nPSeAggpoXeJ7WNKvtGJJLwa3czqn/2"
+      ],
+      "transaction": {
+        "type": "0x02",
+        "from": "0xddddf33b5301b9479cdcbcfff22946e9b54ea76d",
+        "to": "0x2af8b8be90a38e5fb6c94a5043c942a4ffe3a658",
+        "gas": "0x321a0",
+        "value": "0x0",
+        "data": "0x2dfb9ff000000000000000000000000000000000000000000000000000000000004c4b400000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000004568747470733a2f2f697066732e696f2f697066732f516d55553977646564534374725a4673356e505365416767706f58654a37574e4b7674474a4a4c776133637a716e2f32000000000000000000000000000000000000000000000000000000",
+        "nonce": "0x14",
+        "accessList": []
+      },
+      "additionalContracts": [],
+      "isFixedGasLimit": false
+    },
+    {
+      "hash": "0x02283886742dccfe368e5495f2c8b18ad850bf3f2702bbeab2fb1d0028745c84",
+      "transactionType": "CALL",
+      "contractName": "TronicToken",
+      "contractAddress": "0x2AF8B8bE90A38E5Fb6c94A5043c942a4ffe3A658",
+      "function": "createFungibleType(uint64,string):(uint256)",
+      "arguments": [
+        "2000000",
+        "https://ipfs.io/ipfs/QmUU9wdedSCtrZFs5nPSeAggpoXeJ7WNKvtGJJLwa3czqn/3"
+      ],
+      "transaction": {
+        "type": "0x02",
+        "from": "0xddddf33b5301b9479cdcbcfff22946e9b54ea76d",
+        "to": "0x2af8b8be90a38e5fb6c94a5043c942a4ffe3a658",
+        "gas": "0x321a0",
+        "value": "0x0",
+        "data": "0x2dfb9ff000000000000000000000000000000000000000000000000000000000001e84800000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000004568747470733a2f2f697066732e696f2f697066732f516d55553977646564534374725a4673356e505365416767706f58654a37574e4b7674474a4a4c776133637a716e2f33000000000000000000000000000000000000000000000000000000",
+        "nonce": "0x15",
+        "accessList": []
+      },
+      "additionalContracts": [],
+      "isFixedGasLimit": false
+    }
+  ],
+  "receipts": [],
+  "libraries": [],
+  "pending": [
+    "0x6499439e4f29cc251c6335d92f54accc7c2cc1bc82ad0de7615800126d76fc53",
+    "0x242eae16fdefdcc77a9127b01ddedad6f15af5aebaf3c7c281f36ef76be08aef",
+    "0x6f9eeae8416d2728fcabcae9af5da38fbb1a02f53daeb4992a4d6aeb5b65e4be",
+    "0x75420ae394ad9b731306d778c8ebabfa0e8a43ac30e29c4d8fcff7ce6b9696a9",
+    "0xece823d5bb3e3a3133b7cff8830510bc2eb96e5acbadf47969c6394f2d997d8c",
+    "0x02283886742dccfe368e5495f2c8b18ad850bf3f2702bbeab2fb1d0028745c84"
+  ],
+  "returns": {},
+  "timestamp": 1695758461,
+  "chain": 80001,
+  "multi": false,
+  "commit": "04215ea"
+}

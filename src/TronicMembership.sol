@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
-
-pragma solidity 0.8.20;
+pragma solidity ^0.8.19;
 
 import "./interfaces/IERC6551Registry.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
@@ -373,7 +372,7 @@ contract TronicMembership is ERC721, Initializable {
         owner = newOwner;
     }
 
-    /// @notice Transfers a token from one address to another.
+    /// @notice Transfers an unbound token from one address to another.
     /// @param from The address to transfer the token from.
     /// @param to The address to transfer the token to.
     /// @param tokenId The ID of the token to transfer.
@@ -384,7 +383,7 @@ contract TronicMembership is ERC721, Initializable {
         super.transferFrom(from, to, tokenId);
     }
 
-    /// @notice Safely transfers a token from one address to another.
+    /// @notice Safely transfers an unbound token from one address to another.
     /// @param from The address to transfer the token from.
     /// @param to The address to transfer the token to.
     /// @param tokenId The ID of the token to transfer.

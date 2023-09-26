@@ -30,7 +30,7 @@ TODO:
 Verifies all contracts on etherscan
 
 ```bash
-forge script script/DeployTronic.s.sol:DeployTronic -vvvv --rpc-url sepolia --broadcast --verify
+forge script script/DeployTronic.s.sol:DeployTronic -vvvv --rpc-url mumbai --broadcast --verify
 ```
 
 ```r
@@ -38,10 +38,10 @@ forge script script/DeployTronic.s.sol:DeployTronic -vvvv --rpc-url sepolia --br
 ERC6551_REGISTRY_ADDRESS=0x02101dfB77FDE026414827Fdc604ddAF224F0921
 TOKENBOUND_ACCOUNT_DEFAULT_IMPLEMENTATION_ADDRESS=0x2d25602551487c3f3354dd80d76d54383a243358
 
-# deployed testnet contract addresses (sepolia)
-TRONIC_MEMBERSHIP_ERC721_ADDRESS=0xa23161C76f1f5E91607Da899e909A1355C4dAAcb
-TRONIC_TOKEN_ERC1155_ADDRESS=0x704Bb35954f1b425B8D1Ca5cD4a8219ac5B1C2E1
-TRONIC_MAIN_CONTRACT_ADDRESS=0x10900dA08f0515dC93C589169953B5ef87E33adc
+# deployed testnet contract addresses (mumbai)
+TRONIC_MEMBERSHIP_ERC721_ADDRESS=0xB5c837FD932FBED9Ef38203AaD6F07dc5A35272C
+TRONIC_TOKEN_ERC1155_ADDRESS=0xdb02312EF6d6ec9c24Fc77A18d1F91A7Ef796A07
+TRONIC_MAIN_CONTRACT_ADDRESS=0xfEfbE525f9Cd75E026B7bfE2d51f861aE82f00cA
 
 ```
 
@@ -52,7 +52,7 @@ TRONIC_MAIN_CONTRACT_ADDRESS=0x10900dA08f0515dC93C589169953B5ef87E33adc
 - Creates 4 Fungible Reward Tokens for Tronic
 
 ```bash
-forge script script/InitializeTronic.s.sol:InitializeTronic -vvvv --rpc-url sepolia --broadcast
+forge script script/InitializeTronic.s.sol:InitializeTronic -vvvv --rpc-url mumbai --broadcast
 ```
 
 ### `DeployMembership.s.sol` - Deploys New Memberships (Memberships X and Y)
@@ -63,17 +63,17 @@ forge script script/InitializeTronic.s.sol:InitializeTronic -vvvv --rpc-url sepo
 - Creates fungible loyalty tokens for both memberships
 
 ```bash
-forge script script/DeployMembership.s.sol:DeployMembership -vvvv --rpc-url sepolia --broadcast
+forge script script/DeployMembership.s.sol:DeployMembership -vvvv --rpc-url mumbai --broadcast
 ```
 
 ```r
 # MEMBERSHIP x contracts
-MEMBERSHIP_X_ERC721_ADDRESS=0x0256fAdb74B480aE49F0930a5913466005118f26
-MEMBERSHIP_X_ERC1155_ADDRESS=0xd93937E53d87973435AF7277B8C171CA9BC68769
+MEMBERSHIP_X_ERC721_ADDRESS=0x1d2aAb95192632674BA7CBf8c0105D8782fb9897
+MEMBERSHIP_X_ERC1155_ADDRESS=0x9Eb6A0742c70A0Fc5288fB897eAb8A0aC1B651d4
 
 # MEMBERSHIP y contracts
-MEMBERSHIP_Y_ERC721_ADDRESS=0xD01d94073d0aB4Cc5AF318aaF8D67Ee89259f131
-MEMBERSHIP_Y_ERC1155_ADDRESS=0xdC4f015d90454600CfB735b8f1f80Bdf1468A900
+MEMBERSHIP_Y_ERC721_ADDRESS=0xc5a11d5FF21C987908F95495BF12B404E551F225
+MEMBERSHIP_Y_ERC1155_ADDRESS=0x2AF8B8bE90A38E5Fb6c94A5043c942a4ffe3A658
 ```
 
 ### `MembershipConfig.s.sol` - Creates Fungible Types for Memberships X and Y
@@ -81,7 +81,7 @@ MEMBERSHIP_Y_ERC1155_ADDRESS=0xdC4f015d90454600CfB735b8f1f80Bdf1468A900
 - Creates three fungible reward tokens for both Memberships
 
 ```bash
-forge script script/MembershipConfig.s.sol:MembershipConfig -vvvv --rpc-url sepolia --broadcast
+forge script script/MembershipConfig.s.sol:MembershipConfig -vvvv --rpc-url mumbai --broadcast
 ```
 
 ### `NewUserEntry.s.sol` - A New User subscribes to Tronic Membership
@@ -91,12 +91,12 @@ forge script script/MembershipConfig.s.sol:MembershipConfig -vvvv --rpc-url sepo
 - Mints 100 Tronic A Loyalty Tokens to user
 
 ```bash
-forge script script/NewUserEntry.s.sol:NewUserEntry -vvvv --rpc-url sepolia --broadcast
+forge script script/NewUserEntry.s.sol:NewUserEntry -vvvv --rpc-url mumbai --broadcast
 ```
 
 ```r
 # Tokenbound Account
-TOKENBOUND_ACCOUNT_TOKENID_1=0x5B095fA9f69062Ed7ed78e436075555ad4c4d555
+TOKENBOUND_ACCOUNT_TOKENID_1=0x36a0f8A50A27F08812dD64f975b2C2D71C6F895A
 ```
 
 ### `NewUserEarns1.s.sol` - New User Earns (PART 1) - Subscribes to Memberships X and Y
@@ -107,13 +107,13 @@ TOKENBOUND_ACCOUNT_TOKENID_1=0x5B095fA9f69062Ed7ed78e436075555ad4c4d555
 NOTE: This will create tokenbound accounts for each membership nft
 
 ```bash
-forge script script/NewUserEarns1.s.sol:NewUserEarns1 -vvvv --rpc-url sepolia --broadcast
+forge script script/NewUserEarns1.s.sol:NewUserEarns1 -vvvv --rpc-url mumbai --broadcast
 ```
 
 ```r
 # tokenbound accounts for project nfts
-MEMBERSHIP_X_TOKENBOUND_ACCOUNT_TOKENID_1=0xd0030707C2853261F0829e3915b3b16B94ba6429
-MEMBERSHIP_Y_TOKENBOUND_ACCOUNT_TOKENID_1=0xBB2d7cf4853358590aF8E3EDB9c5b1740673BA52
+MEMBERSHIP_X_TOKENBOUND_ACCOUNT_TOKENID_1=0xc733492d9Df311c186592e610395464fF7a5E869
+MEMBERSHIP_Y_TOKENBOUND_ACCOUNT_TOKENID_1=0xFEea142f892dF67fED359156e0ac57B9488d270A
 ```
 
 ### `NewUserEarns2.s.sol` - New User Earns (PART 2) - Loyalty Tokens from Memberships X and Y
@@ -124,7 +124,7 @@ MEMBERSHIP_Y_TOKENBOUND_ACCOUNT_TOKENID_1=0xBB2d7cf4853358590aF8E3EDB9c5b1740673
 - User receives 50 Membership Y Loyalty B Tokens
 
 ```bash
-forge script script/NewUserEarns2.s.sol:NewUserEarns2 -vvvv --rpc-url sepolia --broadcast
+forge script script/NewUserEarns2.s.sol:NewUserEarns2 -vvvv --rpc-url mumbai --broadcast
 ```
 
 ### `NewUserEarns3.s.sol` - New User Earns (PART 3) - Loyalty Tokens from Membership X and TRONIC
@@ -133,5 +133,5 @@ forge script script/NewUserEarns2.s.sol:NewUserEarns2 -vvvv --rpc-url sepolia --
 - User receives 10 TRONIC Loyalty B Tokens
 
 ```bash
-forge script script/NewUserEarns3.s.sol:NewUserEarns3 -vvvv --rpc-url sepolia --broadcast
+forge script script/NewUserEarns3.s.sol:NewUserEarns3 -vvvv --rpc-url mumbai --broadcast
 ```

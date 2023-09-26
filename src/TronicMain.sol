@@ -196,7 +196,7 @@ contract TronicMain {
         nftTypeID = TronicToken(membership.tokenAddress).createNFTType(baseUri, maxMintable);
     }
 
-    /// @notice Mints a new ERC721 token.
+    /// @notice Mints a new ERC721 token for a specified membership.
     /// @param _recipient The address to mint the token to.
     /// @param _membershipId The ID of the membership to mint the token for.
     /// @return The address of the newly created token account.
@@ -305,7 +305,7 @@ contract TronicMain {
         address _to,
         uint256 _transferTokenId,
         uint256 _amount
-    ) public {
+    ) external {
         // get Tronic TBA address for tronic token id
         address payable tronicTbaAddress = payable(tronicMembership.getTBAccount(_tronicTokenId));
         IERC6551Account tronicTBA = IERC6551Account(tronicTbaAddress);

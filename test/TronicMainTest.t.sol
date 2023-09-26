@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 
 import "./TronicTestBase.t.sol";
 
-contract TronicAdminTest is TronicTestBase {
+contract TronicMainTest is TronicTestBase {
     function testInitialSetup() public {
         assertEq(tronicMainContract.owner(), tronicOwner);
         assertEq(tronicMainContract.membershipCounter(), 2);
@@ -30,7 +30,7 @@ contract TronicAdminTest is TronicTestBase {
         assertEq(tronicAdmin, membershipYERC721.owner());
         assertEq(tronicAdmin, membershipYERC1155.owner());
 
-        // get owner of tokenid 0
+        // get owner of tokenid 1
         address owner = tronicERC721.ownerOf(1);
         console.log("owner of tokenid 1: ", owner);
     }

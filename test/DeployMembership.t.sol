@@ -95,7 +95,7 @@ contract DeployMembership is TronicTestBase {
         bool isBound = true;
         // deploy membership with isBound set to false
         vm.prank(tronicAdmin);
-        (, address membershipZ,) = tronicMainContract.deployMembership(
+        (uint256 membershipID, address membershipZ,) = tronicMainContract.deployMembership(
             "membershipZ", "MEMZ", "http://example.com/token/", 10_000, false, isBound
         );
 
@@ -106,10 +106,21 @@ contract DeployMembership is TronicTestBase {
         vm.prank(tronicAdmin);
         membershipZERC721.mint(tronicTokenId1TBA);
 
-        // try to transfer token to user2 (should revert because token is soulbound)
-        vm.prank(user1);
-        vm.expectRevert();
-        membershipZERC721.transferFrom(user1, user2, 1);
+        // try to transfer token to user2's tba (should revert because token is soulbound)
+        vm.startPrank(user1);
+        //setPermissions for tronicMainContract to transfer membership
+        bool[] memory approvedValues = new bool[](1);
+        approvedValues[0] = true;
+        address[] memory approved = new address[](1);
+        approved[0] = address(tronicMainContract);
+
+        IERC6551Account tokenId1TronicTBA = IERC6551Account(payable(address(tronicTokenId1TBA)));
+        tokenId1TronicTBA.setPermissions(approved, approvedValues);
+
+        // transfer user1's membershipZ nft to user2's tba
+        vm.expectRevert("Token is bound");
+        tronicMainContract.transferMembershipFromTronicTBA(1, membershipID, 1, tronicTokenId2TBA);
+        vm.stopPrank();
 
         // have admin burn it
         vm.prank(tronicAdmin);
@@ -125,7 +136,7 @@ contract DeployMembership is TronicTestBase {
         membershipZERC721.tokenURI(1);
 
         // get token membership tier
-        vm.expectRevert();
+        vm.expectRevert("Token does not exist");
         membershipZERC721.getTokenMembership(1);
     }
 }
