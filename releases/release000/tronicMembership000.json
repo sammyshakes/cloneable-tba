@@ -10,6 +10,11 @@
         "type": "error"
     },
     {
+        "inputs": [],
+        "name": "ERC721EnumerableForbiddenBatchMint",
+        "type": "error"
+    },
+    {
         "inputs": [
             {
                 "internalType": "address",
@@ -110,6 +115,22 @@
             }
         ],
         "name": "ERC721NonexistentToken",
+        "type": "error"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "owner",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "index",
+                "type": "uint256"
+            }
+        ],
+        "name": "ERC721OutOfBoundsIndex",
         "type": "error"
     },
     {
@@ -284,52 +305,6 @@
     {
         "inputs": [
             {
-                "internalType": "string",
-                "name": "tierId",
-                "type": "string"
-            },
-            {
-                "internalType": "uint128",
-                "name": "duration",
-                "type": "uint128"
-            },
-            {
-                "internalType": "bool",
-                "name": "isOpen",
-                "type": "bool"
-            }
-        ],
-        "name": "createMembershipTier",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "string[]",
-                "name": "tierIds",
-                "type": "string[]"
-            },
-            {
-                "internalType": "uint128[]",
-                "name": "durations",
-                "type": "uint128[]"
-            },
-            {
-                "internalType": "bool[]",
-                "name": "isOpens",
-                "type": "bool[]"
-            }
-        ],
-        "name": "createMembershipTiers",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
                 "internalType": "uint256",
                 "name": "tokenId",
                 "type": "uint256"
@@ -349,48 +324,12 @@
     {
         "inputs": [
             {
-                "internalType": "uint8",
-                "name": "tierIndex",
-                "type": "uint8"
+                "internalType": "uint256",
+                "name": "tokenId",
+                "type": "uint256"
             }
         ],
-        "name": "getMembershipTierDetails",
-        "outputs": [
-            {
-                "components": [
-                    {
-                        "internalType": "string",
-                        "name": "tierId",
-                        "type": "string"
-                    },
-                    {
-                        "internalType": "uint128",
-                        "name": "duration",
-                        "type": "uint128"
-                    },
-                    {
-                        "internalType": "bool",
-                        "name": "isOpen",
-                        "type": "bool"
-                    }
-                ],
-                "internalType": "struct TronicMembership.MembershipTier",
-                "name": "",
-                "type": "tuple"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint8",
-                "name": "tierIndex",
-                "type": "uint8"
-            }
-        ],
-        "name": "getMembershipTierId",
+        "name": "getMembershipTier",
         "outputs": [
             {
                 "internalType": "string",
@@ -415,56 +354,6 @@
                 "internalType": "address",
                 "name": "",
                 "type": "address"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "string",
-                "name": "tierId",
-                "type": "string"
-            }
-        ],
-        "name": "getTierIndexByTierId",
-        "outputs": [
-            {
-                "internalType": "uint8",
-                "name": "",
-                "type": "uint8"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "tokenId",
-                "type": "uint256"
-            }
-        ],
-        "name": "getTokenMembership",
-        "outputs": [
-            {
-                "components": [
-                    {
-                        "internalType": "uint8",
-                        "name": "tierIndex",
-                        "type": "uint8"
-                    },
-                    {
-                        "internalType": "uint128",
-                        "name": "timestamp",
-                        "type": "uint128"
-                    }
-                ],
-                "internalType": "struct TronicMembership.TokenMembership",
-                "name": "",
-                "type": "tuple"
             }
         ],
         "stateMutability": "view",
@@ -498,24 +387,9 @@
                 "type": "string"
             },
             {
-                "internalType": "uint8",
-                "name": "_maxMembershipTiers",
-                "type": "uint8"
-            },
-            {
                 "internalType": "uint256",
                 "name": "_maxSupply",
                 "type": "uint256"
-            },
-            {
-                "internalType": "bool",
-                "name": "_isElastic",
-                "type": "bool"
-            },
-            {
-                "internalType": "bool",
-                "name": "_isBound",
-                "type": "bool"
             },
             {
                 "internalType": "address",
@@ -561,51 +435,6 @@
             }
         ],
         "name": "isApprovedForAll",
-        "outputs": [
-            {
-                "internalType": "bool",
-                "name": "",
-                "type": "bool"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "isBound",
-        "outputs": [
-            {
-                "internalType": "bool",
-                "name": "",
-                "type": "bool"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "isElastic",
-        "outputs": [
-            {
-                "internalType": "bool",
-                "name": "",
-                "type": "bool"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint256",
-                "name": "tokenId",
-                "type": "uint256"
-            }
-        ],
-        "name": "isValid",
         "outputs": [
             {
                 "internalType": "bool",
@@ -761,7 +590,7 @@
             },
             {
                 "internalType": "bytes",
-                "name": "_data",
+                "name": "data",
                 "type": "bytes"
             }
         ],
@@ -805,83 +634,16 @@
         "inputs": [
             {
                 "internalType": "uint256",
-                "name": "_maxSupply",
-                "type": "uint256"
-            }
-        ],
-        "name": "setMaxSupply",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint8",
-                "name": "tierIndex",
-                "type": "uint8"
-            },
-            {
-                "internalType": "uint128",
-                "name": "duration",
-                "type": "uint128"
-            }
-        ],
-        "name": "setMembershipTierDuration",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint8",
-                "name": "tierIndex",
-                "type": "uint8"
-            },
-            {
-                "internalType": "string",
-                "name": "tierId",
-                "type": "string"
-            }
-        ],
-        "name": "setMembershipTierId",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint8",
-                "name": "tierIndex",
-                "type": "uint8"
-            },
-            {
-                "internalType": "bool",
-                "name": "isOpen",
-                "type": "bool"
-            }
-        ],
-        "name": "setMembershipTierOpenStatus",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "uint256",
                 "name": "tokenId",
                 "type": "uint256"
             },
             {
-                "internalType": "uint8",
-                "name": "tierIndex",
-                "type": "uint8"
+                "internalType": "string",
+                "name": "newTierId",
+                "type": "string"
             }
         ],
-        "name": "setTokenMembership",
+        "name": "setMembershipTier",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
@@ -913,6 +675,49 @@
                 "internalType": "string",
                 "name": "",
                 "type": "string"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "index",
+                "type": "uint256"
+            }
+        ],
+        "name": "tokenByIndex",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "owner",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "index",
+                "type": "uint256"
+            }
+        ],
+        "name": "tokenOfOwnerByIndex",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
             }
         ],
         "stateMutability": "view",
