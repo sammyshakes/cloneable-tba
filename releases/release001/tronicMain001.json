@@ -1,0 +1,645 @@
+[
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "_admin",
+                "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "_tronicMembership",
+                "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "_tronicToken",
+                "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "_registry",
+                "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "_tbaImplementation",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+    },
+    {
+        "inputs": [],
+        "name": "ERC1167FailedCreateClone",
+        "type": "error"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "uint256",
+                "name": "membershipId",
+                "type": "uint256"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "membershipAddress",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "tokenAddress",
+                "type": "address"
+            }
+        ],
+        "name": "MembershipAdded",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "uint256",
+                "name": "membershipId",
+                "type": "uint256"
+            }
+        ],
+        "name": "MembershipRemoved",
+        "type": "event"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "admin",
+                "type": "address"
+            }
+        ],
+        "name": "addAdmin",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256[]",
+                "name": "_membershipIds",
+                "type": "uint256[]"
+            },
+            {
+                "internalType": "address[][]",
+                "name": "_recipients",
+                "type": "address[][]"
+            },
+            {
+                "internalType": "uint256[][][][]",
+                "name": "_tokenTypeIDs",
+                "type": "uint256[][][][]"
+            },
+            {
+                "internalType": "uint256[][][][]",
+                "name": "_amounts",
+                "type": "uint256[][][][]"
+            },
+            {
+                "internalType": "enum TronicMain.TokenType[][][]",
+                "name": "_contractTypes",
+                "type": "uint8[][][]"
+            }
+        ],
+        "name": "batchProcess",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "maxSupply",
+                "type": "uint256"
+            },
+            {
+                "internalType": "string",
+                "name": "uri",
+                "type": "string"
+            },
+            {
+                "internalType": "uint256",
+                "name": "membershipId",
+                "type": "uint256"
+            }
+        ],
+        "name": "createFungibleTokenType",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "typeId",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "string",
+                "name": "baseUri",
+                "type": "string"
+            },
+            {
+                "internalType": "uint64",
+                "name": "maxMintable",
+                "type": "uint64"
+            },
+            {
+                "internalType": "uint256",
+                "name": "membershipId",
+                "type": "uint256"
+            }
+        ],
+        "name": "createNonFungibleTokenType",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "nftTypeID",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "string",
+                "name": "membershipName",
+                "type": "string"
+            },
+            {
+                "internalType": "string",
+                "name": "membershipSymbol",
+                "type": "string"
+            },
+            {
+                "internalType": "string",
+                "name": "membershipBaseURI",
+                "type": "string"
+            },
+            {
+                "internalType": "uint256",
+                "name": "maxMintable",
+                "type": "uint256"
+            },
+            {
+                "internalType": "bool",
+                "name": "isElastic",
+                "type": "bool"
+            },
+            {
+                "internalType": "bool",
+                "name": "isBound",
+                "type": "bool"
+            }
+        ],
+        "name": "deployMembership",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "memberId",
+                "type": "uint256"
+            },
+            {
+                "internalType": "address",
+                "name": "membershipAddress",
+                "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "tokenAddress",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "membershipId",
+                "type": "uint256"
+            }
+        ],
+        "name": "getMembershipInfo",
+        "outputs": [
+            {
+                "components": [
+                    {
+                        "internalType": "address",
+                        "name": "membershipAddress",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "tokenAddress",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "string",
+                        "name": "membershipName",
+                        "type": "string"
+                    }
+                ],
+                "internalType": "struct TronicMain.MembershipInfo",
+                "name": "",
+                "type": "tuple"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "admin",
+                "type": "address"
+            }
+        ],
+        "name": "isAdmin",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "maxTiersPerMembership",
+        "outputs": [
+            {
+                "internalType": "uint8",
+                "name": "",
+                "type": "uint8"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "membershipCounter",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "_membershipId",
+                "type": "uint256"
+            },
+            {
+                "internalType": "address",
+                "name": "_recipient",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "_tokenId",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint64",
+                "name": "_amount",
+                "type": "uint64"
+            }
+        ],
+        "name": "mintFungibleToken",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "_recipient",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "_membershipId",
+                "type": "uint256"
+            }
+        ],
+        "name": "mintMembership",
+        "outputs": [
+            {
+                "internalType": "address payable",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "_membershipId",
+                "type": "uint256"
+            },
+            {
+                "internalType": "address",
+                "name": "_recipient",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "_typeId",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "_amount",
+                "type": "uint256"
+            }
+        ],
+        "name": "mintNonFungibleToken",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "owner",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "registry",
+        "outputs": [
+            {
+                "internalType": "contract IERC6551Registry",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "admin",
+                "type": "address"
+            }
+        ],
+        "name": "removeAdmin",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "_membershipId",
+                "type": "uint256"
+            }
+        ],
+        "name": "removeMembership",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address payable",
+                "name": "newImplementation",
+                "type": "address"
+            }
+        ],
+        "name": "setAccountImplementation",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "newImplementation",
+                "type": "address"
+            }
+        ],
+        "name": "setERC1155Implementation",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "newImplementation",
+                "type": "address"
+            }
+        ],
+        "name": "setERC721Implementation",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "newRegistry",
+                "type": "address"
+            }
+        ],
+        "name": "setRegistry",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "tbaAccountImplementation",
+        "outputs": [
+            {
+                "internalType": "address payable",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "_tronicTokenId",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "_membershipId",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "_membershipTokenId",
+                "type": "uint256"
+            },
+            {
+                "internalType": "address",
+                "name": "_to",
+                "type": "address"
+            }
+        ],
+        "name": "transferMembershipFromTronicTBA",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "_tronicTokenId",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "_membershipId",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "_membershipTokenId",
+                "type": "uint256"
+            },
+            {
+                "internalType": "address",
+                "name": "_to",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "_transferTokenId",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "_amount",
+                "type": "uint256"
+            }
+        ],
+        "name": "transferTokensFromMembershipTBA",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "_tronicTokenId",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "_transferTokenId",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "_amount",
+                "type": "uint256"
+            },
+            {
+                "internalType": "address",
+                "name": "_to",
+                "type": "address"
+            }
+        ],
+        "name": "transferTokensFromTronicTBA",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "tronicAdmin",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "tronicERC1155",
+        "outputs": [
+            {
+                "internalType": "contract TronicToken",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "tronicMembership",
+        "outputs": [
+            {
+                "internalType": "contract TronicMembership",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    }
+]

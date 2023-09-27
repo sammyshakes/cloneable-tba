@@ -11,6 +11,8 @@ contract DeployMembership is Script {
 
     // max Supply for membership x and y's erc721 tokens
     uint256 public maxSupply = 10_000;
+    bool public elastic = false;
+    bool public bound = false;
 
     // erc721 token uris
     string public erc721URIX = vm.envString("MEMBERSHIP_X_ERC721_BASE_URI");
@@ -34,12 +36,12 @@ contract DeployMembership is Script {
 
         //deploy membership x
         tronicMainContract.deployMembership(
-            membershipXName, membershipXSymbol, erc721URIX, maxSupply
+            membershipXName, membershipXSymbol, erc721URIX, maxSupply, elastic, bound
         );
 
         //deploy membership y
         tronicMainContract.deployMembership(
-            membershipYName, membershipYSymbol, erc721URIY, maxSupply
+            membershipYName, membershipYSymbol, erc721URIY, maxSupply, elastic, bound
         );
 
         vm.stopBroadcast();

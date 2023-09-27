@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: MIT
-
 pragma solidity ^0.8.13;
 
 import "./TronicToken.sol";
@@ -31,14 +30,16 @@ contract TronicMain {
     address public tronicAdmin;
     address payable public tbaAccountImplementation;
 
+    uint8 public maxTiersPerMembership = 10;
+
+    uint256 public membershipCounter;
+    mapping(uint256 => MembershipInfo) private memberships;
+    mapping(address => bool) private _admins;
+
     // Deployments
     IERC6551Registry public registry;
     TronicMembership public tronicMembership;
     TronicToken public tronicERC1155;
-
-    uint256 public membershipCounter;
-    mapping(uint256 => MembershipInfo) public memberships;
-    mapping(address => bool) private _admins;
 
     /// @notice Constructs the TronicMain contract.
     /// @param _admin The address of the Tronic admin.
@@ -98,7 +99,9 @@ contract TronicMain {
         string memory membershipName,
         string memory membershipSymbol,
         string memory membershipBaseURI,
-        uint256 maxMintable
+        uint256 maxMintable,
+        bool isElastic,
+        bool isBound
     )
         external
         onlyAdmin
@@ -107,8 +110,9 @@ contract TronicMain {
         memberId = membershipCounter++;
 
         // Deploy the membership's contracts
-        membershipAddress =
-            _deployMembership(membershipName, membershipSymbol, membershipBaseURI, maxMintable);
+        membershipAddress = _deployMembership(
+            membershipName, membershipSymbol, membershipBaseURI, maxMintable, isElastic, isBound
+        );
         tokenAddress = _deployToken();
 
         // Assign membership id and associate the deployed contracts with the membership
@@ -130,11 +134,22 @@ contract TronicMain {
         string memory name,
         string memory symbol,
         string memory uri,
-        uint256 maxSupply
+        uint256 maxSupply,
+        bool isElastic,
+        bool isBound
     ) private returns (address membershipAddress) {
         membershipAddress = Clones.clone(address(tronicMembership));
         TronicMembership(membershipAddress).initialize(
-            tbaAccountImplementation, address(registry), name, symbol, uri, maxSupply, tronicAdmin
+            tbaAccountImplementation,
+            address(registry),
+            name,
+            symbol,
+            uri,
+            maxTiersPerMembership,
+            maxSupply,
+            isElastic,
+            isBound,
+            tronicAdmin
         );
     }
 
@@ -181,7 +196,7 @@ contract TronicMain {
         nftTypeID = TronicToken(membership.tokenAddress).createNFTType(baseUri, maxMintable);
     }
 
-    /// @notice Mints a new ERC721 token.
+    /// @notice Mints a new ERC721 token for a specified membership.
     /// @param _recipient The address to mint the token to.
     /// @param _membershipId The ID of the membership to mint the token for.
     /// @return The address of the newly created token account.
@@ -290,7 +305,7 @@ contract TronicMain {
         address _to,
         uint256 _transferTokenId,
         uint256 _amount
-    ) public {
+    ) external {
         // get Tronic TBA address for tronic token id
         address payable tronicTbaAddress = payable(tronicMembership.getTBAccount(_tronicTokenId));
         IERC6551Account tronicTBA = IERC6551Account(tronicTbaAddress);

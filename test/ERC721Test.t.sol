@@ -12,7 +12,7 @@ contract ERC721Test is TronicTestBase {
         console.log("SETUP - registry address: ", registryAddress);
 
         // Mint test token
-        vm.prank(address(tronicAdminContract));
+        vm.prank(address(tronicMainContract));
         //tokenids 1-4 were already minted in the setup function to users 1-4
         uint256 tokenId = 2;
 
@@ -54,36 +54,17 @@ contract ERC721Test is TronicTestBase {
         vm.prank(tronicAdmin);
         tronicERC721.removeAdmin(user1);
         assertEq(tronicERC721.isAdmin(user1), false);
+
+        // transfer ownership
+        vm.prank(tronicAdmin);
+        tronicERC721.transferOwnership(user1);
+        assertEq(tronicERC721.owner(), user1);
+
+        // transfer ownership back
+        vm.prank(user1);
+        tronicERC721.transferOwnership(tronicAdmin);
+        assertEq(tronicERC721.owner(), tronicAdmin);
     }
 
-    // test membership tier functions
-    function testMembershipTier721() public {
-        // get membership tier
-        assertEq(tronicERC721.getMembershipTier(1), "tier1");
-        assertEq(tronicERC721.getMembershipTier(2), "tier1");
-        assertEq(tronicERC721.getMembershipTier(3), "tier2");
-        assertEq(tronicERC721.getMembershipTier(4), "tier2");
-    }
-
-    // test get tba address for a user's owned token
-    // function testGetdefaultTBAImplementationAddress721() public {
-    //   //vars for tokenids
-    //     uint256 tokenId1 = 1;
-    //     uint256 tokenId2 = 2;
-    //     uint256 tokenId3 = 3;
-    //     uint256 tokenId4 = 4;
-
-    //     // mint token to user1
-    //     vm.startPrank(address(tronicAdminContract));
-    //     tronicERC721.mint(user1);
-
-    //     // mint token to user2
-    //     tronicERC721.mint(user2);
-
-    //     // mint token to user3
-    //     tronicERC721.mint(user3);
-
-    //     // get tba address
-    //     assertEq(tronicERC721.getTBAccount(tokenId1), defaultTBAImplementationAddress);
-    //     assertEq(tronicERC721.getTBAccount(tokenId2), defaultTBAImplementationAddress);
+    function testMembershipTiers() public {}
 }

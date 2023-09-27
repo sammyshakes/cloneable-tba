@@ -14,7 +14,7 @@ import "../src/interfaces/IERC6551Account.sol";
 /// Details:
 ///
 /// - Deploys TronicMain and assigns roles
-///   - tronicAdminContract: The main TronicMain contract
+///   - tronicMainContract: The main TronicMain contract
 ///   - tronicOwner: Owner account for TronicMain
 ///   - tronicAdmin: Admin account for TronicMain
 ///
@@ -49,7 +49,16 @@ contract TronicTestBase is Test {
         TronicMain.TokenType[][] tokenTypes;
     }
 
-    TronicMain tronicAdminContract;
+    //vars for tokenids
+    uint256 public constant tokenId1 = 1;
+    uint256 public constant tokenId2 = 2;
+    uint256 public constant tokenId3 = 3;
+    uint256 public constant tokenId4 = 4;
+
+    uint8 public constant TronicTier1Index = 1;
+    uint8 public constant TronicTier2Index = 2;
+
+    TronicMain tronicMainContract;
     TronicMembership tronicERC721;
     TronicToken tronicERC1155;
 
@@ -106,11 +115,11 @@ contract TronicTestBase is Test {
         tronicERC721 = new TronicMembership();
         tronicERC1155 = new TronicToken();
 
-        tronicAdminContract =
+        tronicMainContract =
         new TronicMain(tronicAdmin, address(tronicERC721), address(tronicERC1155), registryAddress, defaultTBAImplementationAddress);
 
         //initialize Tronic erc1155
-        tronicERC1155.initialize(address(tronicAdminContract));
+        tronicERC1155.initialize(address(tronicMainContract));
 
         //initialize tronicERC721
         tronicERC721.initialize(
@@ -119,7 +128,10 @@ contract TronicTestBase is Test {
             "Original721",
             "OR721",
             "http://example721.com/",
-            10_000,
+            10, //max tiers
+            10_000, //max supply
+            true, //isElastic
+            false, //isBound
             tronicAdmin
         );
 
@@ -129,14 +141,14 @@ contract TronicTestBase is Test {
         vm.startPrank(tronicAdmin);
 
         //set admin
-        tronicERC721.addAdmin(address(tronicAdminContract));
+        tronicERC721.addAdmin(address(tronicMainContract));
 
-        (membershipIDX, clone721AddressX, clone1155AddressX) = tronicAdminContract.deployMembership(
-            "XClone721", "XCL721", "http://Xclone721.com/", 10_000
+        (membershipIDX, clone721AddressX, clone1155AddressX) = tronicMainContract.deployMembership(
+            "XClone721", "XCL721", "http://Xclone721.com/", 10_000, true, false
         );
 
-        (membershipIDY, clone721AddressY, clone1155AddressY) = tronicAdminContract.deployMembership(
-            "YClone721", "YCL721", "http://Yclone721.com/", 10_000
+        (membershipIDY, clone721AddressY, clone1155AddressY) = tronicMainContract.deployMembership(
+            "YClone721", "YCL721", "http://Yclone721.com/", 10_000, true, false
         );
 
         // Set up initial state
@@ -144,49 +156,52 @@ contract TronicTestBase is Test {
         string memory initialUriX = "http://setup-exampleX.com/token/";
         string memory initialUriY = "http://setup-exampleY.com/token/";
 
-        fungibleTypeIdX1 = tronicAdminContract.createFungibleTokenType(
-            initialMaxSupply, initialUriX, membershipIDX
-        );
+        fungibleTypeIdX1 =
+            tronicMainContract.createFungibleTokenType(initialMaxSupply, initialUriX, membershipIDX);
 
-        fungibleTypeIdY1 = tronicAdminContract.createFungibleTokenType(
-            initialMaxSupply, initialUriY, membershipIDY
-        );
+        fungibleTypeIdY1 =
+            tronicMainContract.createFungibleTokenType(initialMaxSupply, initialUriY, membershipIDY);
 
         nonFungibleTypeIdX1 =
-            tronicAdminContract.createNonFungibleTokenType(initialUriX, 1_000_000, membershipIDX);
+            tronicMainContract.createNonFungibleTokenType(initialUriX, 1_000_000, membershipIDX);
 
         nonFungibleTypeIdY1 =
-            tronicAdminContract.createNonFungibleTokenType(initialUriY, 25_000, membershipIDY);
+            tronicMainContract.createNonFungibleTokenType(initialUriY, 25_000, membershipIDY);
 
         vm.stopPrank();
 
-        //setup some initial users
-        //vars for tokenids
-        uint256 tokenId1 = 1;
-        uint256 tokenId2 = 2;
-        uint256 tokenId3 = 3;
-        uint256 tokenId4 = 4;
+        vm.startPrank(address(tronicMainContract));
 
-        vm.startPrank(address(tronicAdminContract));
-
-        //mint TronicMembership nfts to users 1-4
+        //mint TronicMembership nfts to users 1-4 and return their tbas
         tronicTokenId1TBA = tronicERC721.mint(user1);
         tronicTokenId2TBA = tronicERC721.mint(user2);
         tronicTokenId3TBA = tronicERC721.mint(user3);
         tronicTokenId4TBA = tronicERC721.mint(user4);
 
-        //set tronic Membership tiers based on some external factores
-        //here token ids 1 and 2 are tier1, and ids 3 and 4 are tier2
-        tronicERC721.setMembershipTier(tokenId1, "tier1");
-        tronicERC721.setMembershipTier(tokenId2, "tier1");
-        tronicERC721.setMembershipTier(tokenId3, "tier2");
-        tronicERC721.setMembershipTier(tokenId4, "tier2");
+        //create membership tiers for tronicERC721
+        string[] memory tierIds = new string[](2);
+        tierIds[0] = "tierX";
+        tierIds[1] = "tierY";
 
+        uint128[] memory durations = new uint128[](2);
+        durations[0] = 30 days;
+        durations[1] = 120 days;
+
+        bool[] memory isOpens = new bool[](2);
+        isOpens[0] = true;
+        isOpens[1] = false;
+
+        tronicERC721.createMembershipTiers(tierIds, durations, isOpens);
+
+        tronicERC721.setTokenMembership(tokenId1, TronicTier1Index);
+        tronicERC721.setTokenMembership(tokenId2, TronicTier1Index);
+        tronicERC721.setTokenMembership(tokenId3, TronicTier2Index);
+        tronicERC721.setTokenMembership(tokenId4, TronicTier2Index);
         vm.stopPrank();
 
         // get membership x and y details, membership ids: x=0 and y=1
-        membershipX = tronicAdminContract.getMembershipInfo(membershipIDX);
-        membershipY = tronicAdminContract.getMembershipInfo(membershipIDY);
+        membershipX = tronicMainContract.getMembershipInfo(membershipIDX);
+        membershipY = tronicMainContract.getMembershipInfo(membershipIDY);
 
         // get membership contracts
         membershipXERC721 = TronicMembership(membershipX.membershipAddress);
@@ -195,7 +210,7 @@ contract TronicTestBase is Test {
         membershipYERC1155 = TronicToken(membershipY.tokenAddress);
     }
 
-    // Implement the helper function to create instances of BatchMintOrder
+    // helper function to create instances of BatchMintOrder
     function createBatchMintOrder(
         uint256 _membershipId,
         address[] memory _recipients,
@@ -212,6 +227,7 @@ contract TronicTestBase is Test {
         });
     }
 
+    // helper function to prepare data for batch minting
     function prepareBatchProcessData(BatchMintOrder[] memory orders)
         internal
         pure
