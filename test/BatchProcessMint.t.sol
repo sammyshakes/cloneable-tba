@@ -86,7 +86,7 @@ contract BatchProcessMint is TronicTestBase {
 
         _tokenIds[0][0][0] = fungibleTypeIdY1; // first tokenId for user3
 
-        _tokenIds[0][0][1] = tronicAdminContract.createFungibleTokenType(
+        _tokenIds[0][0][1] = tronicMainContract.createFungibleTokenType(
             5000, "http://example.com/token/", membershipIDY
         ); // second tokenId for user3
 
@@ -122,7 +122,7 @@ contract BatchProcessMint is TronicTestBase {
         ) = prepareBatchProcessData(orders);
 
         // Execute the batchProcess function
-        tronicAdminContract.batchProcess(membershipIds, recipients, tokenIds, amounts, tokenTypes);
+        tronicMainContract.batchProcess(membershipIds, recipients, tokenIds, amounts, tokenTypes);
 
         vm.stopPrank();
 

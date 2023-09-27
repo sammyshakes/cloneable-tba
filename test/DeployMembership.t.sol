@@ -12,23 +12,23 @@ contract DeployMembership is TronicTestBase {
         assertEq(tronicAdmin, membershipYERC721.owner());
         assertEq(tronicAdmin, membershipYERC1155.owner());
 
-        // check if tronicAdminContract isAdmin
-        assertEq(membershipXERC721.isAdmin(address(tronicAdminContract)), true);
-        assertEq(tronicAdminContract.isAdmin(tronicAdmin), true);
+        // check if tronicMainContract isAdmin
+        assertEq(membershipXERC721.isAdmin(address(tronicMainContract)), true);
+        assertEq(tronicMainContract.isAdmin(tronicAdmin), true);
 
         //get name and symbol
         console.log("membershipXERC721 name: ", membershipXERC721.name());
         console.log("membershipXERC721 symbol: ", membershipXERC721.symbol());
 
         vm.startPrank(tronicAdmin);
-        // set membership tier
-        membershipXERC721.setMembershipTier(1, "tier1111");
+        // // set membership tier
+        // membershipXERC721.setMembershipTier(1, "tier1111");
 
-        // get membership tier
-        console.log("membershipXERC721 membership tier: ", membershipXERC721.getMembershipTier(1));
+        // // get membership tier
+        // console.log("membershipXERC721 membership tier: ", membershipXERC721.getMembershipTier(1));
 
         address user1TBAmembershipX =
-            tronicAdminContract.mintMembership(tronicTokenId1TBA, membershipIDX);
+            tronicMainContract.mintMembership(tronicTokenId1TBA, membershipIDX);
         // get tba account address
         address tbaAccount = membershipXERC721.getTBAccount(1);
         console.log("tbaAccount: ", tbaAccount);
@@ -39,7 +39,7 @@ contract DeployMembership is TronicTestBase {
 
         // Membership Y onboards a new user
         address user2TBAmembershipY =
-            tronicAdminContract.mintMembership(tronicTokenId2TBA, membershipIDY);
+            tronicMainContract.mintMembership(tronicTokenId2TBA, membershipIDY);
 
         // get tba account address
         address tbaAccountY = membershipYERC721.getTBAccount(1);
@@ -63,7 +63,7 @@ contract DeployMembership is TronicTestBase {
     function testCreateTypesFromFromAdmin() public {
         vm.startPrank(tronicAdmin);
         // create fungible token type for membershipx
-        uint256 typeId = tronicAdminContract.createFungibleTokenType(
+        uint256 typeId = tronicMainContract.createFungibleTokenType(
             1000, "http://example.com/token/", membershipIDX
         );
 
@@ -77,7 +77,7 @@ contract DeployMembership is TronicTestBase {
         console.log("tokenType.totalBurned: ", tokenType.totalBurned);
 
         // create non fungible token type
-        typeId = tronicAdminContract.createNonFungibleTokenType(
+        typeId = tronicMainContract.createNonFungibleTokenType(
             "http://example.com/token/", 10_000, membershipIDX
         );
 
@@ -89,5 +89,54 @@ contract DeployMembership is TronicTestBase {
         console.log("nonFungibleTokenType.maxMintable: ", nonFungibleTokenType.maxMintable);
         console.log("nonFungibleTokenType.totalMinted: ", nonFungibleTokenType.totalMinted);
         console.log("nonFungibleTokenType.baseURI: ", nonFungibleTokenType.baseURI);
+    }
+
+    function testBoundMemberships() public {
+        bool isBound = true;
+        // deploy membership with isBound set to false
+        vm.prank(tronicAdmin);
+        (uint256 membershipID, address membershipZ,) = tronicMainContract.deployMembership(
+            "membershipZ", "MEMZ", "http://example.com/token/", 10_000, false, isBound
+        );
+
+        //instance of membershipZERC721
+        TronicMembership membershipZERC721 = TronicMembership(membershipZ);
+
+        // mint token to user1's TBA
+        vm.prank(tronicAdmin);
+        membershipZERC721.mint(tronicTokenId1TBA);
+
+        // try to transfer token to user2's tba (should revert because token is soulbound)
+        vm.startPrank(user1);
+        //setPermissions for tronicMainContract to transfer membership
+        bool[] memory approvedValues = new bool[](1);
+        approvedValues[0] = true;
+        address[] memory approved = new address[](1);
+        approved[0] = address(tronicMainContract);
+
+        IERC6551Account tokenId1TronicTBA = IERC6551Account(payable(address(tronicTokenId1TBA)));
+        tokenId1TronicTBA.setPermissions(approved, approvedValues);
+
+        // transfer user1's membershipZ nft to user2's tba
+        vm.expectRevert("Token is bound");
+        tronicMainContract.transferMembershipFromTronicTBA(1, membershipID, 1, tronicTokenId2TBA);
+        vm.stopPrank();
+
+        // have admin burn it
+        vm.prank(tronicAdmin);
+        membershipZERC721.burn(1);
+
+        // verify that token is burned
+        vm.prank(tronicAdmin);
+        vm.expectRevert();
+        membershipZERC721.ownerOf(1);
+
+        // test uri now that token is burned
+        vm.expectRevert();
+        membershipZERC721.tokenURI(1);
+
+        // get token membership tier
+        vm.expectRevert("Token does not exist");
+        membershipZERC721.getTokenMembership(1);
     }
 }

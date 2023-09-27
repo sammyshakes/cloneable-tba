@@ -4,11 +4,11 @@ pragma solidity ^0.8.13;
 
 import "./TronicTestBase.t.sol";
 
-contract TronicAdminTest is TronicTestBase {
+contract TronicMainTest is TronicTestBase {
     function testInitialSetup() public {
-        assertEq(tronicAdminContract.owner(), tronicOwner);
-        assertEq(tronicAdminContract.membershipCounter(), 2);
-        console.log("tronicAdminContract address: ", address(tronicAdminContract));
+        assertEq(tronicMainContract.owner(), tronicOwner);
+        assertEq(tronicMainContract.membershipCounter(), 2);
+        console.log("tronicMainContract address: ", address(tronicMainContract));
         console.log("tronicERC721 address: ", address(tronicERC721));
         console.log("tronicERC1155 address: ", address(tronicERC1155));
         console.log("defaultTBAImplementationAddress: ", defaultTBAImplementationAddress);
@@ -30,7 +30,7 @@ contract TronicAdminTest is TronicTestBase {
         assertEq(tronicAdmin, membershipYERC721.owner());
         assertEq(tronicAdmin, membershipYERC1155.owner());
 
-        // get owner of tokenid 0
+        // get owner of tokenid 1
         address owner = tronicERC721.ownerOf(1);
         console.log("owner of tokenid 1: ", owner);
     }
@@ -43,14 +43,12 @@ contract TronicAdminTest is TronicTestBase {
 
         // Admin creates a fungible token type for membershipX and membershipY
         vm.startPrank(tronicAdmin);
-        uint256 fungibleIDX = tronicAdminContract.createFungibleTokenType(
-            initialMaxSupply, initialUriX, membershipIDX
-        );
+        uint256 fungibleIDX =
+            tronicMainContract.createFungibleTokenType(initialMaxSupply, initialUriX, membershipIDX);
 
         //create a new fungible token type for membershipY
-        uint256 fungibleIDY = tronicAdminContract.createFungibleTokenType(
-            initialMaxSupply, initialUriY, membershipIDY
-        );
+        uint256 fungibleIDY =
+            tronicMainContract.createFungibleTokenType(initialMaxSupply, initialUriY, membershipIDY);
 
         vm.stopPrank();
 
@@ -74,7 +72,7 @@ contract TronicAdminTest is TronicTestBase {
 
         // mint 100 tokens to user1's tba
         vm.prank(tronicAdmin);
-        tronicAdminContract.mintFungibleToken(membershipIDX, tronicTokenId1TBA, fungibleIDX, 100);
+        tronicMainContract.mintFungibleToken(membershipIDX, tronicTokenId1TBA, fungibleIDX, 100);
 
         assertEq(membershipXERC1155.balanceOf(tronicTokenId1TBA, fungibleIDX), 100);
     }
@@ -88,11 +86,11 @@ contract TronicAdminTest is TronicTestBase {
         // Admin creates a non-fungible token type for membershipX and membershipY
         vm.startPrank(tronicAdmin);
         uint256 nonFungibleIDX =
-            tronicAdminContract.createNonFungibleTokenType(initialUriX, maxMintable, membershipIDX);
+            tronicMainContract.createNonFungibleTokenType(initialUriX, maxMintable, membershipIDX);
 
         //create a new non-fungible token type for membershipY
         uint256 nonFungibleIDY =
-            tronicAdminContract.createNonFungibleTokenType(initialUriY, maxMintable, membershipIDY);
+            tronicMainContract.createNonFungibleTokenType(initialUriY, maxMintable, membershipIDY);
 
         vm.stopPrank();
 
@@ -115,14 +113,14 @@ contract TronicAdminTest is TronicTestBase {
 
         // mint a non-fungible token to user1
         // vm.prank(tronicAdmin);
-        // tronicAdminContract.mintNonFungibleERC1155(membershipIDX, user1, nonFungibleIDX, 1);
+        // tronicMainContract.mintNonFungibleERC1155(membershipIDX, user1, nonFungibleIDX, 1);
 
         // assertEq(membershipXERC1155.balanceOf(user1, nonFungibleIDX), userBalanceBefore + 1);
     }
 
     function testDeployAndAddMembership() public {
         // get membership count
-        uint256 membershipCount = tronicAdminContract.membershipCounter();
+        uint256 membershipCount = tronicMainContract.membershipCounter();
 
         // Define membership details
         string memory name721 = "TestClone721";
@@ -137,11 +135,14 @@ contract TronicAdminTest is TronicTestBase {
 
         // Call the deployAndAddMembership function
         (uint256 membershipIDX, address testClone721Address, address testClone1155AddressY) =
-            tronicAdminContract.deployMembership(name721, symbol721, uri721, maxSupply);
+            tronicMainContract.deployMembership(name721, symbol721, uri721, maxSupply, true, false);
+
+        // Make sure membershipCount was next index
+        assertEq(membershipIDX, membershipCount);
 
         // Retrieve the added membership's details
         TronicMain.MembershipInfo memory membership =
-            tronicAdminContract.getMembershipInfo(membershipCount);
+            tronicMainContract.getMembershipInfo(membershipIDX);
 
         // Assert that the membership's details are correctly set
         assertEq(membership.membershipAddress, testClone721Address);
@@ -241,7 +242,7 @@ contract TronicAdminTest is TronicTestBase {
     //     tokenTypes[0] = tokenTypes1;
     //     tokenTypes[1] = tokenTypes2;
 
-    //     tronicAdminContract.batchProcess(membershipIds, recipients, tokenIds, amounts, tokenTypes);
+    //     tronicMainContract.batchProcess(membershipIds, recipients, tokenIds, amounts, tokenTypes);
 
     //     // Assertions to validate correct minting
     //     assertEq(membershipXERC721.ownerOf(1), user1);

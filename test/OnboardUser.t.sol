@@ -44,7 +44,7 @@ contract OnboardUser is TronicTestBase {
 
         // users subscribe to membershipX
         // membershipX mints a membership token to user's tronic tba
-        vm.startPrank(address(tronicAdminContract));
+        vm.startPrank(address(tronicMainContract));
         address membershipXTokenId1TBA = membershipXERC721.mint(address(tokenId1TronicTBA));
         address membershipXTokenId2TBA = membershipXERC721.mint(address(tokenId2TronicTBA));
         address membershipXTokenId3TBA = membershipXERC721.mint(address(tokenId3TronicTBA));
@@ -99,7 +99,7 @@ contract OnboardUser is TronicTestBase {
         //TronicMain contract must be an approved user for tronic tba
         //we wil also approve the tronic admin address
         address[] memory approved = new address[](2);
-        approved[0] = address(tronicAdminContract);
+        approved[0] = address(tronicMainContract);
         approved[1] = tronicAdmin;
         bool[] memory approvedValues = new bool[](2);
         approvedValues[0] = true;
@@ -111,13 +111,13 @@ contract OnboardUser is TronicTestBase {
         // expect revert for unauthorized user
         vm.prank(unauthorizedUser);
         vm.expectRevert();
-        tronicAdminContract.transferTokensFromMembershipTBA(
+        tronicMainContract.transferTokensFromMembershipTBA(
             1, membershipIDX, 1, membershipXTokenId2TBA, fungibleTypeIdX1, 500
         );
 
         vm.prank(user1);
         // transfer loyalty tokens from user1's member tba to user2's member tba
-        tronicAdminContract.transferTokensFromMembershipTBA(
+        tronicMainContract.transferTokensFromMembershipTBA(
             1, membershipIDX, 1, membershipXTokenId2TBA, fungibleTypeIdX1, 500
         );
 
@@ -137,7 +137,7 @@ contract OnboardUser is TronicTestBase {
 
         //perform same transfer but from an approved caller other than user1
         vm.prank(tronicAdmin);
-        tronicAdminContract.transferTokensFromMembershipTBA(
+        tronicMainContract.transferTokensFromMembershipTBA(
             1, membershipIDX, 1, membershipXTokenId2TBA, fungibleTypeIdX1, 500
         );
 
@@ -161,7 +161,7 @@ contract OnboardUser is TronicTestBase {
 
         // transfer user2's membershipX nft to user5
         vm.prank(user2);
-        tronicAdminContract.transferMembershipFromTronicTBA(2, membershipIDX, 2, user5);
+        tronicMainContract.transferMembershipFromTronicTBA(2, membershipIDX, 2, user5);
 
         // verify that user5 has membershipX nft
         assertEq(membershipXERC721.ownerOf(2), user5);
@@ -175,7 +175,7 @@ contract OnboardUser is TronicTestBase {
 
         // test transferTokensFromTronicTBA function
         //create a fungible type for tronicerc1155
-        vm.startPrank(address(tronicAdminContract));
+        vm.startPrank(address(tronicMainContract));
         uint256 typeId = tronicERC1155.createFungibleType(1_000_000, "testFungibleURI");
         //mint fungible tokens to user1's tronic tba
         tronicERC1155.mintFungible(address(tokenId1TronicTBA), typeId, 1000);
@@ -190,7 +190,7 @@ contract OnboardUser is TronicTestBase {
 
         // transfer loyalty tokens from user1's member tba to user2's member tba
         vm.prank(user1);
-        tronicAdminContract.transferTokensFromTronicTBA(1, typeId, 500, address(tokenId2TronicTBA));
+        tronicMainContract.transferTokensFromTronicTBA(1, typeId, 500, address(tokenId2TronicTBA));
 
         // verify that user1 has 500 loyalty tokens
         assertEq(
@@ -208,7 +208,7 @@ contract OnboardUser is TronicTestBase {
 
         //perform same transfer but from an approved caller other than user1
         vm.prank(tronicAdmin);
-        tronicAdminContract.transferTokensFromTronicTBA(1, typeId, 500, address(tokenId2TronicTBA));
+        tronicMainContract.transferTokensFromTronicTBA(1, typeId, 500, address(tokenId2TronicTBA));
 
         // verify that user1 has 0 loyalty tokens
         assertEq(
