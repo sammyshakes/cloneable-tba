@@ -93,10 +93,14 @@ contract DeployMembership is TronicTestBase {
 
     function testBoundMemberships() public {
         bool isBound = true;
+        string[] memory tiers;
+        uint128[] memory durations;
+        bool[] memory isOpens;
+
         // deploy membership with isBound set to false
         vm.prank(tronicAdmin);
         (uint256 membershipID, address membershipZ,) = tronicMainContract.deployMembership(
-            "membershipZ", "MEMZ", "http://example.com/token/", 10_000, false, isBound
+            "membershipZ", "MEMZ", "http://example.com/token/", 10_000, false, isBound, tiers, durations, isOpens
         );
 
         //instance of membershipZERC721

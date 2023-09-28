@@ -24,6 +24,9 @@ contract DeployMembership is Script {
     string public membershipXSymbol = "MX721";
     string public membershipYName = "Membership Y ERC721";
     string public membershipYSymbol = "MY721";
+    string[] public tiers;
+    uint128[] public durations;
+    bool[] public isOpens;
 
     // this script deploys membership x and membership y
     // from Tronic Main contract with tronic admin pkey
@@ -36,12 +39,12 @@ contract DeployMembership is Script {
 
         //deploy membership x
         tronicMainContract.deployMembership(
-            membershipXName, membershipXSymbol, erc721URIX, maxSupply, elastic, bound
+            membershipXName, membershipXSymbol, erc721URIX, maxSupply, elastic, bound, tiers, durations, isOpens
         );
 
         //deploy membership y
         tronicMainContract.deployMembership(
-            membershipYName, membershipYSymbol, erc721URIY, maxSupply, elastic, bound
+            membershipYName, membershipYSymbol, erc721URIY, maxSupply, elastic, bound, tiers, durations, isOpens
         );
 
         vm.stopBroadcast();

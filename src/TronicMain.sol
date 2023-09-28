@@ -101,12 +101,20 @@ contract TronicMain {
         string memory membershipBaseURI,
         uint256 maxMintable,
         bool isElastic,
-        bool isBound
+        bool isBound,
+        string[] memory tierIds,
+        uint128[] memory durations,
+        bool[] memory isOpens
     )
         external
         onlyAdmin
         returns (uint256 memberId, address membershipAddress, address tokenAddress)
     {
+        require(
+            tierIds.length == durations.length && tierIds.length == isOpens.length,
+            "Input arrays must have the same length"
+        );
+
         memberId = membershipCounter++;
 
         // Deploy the membership's contracts
@@ -121,6 +129,12 @@ contract TronicMain {
             tokenAddress: tokenAddress,
             membershipName: membershipName
         });
+
+        // Deploy tiers
+        if (tierIds.length > 0) {
+            tronicMembership = TronicMembership(membershipAddress);
+            tronicMembership.createMembershipTiers(tierIds, durations, isOpens);
+        }
 
         emit MembershipAdded(memberId, membershipAddress, tokenAddress);
     }

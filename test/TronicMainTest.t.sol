@@ -129,13 +129,16 @@ contract TronicMainTest is TronicTestBase {
 
         // maxsupply for membership erc721
         uint64 maxSupply = 10_000;
+        string[] memory tiers;
+        uint128[] memory durations;
+        bool[] memory isOpens;
 
         // Simulate as admin
         vm.prank(tronicAdmin);
 
         // Call the deployAndAddMembership function
         (uint256 membershipIDX, address testClone721Address, address testClone1155AddressY) =
-            tronicMainContract.deployMembership(name721, symbol721, uri721, maxSupply, true, false);
+            tronicMainContract.deployMembership(name721, symbol721, uri721, maxSupply, true, false, tiers, durations, isOpens);
 
         // Make sure membershipCount was next index
         assertEq(membershipIDX, membershipCount);

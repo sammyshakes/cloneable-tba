@@ -7,10 +7,14 @@ import "./TronicTestBase.t.sol";
 contract MembershipTest is TronicTestBase {
     function testMemberships() public {
         bool isBound = false;
+        string[] memory tiers;
+        uint128[] memory durations;
+        bool[] memory isOpens;
+
         // deploy membership with isBound set to false
         vm.prank(tronicAdmin);
         (, address membershipZ,) = tronicMainContract.deployMembership(
-            "membershipZ", "MEMZ", "http://example.com/token/", 10_000, false, isBound
+            "membershipZ", "MEMZ", "http://example.com/token/", 10_000, false, isBound, tiers, durations, isOpens
         );
 
         //instance of membershipZERC721

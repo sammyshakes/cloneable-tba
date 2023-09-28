@@ -194,17 +194,21 @@ contract TestnetTests is Test {
     }
 
     function testUnauthorizedCloning() public {
+        string[] memory tiers;
+        uint128[] memory durations;
+        bool[] memory isOpens;
+        
         // Prank the VM to make the unauthorized user the msg.sender
         vm.prank(unauthorizedUser);
 
         // Expect the cloneERC1155 function to be reverted due to unauthorized access
         vm.expectRevert();
-        tronicMainContract.deployMembership("", "", "", 0, false, false);
+        tronicMainContract.deployMembership("", "", "", 0, false, false, tiers, durations, isOpens);
 
         // Expect the cloneERC721 function to be reverted due to unauthorized access
         vm.expectRevert();
         tronicMainContract.deployMembership(
-            "Unauthorized721", "UN721", "http://unauthorized721.com/", 10_000, false, false
+            "Unauthorized721", "UN721", "http://unauthorized721.com/", 10_000, false, false, tiers, durations, isOpens
         );
     }
 }

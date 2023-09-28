@@ -109,6 +109,10 @@ contract TronicTestBase is Test {
     uint256 nonFungibleTypeIdX1;
     uint256 nonFungibleTypeIdY1;
 
+    string[] public tiers;
+    uint128[] public durations;
+    bool[] public isOpens;
+
     function setUp() public {
         //deploy tronic contracts
         vm.startPrank(tronicOwner);
@@ -144,11 +148,11 @@ contract TronicTestBase is Test {
         tronicERC721.addAdmin(address(tronicMainContract));
 
         (membershipIDX, clone721AddressX, clone1155AddressX) = tronicMainContract.deployMembership(
-            "XClone721", "XCL721", "http://Xclone721.com/", 10_000, true, false
+            "XClone721", "XCL721", "http://Xclone721.com/", 10_000, true, false, tiers, durations, isOpens
         );
 
         (membershipIDY, clone721AddressY, clone1155AddressY) = tronicMainContract.deployMembership(
-            "YClone721", "YCL721", "http://Yclone721.com/", 10_000, true, false
+            "YClone721", "YCL721", "http://Yclone721.com/", 10_000, true, false, tiers, durations, isOpens
         );
 
         // Set up initial state
