@@ -104,8 +104,6 @@ contract TronicTestBase is Test {
     address public tronicTokenId3TBA;
     address public tronicTokenId4TBA;
 
-    uint256 tokenId;
-
     uint256 fungibleTypeIdX1;
     uint256 fungibleTypeIdY1;
     uint256 nonFungibleTypeIdX1;
@@ -150,11 +148,27 @@ contract TronicTestBase is Test {
         tronicERC721.addAdmin(address(tronicMainContract));
 
         (membershipIDX, clone721AddressX, clone1155AddressX) = tronicMainContract.deployMembership(
-            "XClone721", "XCL721", "http://Xclone721.com/", 10_000, true, false, tiers, durations, isOpens
+            "XClone721",
+            "XCL721",
+            "http://Xclone721.com/",
+            10_000,
+            true,
+            false,
+            tiers,
+            durations,
+            isOpens
         );
 
         (membershipIDY, clone721AddressY, clone1155AddressY) = tronicMainContract.deployMembership(
-            "YClone721", "YCL721", "http://Yclone721.com/", 10_000, true, false, tiers, durations, isOpens
+            "YClone721",
+            "YCL721",
+            "http://Yclone721.com/",
+            10_000,
+            true,
+            false,
+            tiers,
+            durations,
+            isOpens
         );
 
         // Set up initial state
@@ -179,21 +193,21 @@ contract TronicTestBase is Test {
         vm.startPrank(address(tronicMainContract));
 
         //mint TronicMembership nfts to users 1-4 and return their tbas
-        (tronicTokenId1TBA, tokenId) = tronicERC721.mint(user1);
-        (tronicTokenId2TBA, tokenId) = tronicERC721.mint(user2);
-        (tronicTokenId3TBA, tokenId) = tronicERC721.mint(user3);
-        (tronicTokenId4TBA, tokenId) = tronicERC721.mint(user4);
+        (tronicTokenId1TBA,) = tronicERC721.mint(user1);
+        (tronicTokenId2TBA,) = tronicERC721.mint(user2);
+        (tronicTokenId3TBA,) = tronicERC721.mint(user3);
+        (tronicTokenId4TBA,) = tronicERC721.mint(user4);
 
         //create membership tiers for tronicERC721
         string[] memory tierIds = new string[](2);
         tierIds[0] = "tierX";
         tierIds[1] = "tierY";
 
-        uint128[] memory durations = new uint128[](2);
+        durations = new uint128[](2);
         durations[0] = 30 days;
         durations[1] = 120 days;
 
-        bool[] memory isOpens = new bool[](2);
+        isOpens = new bool[](2);
         isOpens[0] = true;
         isOpens[1] = false;
 

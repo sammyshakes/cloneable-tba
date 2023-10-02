@@ -27,7 +27,7 @@ contract NewUserEntry is Script {
 
         //mint tronic membership erc721 to sample userAddress
         // which returns tokenbound account address for user's minted token id
-        (address tba, uint256 tokenId) = tronicMembership.mint(userAddress);
+        (address tba,) = tronicMembership.mint(userAddress);
 
         // let's also mint 1000 tronic loyalty tokens (token typeID = 1) to the new tba
         //note: for fungible types, the token ID = typeId
