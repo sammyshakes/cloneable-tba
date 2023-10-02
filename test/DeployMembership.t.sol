@@ -27,7 +27,7 @@ contract DeployMembership is TronicTestBase {
         // // get membership tier
         // console.log("membershipXERC721 membership tier: ", membershipXERC721.getMembershipTier(1));
 
-        address user1TBAmembershipX =
+        (address user1TBAmembershipX, uint256 tokenId1) =
             tronicMainContract.mintMembership(tronicTokenId1TBA, membershipIDX);
         // get tba account address
         address tbaAccount = membershipXERC721.getTBAccount(1);
@@ -38,7 +38,7 @@ contract DeployMembership is TronicTestBase {
         assertEq(membershipXERC721.ownerOf(1), tronicTokenId1TBA);
 
         // Membership Y onboards a new user
-        address user2TBAmembershipY =
+        (address user2TBAmembershipY, uint256 tokenId2) =
             tronicMainContract.mintMembership(tronicTokenId2TBA, membershipIDY);
 
         // get tba account address

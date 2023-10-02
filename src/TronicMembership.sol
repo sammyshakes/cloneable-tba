@@ -119,8 +119,9 @@ contract TronicMembership is ERC721, Initializable {
     /// @param to Address to mint the token to.
     /// @return tbaAccount The payable address of the created tokenbound account.
     /// @dev The tokenbound account is created using the registry contract.
-    function mint(address to) public onlyAdmin returns (address payable tbaAccount) {
-        require(++_totalMinted <= maxSupply, "Max supply reached");
+    function mint(address to) public onlyAdmin returns (address payable tbaAccount, uint256) {
+        uint256 _tokenId = ++_totalMinted;
+        require(_tokenId <= maxSupply, "Max supply reached");
         // Deploy token account
         tbaAccount = payable(
             registry.createAccount(
@@ -135,6 +136,8 @@ contract TronicMembership is ERC721, Initializable {
 
         // Mint token
         _mint(to, _totalMinted);
+
+        return (tbaAccount, _tokenId);
     }
 
     /// @notice Creates a new membership tier.

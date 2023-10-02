@@ -104,6 +104,8 @@ contract TronicTestBase is Test {
     address public tronicTokenId3TBA;
     address public tronicTokenId4TBA;
 
+    uint256 tokenId;
+
     uint256 fungibleTypeIdX1;
     uint256 fungibleTypeIdY1;
     uint256 nonFungibleTypeIdX1;
@@ -177,10 +179,10 @@ contract TronicTestBase is Test {
         vm.startPrank(address(tronicMainContract));
 
         //mint TronicMembership nfts to users 1-4 and return their tbas
-        tronicTokenId1TBA = tronicERC721.mint(user1);
-        tronicTokenId2TBA = tronicERC721.mint(user2);
-        tronicTokenId3TBA = tronicERC721.mint(user3);
-        tronicTokenId4TBA = tronicERC721.mint(user4);
+        (tronicTokenId1TBA, tokenId) = tronicERC721.mint(user1);
+        (tronicTokenId2TBA, tokenId) = tronicERC721.mint(user2);
+        (tronicTokenId3TBA, tokenId) = tronicERC721.mint(user3);
+        (tronicTokenId4TBA, tokenId) = tronicERC721.mint(user4);
 
         //create membership tiers for tronicERC721
         string[] memory tierIds = new string[](2);

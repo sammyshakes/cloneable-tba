@@ -45,10 +45,10 @@ contract OnboardUser is TronicTestBase {
         // users subscribe to membershipX
         // membershipX mints a membership token to user's tronic tba
         vm.startPrank(address(tronicMainContract));
-        address membershipXTokenId1TBA = membershipXERC721.mint(address(tokenId1TronicTBA));
-        address membershipXTokenId2TBA = membershipXERC721.mint(address(tokenId2TronicTBA));
-        address membershipXTokenId3TBA = membershipXERC721.mint(address(tokenId3TronicTBA));
-        address membershipXTokenId4TBA = membershipXERC721.mint(address(tokenId4TronicTBA));
+        (address membershipXTokenId1TBA, uint256 tokenId1) = membershipXERC721.mint(address(tokenId1TronicTBA));
+        (address membershipXTokenId2TBA, uint256 tokenId2) = membershipXERC721.mint(address(tokenId2TronicTBA));
+        (address membershipXTokenId3TBA, uint256 tokenId3) = membershipXERC721.mint(address(tokenId3TronicTBA));
+        (address membershipXTokenId4TBA, uint256 tokenId4) = membershipXERC721.mint(address(tokenId4TronicTBA));
 
         // verify that users' tronic TBAs have membershipX nfts
         assertEq(membershipXERC721.ownerOf(1), address(tokenId1TronicTBA));

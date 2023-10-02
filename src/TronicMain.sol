@@ -217,7 +217,7 @@ contract TronicMain {
     function mintMembership(address _recipient, uint256 _membershipId)
         external
         onlyAdmin
-        returns (address payable)
+        returns (address payable, uint256)
     {
         MembershipInfo memory membership = memberships[_membershipId];
         require(membership.membershipAddress != address(0), "Membership does not exist");
