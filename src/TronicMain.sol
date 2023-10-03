@@ -18,6 +18,11 @@ contract TronicMain {
         ERC721
     }
 
+    event MembershipMinted(
+        address indexed recipientAddress,
+        uint256 indexed tokenId
+    );
+
     event MembershipAdded(
         uint256 indexed membershipId,
         address indexed membershipAddress,
@@ -221,7 +226,12 @@ contract TronicMain {
     {
         MembershipInfo memory membership = memberships[_membershipId];
         require(membership.membershipAddress != address(0), "Membership does not exist");
-        return TronicMembership(membership.membershipAddress).mint(_recipient);
+        (address payable recipientAddress, uint256 tokenId) = 
+            TronicMembership(membership.membershipAddress).mint(_recipient);
+
+        emit MembershipMinted(recipientAddress, tokenId);
+
+        return (recipientAddress, tokenId);
     }
 
     /// @notice Mints a fungible ERC1155 token.
