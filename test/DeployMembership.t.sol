@@ -28,7 +28,7 @@ contract DeployMembership is TronicTestBase {
         // console.log("membershipXERC721 membership tier: ", membershipXERC721.getMembershipTier(1));
 
         (address user1TBAmembershipX,) =
-            tronicMainContract.mintMembership(tronicTokenId1TBA, membershipIDX);
+            tronicMainContract.mintMembership(tronicTokenId1TBA, membershipIDX, "no_tier");
         // get tba account address
         address tbaAccount = membershipXERC721.getTBAccount(1);
         console.log("tbaAccount: ", tbaAccount);
@@ -39,7 +39,7 @@ contract DeployMembership is TronicTestBase {
 
         // Membership Y onboards a new user
         (address user2TBAmembershipY,) =
-            tronicMainContract.mintMembership(tronicTokenId2TBA, membershipIDY);
+            tronicMainContract.mintMembership(tronicTokenId2TBA, membershipIDY, "no_tier");
 
         // get tba account address
         address tbaAccountY = membershipYERC721.getTBAccount(1);

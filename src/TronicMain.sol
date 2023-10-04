@@ -226,7 +226,7 @@ contract TronicMain {
     /// @param _recipient The address to mint the token to.
     /// @param _membershipId The ID of the membership to mint the token for.
     /// @return The address of the newly created token account.
-    function mintMembership(address _recipient, uint256 _membershipId)
+    function mintMembership(address _recipient, uint256 _membershipId, string memory _tierId)
         external
         onlyAdmin
         returns (address payable, uint256)
@@ -238,6 +238,10 @@ contract TronicMain {
 
         emit MembershipMinted(membership.membershipAddress, recipientAddress, tokenId);
 
+        if (keccak256(abi.encodePacked(_tierId)) != keccak256(abi.encodePacked("no_tier"))) {
+            _assignMembershipTier(_membershipId, _tierId, tokenId);
+        }
+
         return (recipientAddress, tokenId);
     }
 
@@ -247,9 +251,8 @@ contract TronicMain {
     /// @dev This function can only be called by an admin.
     /// @dev The tier must exist.
     /// @dev The token must exist.
-    function assignMembershipTier(uint256 _membershipId, string memory _tierId, uint256 _tokenId)
-        external
-        onlyAdmin
+    function _assignMembershipTier(uint256 _membershipId, string memory _tierId, uint256 _tokenId)
+        internal
     {
         MembershipInfo memory membership = memberships[_membershipId];
         require(membership.membershipAddress != address(0), "Membership does not exist");
