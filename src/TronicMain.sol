@@ -19,8 +19,15 @@ contract TronicMain {
     }
 
     event MembershipMinted(
+        address indexed membershipAddress,
         address indexed recipientAddress,
         uint256 indexed tokenId
+    );
+
+    event TierAssigned(
+        address indexed membershipAddress,
+        uint256 indexed tokenId,
+        uint256 indexed tierIndex
     );
 
     event MembershipAdded(
@@ -229,9 +236,28 @@ contract TronicMain {
         (address payable recipientAddress, uint256 tokenId) = 
             TronicMembership(membership.membershipAddress).mint(_recipient);
 
-        emit MembershipMinted(recipientAddress, tokenId);
+        emit MembershipMinted(membership.membershipAddress, recipientAddress, tokenId);
 
         return (recipientAddress, tokenId);
+    }
+
+    /// @notice Assigns a membership tier details of a specific token.
+    /// @param _tokenId The ID of the token whose membership details are to be set.
+    /// @param _tierId The index of the membership tier to associate with the token.
+    /// @dev This function can only be called by an admin.
+    /// @dev The tier must exist.
+    /// @dev The token must exist.
+    function assignMembershipTier(uint256 _membershipId, string memory _tierId, uint256 _tokenId)
+        external
+        onlyAdmin
+    {
+        MembershipInfo memory membership = memberships[_membershipId];
+        require(membership.membershipAddress != address(0), "Membership does not exist");
+
+        uint8 _tierIndex = TronicMembership(membership.membershipAddress).getTierIndexByTierId(_tierId);
+        TronicMembership(membership.membershipAddress).setTokenMembership(_tokenId, _tierIndex);
+
+        emit TierAssigned(membership.membershipAddress, _tokenId, _tierIndex);
     }
 
     /// @notice Mints a fungible ERC1155 token.

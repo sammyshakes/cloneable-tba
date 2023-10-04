@@ -122,6 +122,7 @@ contract TronicMembership is ERC721, Initializable {
     function mint(address to) public onlyAdmin returns (address payable tbaAccount, uint256) {
         uint256 _tokenId = ++_totalMinted;
         require(_tokenId <= maxSupply, "Max supply reached");
+
         // Deploy token account
         tbaAccount = payable(
             registry.createAccount(
