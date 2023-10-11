@@ -36,6 +36,10 @@ contract TronicMain {
         address indexed tokenAddress
     );
 
+    event FungibleTokenTypeCreated(
+        uint256 indexed tokenId
+    );
+
     event MembershipRemoved(uint256 indexed membershipId);
 
     address public owner;
@@ -205,6 +209,8 @@ contract TronicMain {
         MembershipInfo memory membership = memberships[membershipId];
         require(membership.tokenAddress != address(0), "Membership does not exist");
         typeId = TronicToken(membership.tokenAddress).createFungibleType(uint64(maxSupply), uri);
+
+        emit FungibleTokenTypeCreated(typeId);
     }
 
     /// @notice Creates a new ERC1155 non-fungible token type for a membership.
