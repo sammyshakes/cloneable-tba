@@ -43,7 +43,7 @@ contract TronicToken is ERC1155, Initializable {
     mapping(address => bool) private _admins;
 
     // Token ID => URI mapping for fungible tokens
-    mapping(uint256 => string) private _fungibleTokenURIs;
+    // mapping(uint256 => string) private _fungibleTokenURIs;
 
     /// @notice Constructor initializes ERC1155 with an empty URI.
     constructor() ERC1155("") {}
@@ -130,8 +130,6 @@ contract TronicToken is ERC1155, Initializable {
         // Set Fungible Tokens struct for the new token ID.
         _fungibleTokens[fungibleTokenId] =
             FungibleTokenInfo({uri: _uri, maxSupply: _maxSupply, totalMinted: 0, totalBurned: 0});
-
-        _fungibleTokenURIs[fungibleTokenId] = _uri;
 
         emit FungibleTokenTypeCreated(fungibleTokenId, _maxSupply, _uri);
     }
@@ -304,8 +302,8 @@ contract TronicToken is ERC1155, Initializable {
     /// @dev Overrides the base implementation to support fungible tokens.
     function uri(uint256 tokenId) public view override returns (string memory) {
         // Check if it's a fungible token type
-        if (bytes(_fungibleTokenURIs[tokenId]).length > 0) {
-            return _fungibleTokenURIs[tokenId];
+        if (bytes(_fungibleTokens[tokenId].uri).length > 0) {
+            return _fungibleTokens[tokenId].uri;
         }
 
         // Check if it's a non-fungible token type
