@@ -405,4 +405,11 @@ contract TronicMembership is ERC721, Initializable {
     function totalSupply() external view returns (uint256) {
         return _totalMinted - _totalBurned;
     }
+
+    /// @notice Returns _baseURI_.
+    /// @return _baseURI_.
+    /// @dev This function overrides the baseURI function of ERC721.
+    function _baseURI() internal view override returns (string memory) {
+        return _baseURI_;
+    }
 }
