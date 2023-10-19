@@ -18,10 +18,26 @@ contract TronicMain {
         ERC721
     }
 
+    event MembershipMinted(
+        address indexed membershipAddress,
+        address indexed recipientAddress,
+        uint256 indexed tokenId
+    );
+
+    event TierAssigned(
+        address indexed membershipAddress,
+        uint256 indexed tokenId,
+        uint256 indexed tierIndex
+    );
+
     event MembershipAdded(
         uint256 indexed membershipId,
         address indexed membershipAddress,
         address indexed tokenAddress
+    );
+
+    event FungibleTokenTypeCreated(
+        uint256 indexed tokenId
     );
 
     event MembershipRemoved(uint256 indexed membershipId);
@@ -193,6 +209,8 @@ contract TronicMain {
         MembershipInfo memory membership = memberships[membershipId];
         require(membership.tokenAddress != address(0), "Membership does not exist");
         typeId = TronicToken(membership.tokenAddress).createFungibleType(uint64(maxSupply), uri);
+
+        emit FungibleTokenTypeCreated(typeId);
     }
 
     /// @notice Creates a new ERC1155 non-fungible token type for a membership.
@@ -214,14 +232,51 @@ contract TronicMain {
     /// @param _recipient The address to mint the token to.
     /// @param _membershipId The ID of the membership to mint the token for.
     /// @return The address of the newly created token account.
-    function mintMembership(address _recipient, uint256 _membershipId)
+    function mintMembership(address _recipient, uint256 _membershipId, uint8 _tierIndex)
         external
         onlyAdmin
         returns (address payable, uint256)
     {
         MembershipInfo memory membership = memberships[_membershipId];
         require(membership.membershipAddress != address(0), "Membership does not exist");
-        return TronicMembership(membership.membershipAddress).mint(_recipient);
+        (address payable recipientAddress, uint256 tokenId) = 
+            TronicMembership(membership.membershipAddress).mint(_recipient);
+
+        emit MembershipMinted(membership.membershipAddress, recipientAddress, tokenId);
+
+        if (_tierIndex != 0) {
+            _assignMembershipTier(_membershipId, _tierIndex, tokenId);
+        }
+
+        return (recipientAddress, tokenId);
+    }
+
+    /// @notice Assigns a membership tier details of a specific token.
+    /// @param _tokenId The ID of the token whose membership details are to be set.
+    /// @param _tierIndex The index of the membership tier to associate with the token.
+    /// @dev This function can only be called by an admin.
+    /// @dev The tier must exist.
+    /// @dev The token must exist.
+    function _assignMembershipTier(uint256 _membershipId, uint8 _tierIndex, uint256 _tokenId)
+        internal
+    {
+        MembershipInfo memory membership = memberships[_membershipId];
+        require(membership.membershipAddress != address(0), "Membership does not exist");
+
+        TronicMembership(membership.membershipAddress).setTokenMembership(_tokenId, _tierIndex);
+
+        emit TierAssigned(membership.membershipAddress, _tokenId, _tierIndex);
+    }
+
+    /// @notice Retrieves tier index of a given tier ID.
+    /// @param tierId The ID of the tier.
+    /// @return The index of the tier.
+    /// @dev Returns 0 if the tier does not exist.
+    function getTierIndexByTierId(uint256 _membershipId, string memory tierId) external view returns (uint8) {
+        MembershipInfo memory membership = memberships[_membershipId];
+        require(membership.membershipAddress != address(0), "Membership does not exist");
+
+        return TronicMembership(membership.membershipAddress).getTierIndexByTierId(tierId);
     }
 
     /// @notice Mints a fungible ERC1155 token.
