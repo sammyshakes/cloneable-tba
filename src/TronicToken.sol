@@ -131,6 +131,8 @@ contract TronicToken is ERC1155, Initializable {
         _fungibleTokens[fungibleTokenId] =
             FungibleTokenInfo({uri: _uri, maxSupply: _maxSupply, totalMinted: 0, totalBurned: 0});
 
+        _fungibleTokenURIs[fungibleTokenId] = _uri;
+
         emit FungibleTokenTypeCreated(fungibleTokenId, _maxSupply, _uri);
     }
 
@@ -147,7 +149,7 @@ contract TronicToken is ERC1155, Initializable {
         token.totalMinted += amount;
         require(token.totalMinted <= token.maxSupply, "Exceeds max supply");
 
-        //update the struct
+        // Update the struct
         _fungibleTokens[id] = token;
 
         _mint(to, id, amount, "");
