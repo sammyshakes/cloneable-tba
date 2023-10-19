@@ -42,9 +42,6 @@ contract TronicToken is ERC1155, Initializable {
     mapping(uint256 => address) public nftOwners;
     mapping(address => bool) private _admins;
 
-    // Token ID => URI mapping for fungible tokens
-    // mapping(uint256 => string) private _fungibleTokenURIs;
-
     /// @notice Constructor initializes ERC1155 with an empty URI.
     constructor() ERC1155("") {}
 
