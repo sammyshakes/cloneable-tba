@@ -37,6 +37,12 @@ contract DeployMembership is TronicTestBase {
         // verify that user1TBA owns token
         assertEq(membershipXERC721.ownerOf(1), tronicTokenId1TBA);
 
+        // check uri
+        string memory uri = membershipXERC721.tokenURI(1);
+        console.log("uri: ", uri);
+        //verify uri is correct
+        assertEq(uri, "http://Xclone721.com/1");
+
         // Membership Y onboards a new user
         (address user2TBAmembershipY,) =
             tronicMainContract.mintMembership(tronicTokenId2TBA, membershipIDY, 0);
@@ -133,6 +139,11 @@ contract DeployMembership is TronicTestBase {
         vm.expectRevert("Token is bound");
         tronicMainContract.transferMembershipFromTronicTBA(1, membershipID, 1, tronicTokenId2TBA);
         vm.stopPrank();
+
+        //test uri
+        // vm.expectRevert("Token is bound");
+        string memory uri = membershipZERC721.tokenURI(1);
+        console.log("uri: ", uri);
 
         // have admin burn it
         vm.prank(tronicAdmin);
