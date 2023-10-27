@@ -71,10 +71,16 @@ contract TronicMainTest is TronicTestBase {
         assertEq(tokenInfoY.totalBurned, 0, "Incorrect totalBurned");
 
         // mint 100 tokens to user1's tba
-        vm.prank(tronicAdmin);
+        vm.startPrank(tronicAdmin);
         tronicMainContract.mintFungibleToken(membershipIDX, tronicTokenId1TBA, fungibleIDX, 100);
 
         assertEq(membershipXERC1155.balanceOf(tronicTokenId1TBA, fungibleIDX), 100);
+
+        // attempt to mint from invalid membership
+        vm.expectRevert("Membership does not exist");
+        tronicMainContract.mintFungibleToken(100, tronicTokenId1TBA, fungibleIDX, 100);
+
+        vm.stopPrank();
     }
 
     function testCreateNonFungibleType() public {
@@ -136,9 +142,12 @@ contract TronicMainTest is TronicTestBase {
         // Simulate as admin
         vm.prank(tronicAdmin);
 
+        vm.expectEmit();
         // Call the deployAndAddMembership function
         (uint256 membershipIDX, address testClone721Address, address testClone1155AddressY) =
-            tronicMainContract.deployMembership(name721, symbol721, uri721, maxSupply, true, false, tiers, durations, isOpens);
+        tronicMainContract.deployMembership(
+            name721, symbol721, uri721, maxSupply, true, false, tiers, durations, isOpens
+        );
 
         // Make sure membershipCount was next index
         assertEq(membershipIDX, membershipCount);
@@ -152,7 +161,12 @@ contract TronicMainTest is TronicTestBase {
         assertEq(membership.tokenAddress, testClone1155AddressY);
         assertEq(membership.membershipName, name721);
 
-        // TODO: check that MembershipAdded event was emitted
+        //get tier index by tier id from tronicMain
+        uint8 tierIndex = tronicMainContract.getTierIndexByTierId(membershipIDX, "tier1");
+
+        //attempt to get tier index by tier id from tronicMain with invalid membership id
+        vm.expectRevert("Membership does not exist");
+        tierIndex = tronicMainContract.getTierIndexByTierId(100, "tier3");
     }
 
     // test getAccount function from tronic membership contract
@@ -164,6 +178,72 @@ contract TronicMainTest is TronicTestBase {
 
         // check that the account is correct
         assertEq(account, tronicTokenId1TBA);
+    }
+
+    //test createFungibleType and nonfungible function from tronic main contract for membership that does not exist
+    function testCreateTypes() public {
+        // Set up initial state
+        uint64 initialMaxSupply = 1000;
+        string memory initialUriX = "http://exampleX.com/token/";
+
+        // create a fungible token type
+        vm.startPrank(tronicAdmin);
+        vm.expectRevert("Membership does not exist");
+        tronicMainContract.createFungibleTokenType(initialMaxSupply, initialUriX, 100);
+
+        //now test nonfungible
+        string memory initialUriY = "http://exampleY.com/token/";
+        uint64 maxMintable = 1000;
+
+        // create a non-fungible token type
+        vm.expectRevert("Membership does not exist");
+        tronicMainContract.createNonFungibleTokenType(initialUriY, maxMintable, 100);
+    }
+
+    //test mintMembership function from tronic main contract
+    // mintMembership(address _recipient, uint256 _membershipId, uint8 _tierIndex)
+    //     external
+    //     onlyAdmin
+    //     returns (address payable, uint256)
+
+    function testMintMembership() public {
+        //set up recipient, membershipId, and tierIndex
+        address recipient = user1;
+        uint256 membershipId = membershipIDX;
+        uint8 tierIndex = 6;
+
+        //try to mint with invalid tierIndex
+        vm.startPrank(tronicAdmin);
+        vm.expectRevert("Tier does not exist");
+        (address payable tba, uint256 tokenId) =
+            tronicMainContract.mintMembership(recipient, membershipId, 250);
+
+        //try to mint with invalid membershipId
+        vm.expectRevert("Membership does not exist");
+        (tba, tokenId) = tronicMainContract.mintMembership(recipient, 250, tierIndex);
+
+        //mint valid membership
+        //create tiers for membershipX
+        string[] memory tiers = new string[](2);
+        tiers[0] = "tier1";
+        tiers[1] = "tier2";
+
+        //create durations for membershipX
+        uint128[] memory durations = new uint128[](2);
+        durations[0] = 100;
+        durations[1] = 200;
+
+        //create isOpens for membershipX
+        bool[] memory isOpens = new bool[](2);
+        isOpens[0] = true;
+        isOpens[1] = false;
+
+        //call setMembershipTiers function
+        membershipXERC721.createMembershipTiers(tiers, durations, isOpens);
+
+        (tba, tokenId) = tronicMainContract.mintMembership(recipient, membershipId, 0);
+
+        vm.stopPrank();
     }
 
     // function testBatchProcessMinting() public {

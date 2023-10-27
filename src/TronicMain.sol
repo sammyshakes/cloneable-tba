@@ -19,15 +19,11 @@ contract TronicMain {
     }
 
     event MembershipMinted(
-        address indexed membershipAddress,
-        address indexed recipientAddress,
-        uint256 indexed tokenId
+        address indexed membershipAddress, address indexed recipientAddress, uint256 indexed tokenId
     );
 
     event TierAssigned(
-        address indexed membershipAddress,
-        uint256 indexed tokenId,
-        uint256 indexed tierIndex
+        address indexed membershipAddress, uint256 indexed tokenId, uint256 indexed tierIndex
     );
 
     event MembershipAdded(
@@ -36,9 +32,7 @@ contract TronicMain {
         address indexed tokenAddress
     );
 
-    event FungibleTokenTypeCreated(
-        uint256 indexed tokenId
-    );
+    event FungibleTokenTypeCreated(uint256 indexed tokenId);
 
     event MembershipRemoved(uint256 indexed membershipId);
 
@@ -159,6 +153,9 @@ contract TronicMain {
     /// @param name The name of the token.
     /// @param symbol The symbol of the token.
     /// @param uri The URI for the cloned contract.
+    /// @param maxSupply The maximum supply of the token. If no maxSupply is desired, set to MaxValue.
+    /// @param isElastic Whether or not the token maxSupply is elastic.
+    /// @param isBound Whether or not the token is soulbound (non-transferable).
     /// @return membershipAddress The address of the newly cloned Membership contract.
     function _deployMembership(
         string memory name,
@@ -239,13 +236,13 @@ contract TronicMain {
     {
         MembershipInfo memory membership = memberships[_membershipId];
         require(membership.membershipAddress != address(0), "Membership does not exist");
-        (address payable recipientAddress, uint256 tokenId) = 
+        (address payable recipientAddress, uint256 tokenId) =
             TronicMembership(membership.membershipAddress).mint(_recipient);
 
         emit MembershipMinted(membership.membershipAddress, recipientAddress, tokenId);
 
         if (_tierIndex != 0) {
-            _assignMembershipTier(_membershipId, _tierIndex, tokenId);
+            _assignMembershipTier(membership.membershipAddress, _tierIndex, tokenId);
         }
 
         return (recipientAddress, tokenId);
@@ -257,22 +254,23 @@ contract TronicMain {
     /// @dev This function can only be called by an admin.
     /// @dev The tier must exist.
     /// @dev The token must exist.
-    function _assignMembershipTier(uint256 _membershipId, uint8 _tierIndex, uint256 _tokenId)
-        internal
+    function _assignMembershipTier(address _membershipAddress, uint8 _tierIndex, uint256 _tokenId)
+        private
     {
-        MembershipInfo memory membership = memberships[_membershipId];
-        require(membership.membershipAddress != address(0), "Membership does not exist");
+        TronicMembership(_membershipAddress).setTokenMembership(_tokenId, _tierIndex);
 
-        TronicMembership(membership.membershipAddress).setTokenMembership(_tokenId, _tierIndex);
-
-        emit TierAssigned(membership.membershipAddress, _tokenId, _tierIndex);
+        emit TierAssigned(_membershipAddress, _tokenId, _tierIndex);
     }
 
     /// @notice Retrieves tier index of a given tier ID.
     /// @param tierId The ID of the tier.
     /// @return The index of the tier.
     /// @dev Returns 0 if the tier does not exist.
-    function getTierIndexByTierId(uint256 _membershipId, string memory tierId) external view returns (uint8) {
+    function getTierIndexByTierId(uint256 _membershipId, string memory tierId)
+        external
+        view
+        returns (uint8)
+    {
         MembershipInfo memory membership = memberships[_membershipId];
         require(membership.membershipAddress != address(0), "Membership does not exist");
 

@@ -113,6 +113,9 @@ contract TronicTestBase is Test {
     uint128[] public durations;
     bool[] public isOpens;
 
+    string initialUriX = "http://setup-exampleX.com/token/";
+    string initialUriY = "http://setup-exampleY.com/token/";
+
     function setUp() public {
         //deploy tronic contracts
         vm.startPrank(tronicOwner);
@@ -152,7 +155,7 @@ contract TronicTestBase is Test {
             "XCL721",
             "http://Xclone721.com/",
             10_000,
-            true,
+            true, //iselastic
             false,
             tiers,
             durations,
@@ -164,7 +167,7 @@ contract TronicTestBase is Test {
             "YCL721",
             "http://Yclone721.com/",
             10_000,
-            true,
+            false, //is not elastic
             false,
             tiers,
             durations,
@@ -173,8 +176,6 @@ contract TronicTestBase is Test {
 
         // Set up initial state
         uint64 initialMaxSupply = 100_000;
-        string memory initialUriX = "http://setup-exampleX.com/token/";
-        string memory initialUriY = "http://setup-exampleY.com/token/";
 
         fungibleTypeIdX1 =
             tronicMainContract.createFungibleTokenType(initialMaxSupply, initialUriX, membershipIDX);
@@ -228,6 +229,12 @@ contract TronicTestBase is Test {
         membershipXERC1155 = TronicToken(membershipX.tokenAddress);
         membershipYERC721 = TronicMembership(membershipY.membershipAddress);
         membershipYERC1155 = TronicToken(membershipY.tokenAddress);
+
+        //verify that users have tronic membership nfts
+        assertEq(tronicERC721.ownerOf(tokenId1), user1);
+        assertEq(tronicERC721.ownerOf(tokenId2), user2);
+        assertEq(tronicERC721.ownerOf(tokenId3), user3);
+        assertEq(tronicERC721.ownerOf(tokenId4), user4);
     }
 
     // helper function to create instances of BatchMintOrder

@@ -221,5 +221,9 @@ contract OnboardUser is TronicTestBase {
             1000,
             "user2 should have 1000"
         );
+
+        //user tries to transfer tronicMembership with safetransferfrom
+        vm.prank(user1);
+        tronicERC721.safeTransferFrom(user1, user2, 1, "");
     }
 }
