@@ -177,8 +177,8 @@ contract DeployMembership is TronicTestBase {
         assertEq(membershipXERC721.getMembershipTierDetails(2).isOpen, false);
 
         //now set membership tier ids using setMembershipTierId function
-        membershipXERC721.setMembershipTierId(1, "tier3333");
-        membershipXERC721.setMembershipTierId(2, "tier4444");
+        membershipXERC721.setMembershipTier(1, "tier3333", 30 days, true);
+        membershipXERC721.setMembershipTier(2, "tier4444", 120 days, false);
 
         //verify that membership tier id was changed
         assertEq(membershipXERC721.getMembershipTierId(1), "tier3333");

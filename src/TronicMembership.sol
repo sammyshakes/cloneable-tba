@@ -149,9 +149,11 @@ contract TronicMembership is ERC721, Initializable {
     function createMembershipTier(string memory tierId, uint128 duration, bool isOpen)
         external
         onlyAdmin
+        returns (uint8 tierIndex)
     {
-        require(++_numTiers <= _maxTiers, "Max Tier limit reached");
-        _membershipTiers[_numTiers] =
+        tierIndex = ++_numTiers;
+        require(tierIndex <= _maxTiers, "Max Tier limit reached");
+        _membershipTiers[tierIndex] =
             MembershipTier({tierId: tierId, duration: duration, isOpen: isOpen});
     }
 
@@ -177,43 +179,21 @@ contract TronicMembership is ERC721, Initializable {
         }
     }
 
-    /// @notice Sets the open status of a membership tier.
+    /// @notice Sets the details of a membership tier.
     /// @param tierIndex The index of the tier to update.
+    /// @param duration The new duration in seconds.
     /// @param isOpen The new open status.
     /// @dev Only callable by admin.
     /// @dev the tier must exist.
-    function setMembershipTierOpenStatus(uint8 tierIndex, bool isOpen)
-        external
-        onlyAdmin
-        tierExists(tierIndex)
-    {
-        _membershipTiers[tierIndex].isOpen = isOpen;
-    }
-
-    /// @notice Sets the ID of a membership tier.
-    /// @param tierIndex The index of the tier to update.
-    /// @param tierId The new tier ID.
-    /// @dev Only callable by admin.
-    /// @dev the tier must exist.
-    function setMembershipTierId(uint8 tierIndex, string memory tierId)
-        external
-        onlyAdmin
-        tierExists(tierIndex)
-    {
+    function setMembershipTier(
+        uint8 tierIndex,
+        string calldata tierId,
+        uint128 duration,
+        bool isOpen
+    ) external onlyAdmin tierExists(tierIndex) {
         _membershipTiers[tierIndex].tierId = tierId;
-    }
-
-    /// @notice Sets the duration of a membership tier.
-    /// @param tierIndex The index of the tier to update.
-    /// @param duration The new duration in seconds.
-    /// @dev Only callable by admin.
-    /// @dev the tier must exist.
-    function setMembershipTierDuration(uint8 tierIndex, uint128 duration)
-        external
-        onlyAdmin
-        tierExists(tierIndex)
-    {
         _membershipTiers[tierIndex].duration = duration;
+        _membershipTiers[tierIndex].isOpen = isOpen;
     }
 
     /// @notice Retrieves the details of a membership tier.

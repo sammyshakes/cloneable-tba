@@ -262,6 +262,69 @@ contract TronicMain {
         emit TierAssigned(_membershipAddress, _tokenId, _tierIndex);
     }
 
+    /// @notice Creates a new membership tier.
+    /// @param _membershipId The ID of the membership to create the tier for.
+    /// @param _tierId The ID of the tier.
+    /// @param _duration The duration of the tier.
+    /// @param _isOpen Whether or not the tier is open.
+    /// @return tierIndex The index of the newly created tier.
+    /// @dev This function can only be called by an admin.
+    /// @dev The membership must exist.
+    function createMembershipTier(
+        uint256 _membershipId,
+        string memory _tierId,
+        uint128 _duration,
+        bool _isOpen
+    ) external onlyAdmin returns (uint8 tierIndex) {
+        MembershipInfo memory membership = memberships[_membershipId];
+        require(membership.membershipAddress != address(0), "Membership does not exist");
+
+        return TronicMembership(membership.membershipAddress).createMembershipTier(
+            _tierId, _duration, _isOpen
+        );
+    }
+
+    /// @notice Sets the details of a membership tier.
+    /// @param _membershipId The ID of the membership to set the tier for.
+    /// @param _tierIndex The index of the tier to set.
+    /// @param _tierId The ID of the tier.
+    /// @param _duration The duration of the tier.
+    /// @param _isOpen Whether or not the tier is open.
+    /// @dev This function can only be called by an admin.
+    /// @dev The membership must exist.
+    /// @dev The tier must exist.
+    function setMembershipTier(
+        uint256 _membershipId,
+        uint8 _tierIndex,
+        string memory _tierId,
+        uint128 _duration,
+        bool _isOpen
+    ) external onlyAdmin {
+        MembershipInfo memory membership = memberships[_membershipId];
+        require(membership.membershipAddress != address(0), "Membership does not exist");
+
+        TronicMembership(membership.membershipAddress).setMembershipTier(
+            _tierIndex, _tierId, _duration, _isOpen
+        );
+    }
+
+    /// @notice Gets the details of a membership tier.
+    /// @param _membershipId The ID of the membership to get the tier for.
+    /// @param _tierIndex The index of the tier to get.
+    /// @return The details of the membership tier.
+    /// @dev The membership must exist.
+    /// @dev The tier must exist.
+    function getMembershipTierInfo(uint256 _membershipId, uint8 _tierIndex)
+        external
+        view
+        returns (TronicMembership.MembershipTier memory)
+    {
+        MembershipInfo memory membership = memberships[_membershipId];
+        require(membership.membershipAddress != address(0), "Membership does not exist");
+
+        return TronicMembership(membership.membershipAddress).getMembershipTierDetails(_tierIndex);
+    }
+
     /// @notice Retrieves tier index of a given tier ID.
     /// @param tierId The ID of the tier.
     /// @return The index of the tier.

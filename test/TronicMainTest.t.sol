@@ -201,11 +201,6 @@ contract TronicMainTest is TronicTestBase {
     }
 
     //test mintMembership function from tronic main contract
-    // mintMembership(address _recipient, uint256 _membershipId, uint8 _tierIndex)
-    //     external
-    //     onlyAdmin
-    //     returns (address payable, uint256)
-
     function testMintMembership() public {
         //set up recipient, membershipId, and tierIndex
         address recipient = user1;
@@ -244,6 +239,30 @@ contract TronicMainTest is TronicTestBase {
         (tba, tokenId) = tronicMainContract.mintMembership(recipient, membershipId, 0);
 
         vm.stopPrank();
+    }
+
+    //test setMembershipTiers function from tronic main contract
+    function testSetMembershipTier() public {
+        //create tier for membershipX
+        string memory tier = "tier1";
+        uint128 duration = 100;
+        bool isOpen = true;
+
+        //call setMembershipTiers function
+        vm.prank(tronicAdmin);
+        tronicMainContract.createMembershipTier(membershipIDX, tier, duration, isOpen);
+
+        //get tier index by tier id from tronicMain
+        uint8 tierIndex = tronicMainContract.getTierIndexByTierId(membershipIDX, "tier1");
+
+        //get tier info from membershipXERC721
+        TronicMembership.MembershipTier memory membershipTier =
+            tronicMainContract.getMembershipTierInfo(membershipIDX, tierIndex);
+
+        //assert that tier info is correct
+        assertEq(membershipTier.tierId, tier);
+        assertEq(membershipTier.duration, duration);
+        assertEq(membershipTier.isOpen, isOpen);
     }
 
     // function testBatchProcessMinting() public {

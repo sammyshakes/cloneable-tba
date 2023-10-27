@@ -37,8 +37,9 @@ contract MembershipTest is TronicTestBase {
         // create membership tier for membershipZ
         membershipZERC721.createMembershipTier("tier1", 100, true);
 
-        //get membership tier
-        membershipZERC721.getMembershipTierDetails(1);
+        //verify that membership tier
+        assertEq(membershipZERC721.getMembershipTierDetails(1).isOpen, true);
+        assertEq(membershipZERC721.getMembershipTierDetails(1).duration, 100);
 
         // set membership tier for token
         membershipZERC721.setTokenMembership(1, 1);
@@ -55,26 +56,12 @@ contract MembershipTest is TronicTestBase {
         // ensure token membership is expired
         assertEq(membershipZERC721.isValid(1), false);
 
-        // set membership tier to open
-        membershipZERC721.setMembershipTierOpenStatus(1, true);
+        // set membership tier by tierIndex (takes in tierIndex, and a generated MembershipTier struct with updated info)
+        membershipZERC721.setMembershipTier(1, "tier1", 1000, false);
 
-        //get membership tier
-        membershipZERC721.getMembershipTierDetails(1);
-
-        //verify that membership tier is open
-        assertEq(membershipZERC721.getMembershipTierDetails(1).isOpen, true);
-
-        // set membership tier to closed
-        membershipZERC721.setMembershipTierOpenStatus(1, false);
-
-        //verify that membership tier is closed
+        //verify the changed membership tier
         assertEq(membershipZERC721.getMembershipTierDetails(1).isOpen, false);
-
-        // set setMembershipTierDuration
-        membershipZERC721.setMembershipTierDuration(1, 100);
-
-        // verify membership tier duration
-        assertEq(membershipZERC721.getMembershipTierDetails(1).duration, 100);
+        assertEq(membershipZERC721.getMembershipTierDetails(1).duration, 1000);
 
         //test setting baseURI
         membershipZERC721.setBaseURI("http://example.com/token/");
