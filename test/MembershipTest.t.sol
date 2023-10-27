@@ -211,9 +211,6 @@ contract MembershipTest is TronicTestBase {
 
     //test updateImplementation on tronicMembership
     function testUpdateImplementation() public {
-        //get current implementation address
-        address currentImplementation = tronicERC721.accountImplementation();
-
         //update implementation address
         vm.prank(tronicAdmin);
         tronicERC721.updateImplementation(payable(address(0xdeadbeef)));

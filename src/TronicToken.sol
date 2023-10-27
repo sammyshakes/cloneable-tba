@@ -40,6 +40,7 @@ contract TronicToken is ERC1155, Initializable {
     mapping(uint256 => NFTokenInfo) private _nftTypes;
     mapping(uint256 => uint256) public tokenLevels;
     mapping(uint256 => address) public nftOwners;
+    mapping(address => uint256[]) public nftIdsForOwner;
     mapping(address => bool) private _admins;
 
     /// @notice Constructor initializes ERC1155 with an empty URI.
@@ -85,6 +86,13 @@ contract TronicToken is ERC1155, Initializable {
         return _nftTypes[typeId];
     }
 
+    /// @notice Gets the non-fungible token (NFT) IDs for a specific address.
+    /// @param _owner The address to get the NFT IDs for.
+    /// @return The NFT IDs for the address.
+    function getNftIdsForOwner(address _owner) external view returns (uint256[] memory) {
+        return nftIdsForOwner[_owner];
+    }
+
     /// @notice Creates a new non-fungible token (NFT) type.
     /// @param baseURI Base URI for the token metadata.
     /// @param maxMintable Max mintable for the NFT type.
@@ -102,7 +110,7 @@ contract TronicToken is ERC1155, Initializable {
 
         _nftTypes[nftTypeId] = NFTokenInfo({
             baseURI: baseURI,
-            startingTokenId: _nextNFTTypeStartId += maxMintable,
+            startingTokenId: _getNextNFTTypeStartId(maxMintable),
             totalMinted: 0,
             maxMintable: maxMintable
         });
@@ -168,6 +176,7 @@ contract TronicToken is ERC1155, Initializable {
         );
 
         nftOwners[tokenId] = to; // Update the owner of the NFT
+        nftIdsForOwner[to].push(tokenId); //update nftIdsForOwner
 
         // update the struct with new totalMinted
         _nftTypes[typeId] = nftType;
@@ -211,6 +220,7 @@ contract TronicToken is ERC1155, Initializable {
             tokenIds[i] = _tokenId;
             amounts[i] = 1; // Each NFT token id has an amount of 1
 
+            nftIdsForOwner[to].push(_tokenId); //update nftIdsForOwner
             nftOwners[_tokenId++] = to; // Update the owner of the NFT
         }
 
@@ -282,8 +292,17 @@ contract TronicToken is ERC1155, Initializable {
     /// @param account Address to burn tokens from.
     /// @param id ID of the token type to burn.
     /// @param amount The amount of tokens to burn.
+    /// @dev For NFT types the amount is always 1.
+    /// @dev Requires that the caller is an admin.
     function burn(address account, uint256 id, uint256 amount) public onlyAdmin {
         _burn(account, id, amount);
+
+        //if nonfungible, update mappings
+        if (isFungible(id)) {
+            _fungibleTokens[id].totalBurned += uint64(amount);
+        } else {
+            _updateOwnership(account, address(0), id);
+        }
     }
 
     /// @notice Gets the next token ID for a specific token type.
@@ -293,13 +312,49 @@ contract TronicToken is ERC1155, Initializable {
         return _nftTypes[typeId].startingTokenId + _nftTypes[typeId].totalMinted + 1;
     }
 
+    /// @notice Gets the next non-fungible token (NFT) type start ID.
+    /// @param maxMintable Max mintable for the NFT type.
+    /// @return startId The next NFT type start ID.
+    function _getNextNFTTypeStartId(uint64 maxMintable) private returns (uint64 startId) {
+        startId = _nextNFTTypeStartId;
+        _nextNFTTypeStartId += maxMintable;
+    }
+
+    /// @notice Checks if a token ID is fungible.
+    /// @param tokenId The ID of the token.
+    /// @return True if the token ID is fungible, false otherwise.
+    function isFungible(uint256 tokenId) public view returns (bool) {
+        return bytes(_fungibleTokens[tokenId].uri).length > 0;
+    }
+
+    /// @dev Updates the ownership of a token.
+    /// @param from The address to transfer from.
+    /// @param to The address to transfer to.
+    /// @param tokenId The ID of the token.
+    function _updateOwnership(address from, address to, uint256 tokenId) internal {
+        uint256[] storage fromTokens = nftIdsForOwner[from];
+        for (uint256 i = 0; i < fromTokens.length; i++) {
+            if (fromTokens[i] == tokenId) {
+                fromTokens[i] = fromTokens[fromTokens.length - 1];
+                fromTokens.pop();
+                break;
+            }
+        }
+
+        if (to != address(0)) {
+            nftIdsForOwner[to].push(tokenId);
+        }
+
+        nftOwners[tokenId] = to;
+    }
+
     /// @notice Returns the URI for a specific token ID.
     /// @param tokenId The ID of the token.
     /// @return The URI of the token.
     /// @dev Overrides the base implementation to support fungible tokens.
     function uri(uint256 tokenId) public view override returns (string memory) {
         // Check if it's a fungible token type
-        if (bytes(_fungibleTokens[tokenId].uri).length > 0) {
+        if (isFungible(tokenId)) {
             return _fungibleTokens[tokenId].uri;
         }
 
@@ -316,6 +371,49 @@ contract TronicToken is ERC1155, Initializable {
 
         // If not found in both, revert to the parent implementation
         return super.uri(tokenId);
+    }
+
+    /// @notice Overrides the base implementation to support non-fungible tokens.
+    /// @param from The address to transfer from.
+    /// @param to The address to transfer to.
+    /// @param id The ID of the token.
+    /// @param amount The amount of tokens to transfer.
+    /// @param data Additional data to include in the transfer call.
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 id,
+        uint256 amount,
+        bytes memory data
+    ) public override {
+        super.safeTransferFrom(from, to, id, amount, data);
+
+        //if nonfungible, update mappings
+        if (!isFungible(id)) {
+            _updateOwnership(from, to, id);
+        }
+    }
+
+    /// @notice Overrides the base implementation to support non-fungible tokens.
+    /// @param from The address to transfer from.
+    /// @param to The address to transfer to.
+    /// @param ids The IDs of the tokens.
+    /// @param amounts The amounts of each token to transfer.
+    /// @param data Additional data to include in the transfer call.
+    function safeBatchTransferFrom(
+        address from,
+        address to,
+        uint256[] memory ids,
+        uint256[] memory amounts,
+        bytes memory data
+    ) public override {
+        super.safeBatchTransferFrom(from, to, ids, amounts, data);
+
+        for (uint256 i = 0; i < ids.length; i++) {
+            if (!isFungible(ids[i])) {
+                _updateOwnership(from, to, ids[i]);
+            }
+        }
     }
 
     /// @notice Adds an admin to the contract.

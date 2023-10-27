@@ -248,12 +248,20 @@ contract TronicMainTest is TronicTestBase {
         uint128 duration = 100;
         bool isOpen = true;
 
-        //call setMembershipTiers function
-        vm.prank(tronicAdmin);
+        //first try to set membership tier with invalid membership id
+        vm.startPrank(tronicAdmin);
+        vm.expectRevert("Membership does not exist");
+        tronicMainContract.createMembershipTier(100, tier, duration, isOpen);
+
+        //call createMembershipTier function
         tronicMainContract.createMembershipTier(membershipIDX, tier, duration, isOpen);
 
         //get tier index by tier id from tronicMain
         uint8 tierIndex = tronicMainContract.getTierIndexByTierId(membershipIDX, "tier1");
+
+        //first attempt to get tier info from invalid membership id
+        vm.expectRevert("Membership does not exist");
+        tronicMainContract.getMembershipTierInfo(100, tierIndex);
 
         //get tier info from membershipXERC721
         TronicMembership.MembershipTier memory membershipTier =
@@ -263,145 +271,58 @@ contract TronicMainTest is TronicTestBase {
         assertEq(membershipTier.tierId, tier);
         assertEq(membershipTier.duration, duration);
         assertEq(membershipTier.isOpen, isOpen);
+
+        //attempt to set membership tier with invalid membership id
+        vm.expectRevert("Membership does not exist");
+        tronicMainContract.setMembershipTier(100, tierIndex, tier, duration, isOpen);
+
+        //attempt to set membership tier with invalid tier index
+        vm.expectRevert("Tier does not exist");
+        tronicMainContract.setMembershipTier(membershipIDX, 100, tier, duration, isOpen);
+
+        // set a valid membership tier
+        tronicMainContract.setMembershipTier(
+            membershipIDX, tierIndex, "changedTier", 1_000_000, isOpen
+        );
+
+        //get tier info from membershipXERC721
+        membershipTier = tronicMainContract.getMembershipTierInfo(membershipIDX, tierIndex);
+
+        //assert that tier info is correct
+        assertEq(membershipTier.tierId, "changedTier");
+        assertEq(membershipTier.duration, 1_000_000);
+        assertEq(membershipTier.isOpen, isOpen);
+
+        vm.stopPrank();
     }
 
-    // function testBatchProcessMinting() public {
+    //test mintNonFungibleToken function from tronic main contract
+    function testMintNonFungibleToken() public {
+        //set up recipient, membershipId, and nonFungibleTypeId
+        address recipient = user3;
+        uint256 invalidInt = 1000;
+        uint256 amount = 1;
 
-    //     uint256[] memory membershipIds = new uint256[](2);
-    //     membershipIds[0] = membershipIDX;
-    //     membershipIds[1] = membershipIDY;
+        //try to mint with invalid membershipId
+        vm.startPrank(tronicAdmin);
+        vm.expectRevert("Membership does not exist");
+        tronicMainContract.mintNonFungibleToken(invalidInt, recipient, nonFungibleTypeIdX1, amount);
 
-    //     // Set up recipients
-    //     address[] memory recipients1 = new address[](2);
-    //     recipients1[0] = user1;
-    //     recipients1[1] = user2;
-    //     address[] memory recipients2 = new address[](2);
-    //     recipients2[0] = user2;
-    //     recipients2[1] = user3;
-    //     address[][] memory recipients = new address[][](2);
-    //     recipients[0] = recipients1;
-    //     recipients[1] = recipients2;
-    //     uint256[][][] memory tokenIds1 = new uint256[][][](2);
-    //     uint256[][][] memory tokenIds2 = new uint256[][][](2);
+        //try to mint with invalid nonFungibleTypeId
+        vm.expectRevert("NFT type does not exist");
+        tronicMainContract.mintNonFungibleToken(membershipIDX, recipient, invalidInt, amount);
 
-    //     uint256[] memory erc721TokenIdsForUser1 = new uint256[](1);
-    //     erc721TokenIdsForUser1[0] = 1;
-    //     uint256[] memory erc721TokenIdsForUser2 = new uint256[](1);
-    //     erc721TokenIdsForUser2[0] = 2;
-    //     uint256[] memory erc1155TokenIdsForUser1 = new uint256[](2);
-    //     erc1155TokenIdsForUser1[0] = 3;
-    //     erc1155TokenIdsForUser1[1] = 4;
-    //     uint256[] memory erc1155TokenIdsForUser2 = new uint256[](2);
-    //     erc1155TokenIdsForUser2[0] = 5;
-    //     erc1155TokenIdsForUser2[1] = 6;
+        //mint valid nonFungibleToken
+        tronicMainContract.mintNonFungibleToken(
+            membershipIDX, recipient, nonFungibleTypeIdX1, amount
+        );
 
-    //     tokenIds1[0] = [erc721TokenIdsForUser1, erc1155TokenIdsForUser1];
-    //     tokenIds1[1] = [erc721TokenIdsForUser2, erc1155TokenIdsForUser2];
+        //get the tokenid of tokens owned by recipient
+        uint256[] memory tokenIds = membershipXERC1155.getNftIdsForOwner(recipient);
 
-    //     tokenIds2[0] = [erc721TokenIdsForUser2, erc1155TokenIdsForUser2];
-    //     tokenIds2[1] = [erc721TokenIdsForUser1, erc1155TokenIdsForUser1];
+        //verify that the token was minted to the correct recipient
+        assertEq(membershipXERC1155.balanceOf(recipient, tokenIds[0]), amount);
 
-    //     uint256[][][][] memory tokenIds = new uint256[][][][](2);
-    //     tokenIds[0] = tokenIds1;
-    //     tokenIds[1] = tokenIds2;
-
-    //     // Similar structure for amounts
-    //     uint256[][][] memory amounts1 = new uint256[][][](2);
-    //     uint256[][][] memory amounts2 = new uint256[][][](2);
-
-    //     uint256[] memory erc721AmountsForUser1 = new uint256[](1);
-    //     erc721AmountsForUser1[0] = 1;
-    //     uint256[] memory erc721AmountsForUser2 = new uint256[](1);
-    //     erc721AmountsForUser2[0] = 1;
-    //     uint256[] memory erc1155AmountsForUser1 = new uint256[](2);
-    //     erc1155AmountsForUser1[0] = 1;
-    //     erc1155AmountsForUser1[1] = 2;
-    //     uint256[] memory erc1155AmountsForUser2 = new uint256[](2);
-    //     erc1155AmountsForUser2[0] = 2;
-    //     erc1155AmountsForUser2[1] = 3;
-
-    //     amounts1[0] = [erc721AmountsForUser1, erc1155AmountsForUser1];
-    //     amounts1[1] = [erc721AmountsForUser2, erc1155AmountsForUser2];
-
-    //     amounts2[0] = [erc721AmountsForUser2, erc1155AmountsForUser2];
-    //     amounts2[1] = [erc721AmountsForUser1, erc1155AmountsForUser1];
-
-    //     uint256[][][][] memory amounts = new uint256[][][][](2);
-    //     amounts[0] = amounts1;
-    //     amounts[1] = amounts2;
-
-    //     // For tokenTypes
-    //     TronicAdmin.TokenType[][] memory tokenTypes1 = new TronicAdmin.TokenType[][](2);
-    //     TronicAdmin.TokenType[][] memory tokenTypes2 = new TronicAdmin.TokenType[][](2);
-
-    //     tokenTypes1[0][0] = [TronicAdmin.TokenType.ERC721, TronicAdmin.TokenType.ERC1155];
-    //     tokenTypes1[1] = [TronicAdmin.TokenType.ERC721, TronicAdmin.TokenType.ERC1155];
-
-    //     tokenTypes2[0] = [TronicAdmin.TokenType.ERC721, TronicAdmin.TokenType.ERC1155];
-    //     tokenTypes2[1] = [TronicAdmin.TokenType.ERC721, TronicAdmin.TokenType.ERC1155];
-
-    //     TronicAdmin.TokenType[][][] memory tokenTypes = new TronicAdmin.TokenType[][][](2);
-    //     tokenTypes[0] = tokenTypes1;
-    //     tokenTypes[1] = tokenTypes2;
-
-    //     tronicMainContract.batchProcess(membershipIds, recipients, tokenIds, amounts, tokenTypes);
-
-    //     // Assertions to validate correct minting
-    //     assertEq(membershipXERC721.ownerOf(1), user1);
-    //     assertEq(membershipXERC1155.balanceOf(user2, 3), 1);
-    //     assertEq(membershipXERC1155.balanceOf(user2, 4), 2);
-    //     assertEq(membershipYERC721.ownerOf(7), user2);
-    //     assertEq(membershipYERC1155.balanceOf(user3, 9), 2);
-    //     // ... Add more assertions as needed
-    // }
-
-    // struct BatchMintOrder {
-    //     uint256 membershipId;
-    //     address[] recipients;
-    //     uint256[][] tokenIds;
-    //     uint256[][] amounts;
-    //     TronicAdmin.TokenType[][] tokenTypes;
-    // }
-
-    // function convertBatchMintOrdersToParameters(BatchMintOrder[] memory orders)
-    //     public
-    //     pure
-    //     returns (
-    //         uint256[] memory membershipIds,
-    //         address[][] memory recipients,
-    //         uint256[][][][] memory tokenIds,
-    //         uint256[][][][] memory amounts,
-    //         TronicAdmin.TokenType[][][] memory tokenTypes
-    //     )
-    // {
-    //     membershipIds = new uint256[](orders.length);
-    //     recipients = new address[][](orders.length);
-    //     tokenIds = new uint256[][][][](orders.length);
-    //     amounts = new uint256[][][][](orders.length);
-    //     tokenTypes = new TronicAdmin.TokenType[][][](orders.length);
-
-    //     for (uint256 i = 0; i < orders.length; i++) {
-    //         membershipIds[i] = orders[i].membershipId;
-
-    //         recipients[i] = orders[i].recipients;
-
-    //         // Adjusting for the 3D structure
-    //         tokenIds[i] = new uint256[][][](orders[i].recipients.length);
-    //         for (uint256 j = 0; j < orders[i].recipients.length; j++) {
-    //             tokenIds[i][j] = [orders[i].tokenIds[j]];
-    //         }
-
-    //         amounts[i] = new uint256[][][](orders[i].recipients.length);
-    //         for (uint256 j = 0; j < orders[i].recipients.length; j++) {
-    //             amounts[i][j] = [orders[i].amounts[j]];
-    //         }
-
-    //         tokenTypes[i] = new TronicAdmin.TokenType[][](orders[i].recipients.length);
-    //         for (uint256 j = 0; j < orders[i].recipients.length; j++) {
-    //             tokenTypes[i][j] = [orders[i].tokenTypes[j]];
-    //         }
-    //     }
-
-    //     return (membershipIds, recipients, tokenIds, amounts, tokenTypes);
-    // }
+        vm.stopPrank();
+    }
 }

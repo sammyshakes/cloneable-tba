@@ -359,8 +359,8 @@ contract TronicMain {
     /// @notice Mints a new nonfungible ERC1155 token.
     /// @param _membershipId The ID of the membership to mint the token for.
     /// @param _recipient The address to mint the token to.
-    /// @param _typeId The typeID of the token to mint.
-    /// @param _amount The amount of the token to mint.
+    /// @param _typeId The typeID of the NFT to mint.
+    /// @param _amount The amount of NFTs to mint.
     function mintNonFungibleToken(
         uint256 _membershipId,
         address _recipient,
