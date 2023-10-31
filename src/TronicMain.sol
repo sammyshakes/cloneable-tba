@@ -120,11 +120,6 @@ contract TronicMain {
         onlyAdmin
         returns (uint256 memberId, address membershipAddress, address tokenAddress)
     {
-        require(
-            tierIds.length == durations.length && tierIds.length == isOpens.length,
-            "Input arrays must have the same length"
-        );
-
         memberId = membershipCounter++;
 
         // Deploy the membership's contracts
@@ -410,7 +405,7 @@ contract TronicMain {
                         TronicToken(membership.tokenAddress).mintBatch(
                             recipient, _tokenTypeIDs[i][j][k], _amounts[i][j][k], ""
                         );
-                    } else if (_contractTypes[i][j][k] == TokenType.ERC721) {
+                    } else {
                         TronicMembership(membership.membershipAddress).mint(recipient);
                     }
                 }

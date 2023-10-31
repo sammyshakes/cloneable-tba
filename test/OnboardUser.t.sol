@@ -115,6 +115,13 @@ contract OnboardUser is TronicTestBase {
             1, membershipIDX, 1, membershipXTokenId2TBA, fungibleTypeIdX1, 500
         );
 
+        //expect revert for invalid membership id
+        vm.prank(user1);
+        vm.expectRevert();
+        tronicMainContract.transferTokensFromMembershipTBA(
+            1, 3, 1, membershipXTokenId2TBA, fungibleTypeIdX1, 500
+        );
+
         vm.prank(user1);
         // transfer loyalty tokens from user1's member tba to user2's member tba
         tronicMainContract.transferTokensFromMembershipTBA(
@@ -159,6 +166,16 @@ contract OnboardUser is TronicTestBase {
         vm.prank(user2);
         tokenId2TronicTBA.setPermissions(approved, approvedValues);
 
+        //attempt to transfer from unauthorized user
+        vm.prank(unauthorizedUser);
+        vm.expectRevert();
+        tronicMainContract.transferMembershipFromTronicTBA(2, membershipIDX, 2, user5);
+
+        //attempt to transfer with invalid membership id
+        vm.prank(user2);
+        vm.expectRevert();
+        tronicMainContract.transferMembershipFromTronicTBA(2, 3, 2, user5);
+
         // transfer user2's membershipX nft to user5
         vm.prank(user2);
         tronicMainContract.transferMembershipFromTronicTBA(2, membershipIDX, 2, user5);
@@ -187,6 +204,11 @@ contract OnboardUser is TronicTestBase {
         );
 
         vm.stopPrank();
+
+        //attempt to transfer from unauthorized user
+        vm.prank(unauthorizedUser);
+        vm.expectRevert();
+        tronicMainContract.transferTokensFromTronicTBA(1, typeId, 500, address(tokenId2TronicTBA));
 
         // transfer loyalty tokens from user1's member tba to user2's member tba
         vm.prank(user1);

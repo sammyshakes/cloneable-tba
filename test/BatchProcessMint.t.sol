@@ -121,10 +121,19 @@ contract BatchProcessMint is TronicTestBase {
             TronicMain.TokenType[][][] memory tokenTypes
         ) = prepareBatchProcessData(orders);
 
+        vm.stopPrank();
+
+        vm.startPrank(unauthorizedUser);
+        vm.expectRevert();
         // Execute the batchProcess function
         tronicMainContract.batchProcess(membershipIds, recipients, tokenIds, amounts, tokenTypes);
 
         vm.stopPrank();
+
+        vm.startPrank(tronicAdmin);
+
+        // Execute the batchProcess function
+        tronicMainContract.batchProcess(membershipIds, recipients, tokenIds, amounts, tokenTypes);
 
         // Assertions
         // For membership 1, ERC721
@@ -162,5 +171,56 @@ contract BatchProcessMint is TronicTestBase {
         //get next tokenid for nonfungibletypeidX1
         uint256 nextTokenId = membershipXERC1155.getNextTokenIdForType(nonFungibleTypeIdX1);
         console.log("nextTokenId: ", nextTokenId);
+
+        //test with membership id arrays of mismatched lengths
+        uint256[] memory _membershipIds = new uint256[](4);
+        _membershipIds[0] = membershipIDX;
+        _membershipIds[1] = membershipIDY;
+        _membershipIds[2] = membershipIDX;
+        _membershipIds[3] = membershipIDY;
+
+        vm.expectRevert();
+        tronicMainContract.batchProcess(_membershipIds, recipients, tokenIds, amounts, tokenTypes);
+
+        //test with token id arrays of mismatched lengths
+        uint256[][][][] memory _tokenIds2 = new uint256[][][][](1);
+        _tokenIds2[0] = new uint256[][][](1);
+        _tokenIds2[0][0] = new uint256[][](2);
+        _tokenIds2[0][0][0] = new uint256[](1);
+        _tokenIds2[0][0][0][0] = 0;
+        _tokenIds2[0][0][1] = new uint256[](1);
+        _tokenIds2[0][0][1][0] = fungibleTypeIdX1;
+
+        vm.expectRevert();
+        tronicMainContract.batchProcess(membershipIds, recipients, _tokenIds2, amounts, tokenTypes);
+
+        //test with amounts arrays of mismatched lengths
+        uint256[][][][] memory _amounts2 = new uint256[][][][](1);
+        _amounts2[0] = new uint256[][][](1);
+        _amounts2[0][0] = new uint256[][](1);
+        _amounts2[0][0][0] = new uint256[](1);
+        _amounts2[0][0][0][0] = 1;
+
+        vm.expectRevert();
+        tronicMainContract.batchProcess(membershipIds, recipients, tokenIds, _amounts2, tokenTypes);
+
+        //test with tokentype arrays of mismatched lengths
+        TronicMain.TokenType[][][] memory _tokenTypes2 = new TronicMain.TokenType[][][](1);
+        _tokenTypes2[0] = new TronicMain.TokenType[][](1);
+        _tokenTypes2[0][0] = new TronicMain.TokenType[](1);
+        _tokenTypes2[0][0][0] = TronicMain.TokenType.ERC721;
+
+        vm.expectRevert();
+        tronicMainContract.batchProcess(membershipIds, recipients, tokenIds, amounts, _tokenTypes2);
+
+        //test with recipient arrays of mismatched lengths
+        address[][] memory _recipients2 = new address[][](1);
+        _recipients2[0] = new address[](1);
+        _recipients2[0][0] = user1;
+
+        vm.expectRevert();
+        tronicMainContract.batchProcess(membershipIds, _recipients2, tokenIds, amounts, tokenTypes);
+
+        vm.stopPrank();
     }
 }

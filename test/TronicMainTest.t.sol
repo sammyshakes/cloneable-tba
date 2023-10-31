@@ -169,6 +169,57 @@ contract TronicMainTest is TronicTestBase {
         tierIndex = tronicMainContract.getTierIndexByTierId(100, "tier3");
     }
 
+    //test deploy membership with multiple tiers
+    function testDeployAndAddMembershipWithMultipleTiers() public {
+        // get membership count
+        uint256 membershipCount = tronicMainContract.membershipCounter();
+
+        // Define membership details
+        string memory name721 = "TestClone721";
+        string memory symbol721 = "TCL721";
+        string memory uri721 = "http://testclone721.com/";
+
+        // maxsupply for membership erc721
+        uint64 maxSupply = 10_000;
+
+        //create tiers for membershipX
+        string[] memory tiers = new string[](2);
+        tiers[0] = "tier1";
+        tiers[1] = "tier2";
+
+        //create durations for membershipX
+        uint128[] memory durations = new uint128[](2);
+        durations[0] = 100;
+        durations[1] = 200;
+
+        //create isOpens for membershipX
+        bool[] memory isOpens = new bool[](2);
+        isOpens[0] = true;
+        isOpens[1] = false;
+
+        // Simulate as admin
+        vm.prank(tronicAdmin);
+
+        vm.expectEmit();
+        // Call the deployAndAddMembership function
+        (uint256 membershipIDX, address testClone721Address, address testClone1155AddressY) =
+        tronicMainContract.deployMembership(
+            name721, symbol721, uri721, maxSupply, true, false, tiers, durations, isOpens
+        );
+
+        // Make sure membershipCount was next index
+        assertEq(membershipIDX, membershipCount);
+
+        // Retrieve the added membership's details
+        TronicMain.MembershipInfo memory membership =
+            tronicMainContract.getMembershipInfo(membershipIDX);
+
+        // Assert that the membership's details are correctly set
+        assertEq(membership.membershipAddress, testClone721Address);
+        assertEq(membership.tokenAddress, testClone1155AddressY);
+        assertEq(membership.membershipName, name721);
+    }
+
     // test getAccount function from tronic membership contract
     function testGetAccount() public {
         // get the token bound account
@@ -205,7 +256,6 @@ contract TronicMainTest is TronicTestBase {
         //set up recipient, membershipId, and tierIndex
         address recipient = user1;
         uint256 membershipId = membershipIDX;
-        uint8 tierIndex = 6;
 
         //try to mint with invalid tierIndex
         vm.startPrank(tronicAdmin);
@@ -215,7 +265,7 @@ contract TronicMainTest is TronicTestBase {
 
         //try to mint with invalid membershipId
         vm.expectRevert("Membership does not exist");
-        (tba, tokenId) = tronicMainContract.mintMembership(recipient, 250, tierIndex);
+        (tba, tokenId) = tronicMainContract.mintMembership(recipient, 250, 6);
 
         //mint valid membership
         //create tiers for membershipX
@@ -236,7 +286,11 @@ contract TronicMainTest is TronicTestBase {
         //call setMembershipTiers function
         membershipXERC721.createMembershipTiers(tiers, durations, isOpens);
 
+        //mint with tier id 0 (no tier)
         (tba, tokenId) = tronicMainContract.mintMembership(recipient, membershipId, 0);
+
+        //mint with tier id 1
+        (tba, tokenId) = tronicMainContract.mintMembership(recipient, membershipId, 1);
 
         vm.stopPrank();
     }
@@ -324,5 +378,82 @@ contract TronicMainTest is TronicTestBase {
         assertEq(membershipXERC1155.balanceOf(recipient, tokenIds[0]), amount);
 
         vm.stopPrank();
+    }
+
+    function testUpdateERC721Implementation() public {
+        //update implementation address
+        vm.prank(tronicOwner);
+        tronicMainContract.setERC721Implementation(payable(address(0xdeadbeef)));
+
+        //get new implementation address
+        address newImplementation = address(tronicMainContract.tronicMembership());
+
+        //verify that implementation address has changed
+        assertEq(newImplementation, address(0xdeadbeef));
+    }
+
+    // test setERC1155Implementation
+    function testUpdateERC1155Implementation() public {
+        //update implementation address
+        vm.prank(tronicOwner);
+        tronicMainContract.setERC1155Implementation(payable(address(0xdeadbeef)));
+
+        //get new implementation address
+        address newImplementation = address(tronicMainContract.tronicERC1155());
+
+        //verify that implementation address has changed
+        assertEq(newImplementation, address(0xdeadbeef));
+    }
+
+    //test setAccountImplementation
+    function testUpdateAccountImplementation() public {
+        //update implementation address
+        vm.prank(tronicOwner);
+        tronicMainContract.setAccountImplementation(payable(address(0xdeadbeef)));
+
+        //get new implementation address
+        address newImplementation = tronicMainContract.tbaAccountImplementation();
+
+        //verify that implementation address has changed
+        assertEq(newImplementation, address(0xdeadbeef));
+    }
+
+    //test setRegistry
+    function testUpdateRegistry() public {
+        //update implementation address
+        vm.prank(tronicOwner);
+        tronicMainContract.setRegistry(address(0xdeadbeef));
+
+        //get new implementation address
+        address newRegistry = address(tronicMainContract.registry());
+
+        //verify that implementation address has changed
+        assertEq(newRegistry, address(0xdeadbeef));
+    }
+
+    //test admin functions
+    function testAdmin() public {
+        //check admin of tronicMain
+        assertTrue(tronicMainContract.isAdmin(tronicAdmin));
+
+        //check admin of membershipX
+        assertTrue(membershipXERC721.isAdmin(tronicAdmin));
+
+        //check admin of membershipY
+        assertTrue(membershipYERC721.isAdmin(tronicAdmin));
+
+        // set admin of tronicMain to user1
+        vm.prank(tronicOwner);
+        tronicMainContract.addAdmin(user1);
+
+        //check admin of tronicMain
+        assertTrue(tronicMainContract.isAdmin(user1));
+
+        // remove admin of tronicMain
+        vm.prank(tronicOwner);
+        tronicMainContract.removeAdmin(user1);
+
+        //check admin of tronicMain
+        assertTrue(!tronicMainContract.isAdmin(user1));
     }
 }

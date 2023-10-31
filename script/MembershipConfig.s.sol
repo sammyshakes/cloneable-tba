@@ -7,12 +7,12 @@ import "../src/TronicMain.sol";
 
 contract MembershipConfig is Script {
     string public FungibleURI1X = vm.envString("MEMBERSHIP_X_FUNGIBLE_URI_1");
-    string public FungibleURI2X = vm.envString("MEMBERSHIP_X_FUNGIBLE_URI_2");
-    string public FungibleURI3X = vm.envString("MEMBERSHIP_X_FUNGIBLE_URI_3");
+    // string public FungibleURI2X = vm.envString("MEMBERSHIP_X_FUNGIBLE_URI_2");
+    // string public FungibleURI3X = vm.envString("MEMBERSHIP_X_FUNGIBLE_URI_3");
 
-    string public FungibleURI1Y = vm.envString("MEMBERSHIP_Y_FUNGIBLE_URI_1");
-    string public FungibleURI2Y = vm.envString("MEMBERSHIP_Y_FUNGIBLE_URI_2");
-    string public FungibleURI3Y = vm.envString("MEMBERSHIP_Y_FUNGIBLE_URI_3");
+    // string public FungibleURI1Y = vm.envString("MEMBERSHIP_Y_FUNGIBLE_URI_1");
+    // string public FungibleURI2Y = vm.envString("MEMBERSHIP_Y_FUNGIBLE_URI_2");
+    // string public FungibleURI3Y = vm.envString("MEMBERSHIP_Y_FUNGIBLE_URI_3");
 
     address public tronicMainContractAddress = vm.envAddress("TRONIC_MAIN_CONTRACT_ADDRESS");
 
@@ -24,8 +24,8 @@ contract MembershipConfig is Script {
     function run() external {
         uint256 adminPrivateKey = vm.envUint("TRONIC_ADMIN_PRIVATE_KEY");
 
-        TronicToken tokenX = TronicToken(tokenXAddress);
-        TronicToken tokenY = TronicToken(tokenYAddress);
+        // TronicToken tokenX = TronicToken(tokenXAddress);
+        // TronicToken tokenY = TronicToken(tokenYAddress);
         TronicMain tronicMainContract = TronicMain(tronicMainContractAddress);
 
         vm.startBroadcast(adminPrivateKey);
