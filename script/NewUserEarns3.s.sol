@@ -24,7 +24,7 @@ contract NewUserEarns3 is Script {
     // this script mints 25 premium tokens with id=3 to the tokenbound project x address
     // and 10 premium tronic tokens to the tronic tbaAccount address
     function run() external {
-        uint256 adminPrivateKey = vm.envUint("TRONIC_ADMIN_PRIVATE_KEY");
+        uint256 adminPrivateKey = uint256(vm.envBytes32("TRONIC_ADMIN_PRIVATE_KEY"));
 
         // get project contracts
         tronicToken = TronicToken(tronicTokenAddress);

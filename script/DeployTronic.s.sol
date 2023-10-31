@@ -17,7 +17,7 @@ contract DeployTronic is Script {
         payable(vm.envAddress("TOKENBOUND_ACCOUNT_DEFAULT_IMPLEMENTATION_ADDRESS"));
 
     function run() external {
-        uint256 deployerPrivateKey = vm.envUint("TRONIC_DEPLOYER_PRIVATE_KEY");
+        uint256 deployerPrivateKey = uint256(vm.envBytes32("TRONIC_DEPLOYER_PRIVATE_KEY"));
 
         //Deploy Tronic Master Contracts
         vm.startBroadcast(deployerPrivateKey);

@@ -47,6 +47,9 @@ contract TestnetTests is Test {
     address public tbaAddressXTokenID1 = vm.envAddress("MEMBERSHIP_X_TOKENBOUND_ACCOUNT_TOKENID_1");
     address public tbaAddressYTokenID1 = vm.envAddress("MEMBERSHIP_Y_TOKENBOUND_ACCOUNT_TOKENID_1");
 
+    // sample user env
+    address public userAddress = vm.envAddress("SAMPLE_USER1_ADDRESS");
+
     function setUp() public {
         erc721 = TronicMembership(erc721Address);
         erc1155 = TronicToken(erc1155Address);
@@ -83,47 +86,47 @@ contract TestnetTests is Test {
         console.log("accountX owner: ", accountX.owner());
 
         console.log("accountY owner: ", accountY.owner());
-        console.log("clonedERC721X.ownerOf(1): ", clonedERC721X.ownerOf(1));
+        console.log("clonedERC721X.ownerOf(2): ", clonedERC721X.ownerOf(2));
 
-        // Top level TBA is owned by tbaOwner (a random user),
+        // Top level TBA is owned by userAddress (a random user),
         assertEq(_tokenId, 1);
-        assertEq(tokenContract.ownerOf(_tokenId), tbaOwner);
-        assertEq(accountTba.owner(), tbaOwner);
+        assertEq(tokenContract.ownerOf(_tokenId), userAddress);
+        assertEq(accountTba.owner(), userAddress);
 
         assertEq(tokenContractAddress, erc721Address);
 
         // Top level TBA owns tokenId 1 on clonedERC721X (erc721), `nestedTbaAddress`
-        assertEq(clonedERC721X.ownerOf(1), address(accountTba));
+        assertEq(clonedERC721X.ownerOf(2), address(accountTba));
         assertEq(accountX.owner(), address(accountTba)); //  parent TBA owns nested TBA
         assertEq(tbaAddressTokenID1, address(accountTba));
 
         // construct SafeTransferCall for ERC721
         bytes memory erc721TransferCall = abi.encodeWithSignature(
-            "safeTransferFrom(address,address,uint256,bytes)", tbaAddressTokenID1, user1, 1, ""
+            "safeTransferFrom(address,address,uint256,bytes)", tbaAddressTokenID1, user1, 2, ""
         );
 
-        vm.prank(tbaOwner, tbaOwner);
+        vm.prank(userAddress, userAddress);
         accountTba.executeCall(cloned721AddressX, 0, erc721TransferCall);
 
         // verify that user 1 now owns token
-        assertEq(clonedERC721X.ownerOf(1), user1);
+        assertEq(clonedERC721X.ownerOf(2), user1);
 
         // transfer token back to tbaAddressTokenID1
         vm.prank(user1);
-        clonedERC721X.safeTransferFrom(user1, tbaAddressTokenID1, 1, "");
+        clonedERC721X.safeTransferFrom(user1, tbaAddressTokenID1, 2, "");
 
         // verify that tbaAddressTokenID1 now owns token
-        assertEq(clonedERC721X.ownerOf(1), tbaAddressTokenID1);
+        assertEq(clonedERC721X.ownerOf(2), tbaAddressTokenID1);
 
         //ERC1155
-        assertEq(clonedERC1155X.balanceOf(tbaAddressXTokenID1, 1), 100);
+        assertEq(clonedERC1155X.balanceOf(tbaAddressXTokenID1, 0), 100);
 
         // construct SafeTransferCall for nested ERC1155
         bytes memory erc1155TransferCall = abi.encodeWithSignature(
             "safeTransferFrom(address,address,uint256,uint256,bytes)",
             tbaAddressXTokenID1,
             user1,
-            1,
+            0,
             10,
             ""
         );
@@ -133,12 +136,12 @@ contract TestnetTests is Test {
             "executeCall(address,uint256,bytes)", cloned1155AddressX, 0, erc1155TransferCall
         );
 
-        vm.prank(tbaOwner);
+        vm.prank(userAddress);
         accountTba.executeCall(tbaAddressXTokenID1, 0, executeCall);
 
         // verify that user 1 now owns 10 of token 1
-        assertEq(clonedERC1155X.balanceOf(user1, 1), 10);
-        assertEq(clonedERC1155X.balanceOf(tbaAddressXTokenID1, 1), 90);
+        assertEq(clonedERC1155X.balanceOf(user1, 0), 10);
+        assertEq(clonedERC1155X.balanceOf(tbaAddressXTokenID1, 0), 90);
 
         // approve user 2 to control tba
         address[] memory approved = new address[](1);
@@ -146,7 +149,7 @@ contract TestnetTests is Test {
         bool[] memory approvedValues = new bool[](1);
         approvedValues[0] = true;
 
-        vm.prank(tbaOwner);
+        vm.prank(userAddress);
         accountTba.setPermissions(approved, approvedValues);
 
         vm.prank(user2);
@@ -167,37 +170,37 @@ contract TestnetTests is Test {
         // Check the clone has correct uri and admin
         TronicToken clonedERC1155X = TronicToken(cloned1155AddressX);
 
-        assertEq(erc721.ownerOf(tokenId), tronicOwner);
+        assertEq(erc721.ownerOf(tokenId), userAddress);
 
         //retrieve and print out the erc1155 owner, name and symbol
         console.log("clonedERC1155X owner: ", clonedERC1155X.owner());
 
         // mint token to user1
         vm.prank(tronicOwner);
-        clonedERC1155X.mintFungible(user1, tokenId, 100);
+        clonedERC1155X.mintFungible(user1, 0, 100);
 
-        assertEq(clonedERC1155X.balanceOf(user1, 1), 100);
+        assertEq(clonedERC1155X.balanceOf(user1, 0), 100);
 
         // transfer token to user2
         vm.prank(user1);
-        clonedERC1155X.safeTransferFrom(user1, user2, 1, 1, "");
+        clonedERC1155X.safeTransferFrom(user1, user2, 0, 1, "");
 
-        assertEq(clonedERC1155X.balanceOf(user2, 1), 1);
+        assertEq(clonedERC1155X.balanceOf(user2, 0), 1);
 
         // transfer token back to user1
         vm.prank(user2);
-        clonedERC1155X.safeTransferFrom(user2, user1, 1, 1, "");
+        clonedERC1155X.safeTransferFrom(user2, user1, 0, 1, "");
 
         //transfer token to tbaAddressTokenID1
         vm.prank(user1);
-        clonedERC1155X.safeTransferFrom(user1, tbaAddressTokenID1, 1, 1, "");
+        clonedERC1155X.safeTransferFrom(user1, tbaAddressTokenID1, 0, 1, "");
     }
 
     function testUnauthorizedCloning() public {
         string[] memory tiers;
         uint128[] memory durations;
         bool[] memory isOpens;
-        
+
         // Prank the VM to make the unauthorized user the msg.sender
         vm.prank(unauthorizedUser);
 
@@ -208,7 +211,15 @@ contract TestnetTests is Test {
         // Expect the cloneERC721 function to be reverted due to unauthorized access
         vm.expectRevert();
         tronicMainContract.deployMembership(
-            "Unauthorized721", "UN721", "http://unauthorized721.com/", 10_000, false, false, tiers, durations, isOpens
+            "Unauthorized721",
+            "UN721",
+            "http://unauthorized721.com/",
+            10_000,
+            false,
+            false,
+            tiers,
+            durations,
+            isOpens
         );
     }
 }

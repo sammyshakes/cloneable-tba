@@ -20,18 +20,21 @@ contract MembershipConfig is Script {
     address public tokenXAddress = vm.envAddress("MEMBERSHIP_X_ERC1155_ADDRESS");
     address public tokenYAddress = vm.envAddress("MEMBERSHIP_Y_ERC1155_ADDRESS");
 
+    //membership Id to create fungible token types for
+    uint256 membershipId = 61;
+
     // this script clones an erc1155 token for a membership x and membership y
     function run() external {
-        uint256 adminPrivateKey = vm.envUint("TRONIC_ADMIN_PRIVATE_KEY");
-
+        uint256 adminPrivateKey = uint256(vm.envBytes32("TRONIC_ADMIN_PRIVATE_KEY"));
         // TronicToken tokenX = TronicToken(tokenXAddress);
         // TronicToken tokenY = TronicToken(tokenYAddress);
         TronicMain tronicMainContract = TronicMain(tronicMainContractAddress);
 
         vm.startBroadcast(adminPrivateKey);
-        tronicMainContract.createFungibleTokenType(1_000_000, FungibleURI1X, 0);
 
-        //create fungible token types
+        //create fungible token types for membership id
+        tronicMainContract.createFungibleTokenType(1_000_000, FungibleURI1X, membershipId);
+
         // tokenX.createFungibleType(1_000_000, FungibleURI1X);
         // tokenX.createFungibleType(500_000, FungibleURI2X);
         // tokenX.createFungibleType(250_000, FungibleURI3X);

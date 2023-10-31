@@ -31,7 +31,7 @@ contract DeployMembership is Script {
     // this script deploys membership x and membership y
     // from Tronic Main contract with tronic admin pkey
     function run() external {
-        uint256 adminPrivateKey = vm.envUint("TRONIC_ADMIN_PRIVATE_KEY");
+        uint256 adminPrivateKey = uint256(vm.envBytes32("TRONIC_ADMIN_PRIVATE_KEY"));
 
         tronicMainContract = TronicMain(tronicMainContractAddress);
 
@@ -39,12 +39,28 @@ contract DeployMembership is Script {
 
         //deploy membership x
         tronicMainContract.deployMembership(
-            membershipXName, membershipXSymbol, erc721URIX, maxSupply, elastic, bound, tiers, durations, isOpens
+            membershipXName,
+            membershipXSymbol,
+            erc721URIX,
+            maxSupply,
+            elastic,
+            bound,
+            tiers,
+            durations,
+            isOpens
         );
 
         //deploy membership y
         tronicMainContract.deployMembership(
-            membershipYName, membershipYSymbol, erc721URIY, maxSupply, elastic, bound, tiers, durations, isOpens
+            membershipYName,
+            membershipYSymbol,
+            erc721URIY,
+            maxSupply,
+            elastic,
+            bound,
+            tiers,
+            durations,
+            isOpens
         );
 
         vm.stopBroadcast();

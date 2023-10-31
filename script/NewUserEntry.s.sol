@@ -21,7 +21,7 @@ contract NewUserEntry is Script {
         tronicMembership = TronicMembership(tronicMembershipAddress);
         tronicToken = TronicToken(tronicTokenAddress);
 
-        uint256 adminPrivateKey = vm.envUint("TRONIC_ADMIN_PRIVATE_KEY");
+        uint256 adminPrivateKey = uint256(vm.envBytes32("TRONIC_ADMIN_PRIVATE_KEY"));
 
         vm.startBroadcast(adminPrivateKey);
 

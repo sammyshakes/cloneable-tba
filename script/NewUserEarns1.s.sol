@@ -18,7 +18,7 @@ contract NewUserEarns1 is Script {
     // this script mints an erc721 token to the tbaAddress address for each project,
     // which will be used to mint a tokenbound nft for each project
     function run() external {
-        uint256 adminPrivateKey = vm.envUint("TRONIC_ADMIN_PRIVATE_KEY");
+        uint256 adminPrivateKey = uint256(vm.envBytes32("TRONIC_ADMIN_PRIVATE_KEY"));
 
         // get project contracts
         membershipX = TronicMembership(membershipAddressX);

@@ -39,7 +39,7 @@ contract InitializeTronic is Script {
     string public tronicMembershipSymbol = "TRONIC";
 
     function run() external {
-        uint256 deployerPrivateKey = vm.envUint("TRONIC_DEPLOYER_PRIVATE_KEY");
+        uint256 deployerPrivateKey = uint256(vm.envBytes32("TRONIC_DEPLOYER_PRIVATE_KEY"));
 
         tronicMembership = TronicMembership(tronicMembershipAddress);
         tronicToken = TronicToken(tronicTokenAddress);
