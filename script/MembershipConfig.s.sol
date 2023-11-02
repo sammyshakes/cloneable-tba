@@ -21,7 +21,7 @@ contract MembershipConfig is Script {
     address public tokenYAddress = vm.envAddress("MEMBERSHIP_Y_ERC1155_ADDRESS");
 
     //membership Id to create fungible token types for
-    uint256 membershipId = 61;
+    uint256 membershipId = 0;
 
     // this script clones an erc1155 token for a membership x and membership y
     function run() external {

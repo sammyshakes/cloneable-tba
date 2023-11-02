@@ -15,6 +15,8 @@ contract NewUserEarns1 is Script {
     address public membershipAddressX = vm.envAddress("MEMBERSHIP_X_ERC721_ADDRESS");
     address public membershipAddressY = vm.envAddress("MEMBERSHIP_Y_ERC721_ADDRESS");
 
+    address public userAddress = vm.envAddress("SAMPLE_USER1_ADDRESS");
+
     // this script mints an erc721 token to the tbaAddress address for each project,
     // which will be used to mint a tokenbound nft for each project
     function run() external {
@@ -27,10 +29,10 @@ contract NewUserEarns1 is Script {
         vm.startBroadcast(adminPrivateKey);
 
         //mint membership to tbaAddress for project x
-        membershipX.mint(tbaAddress);
+        membershipX.mint(userAddress);
 
         //mint membership to tbaAddress for project y
-        membershipY.mint(tbaAddress);
+        // membershipY.mint(tbaAddress);
 
         vm.stopBroadcast();
     }

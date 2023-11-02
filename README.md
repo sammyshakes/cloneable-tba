@@ -135,3 +135,58 @@ forge script script/NewUserEarns2.s.sol:NewUserEarns2 -vvvv --rpc-url mumbai --b
 ```bash
 forge script script/NewUserEarns3.s.sol:NewUserEarns3 -vvvv --rpc-url mumbai --broadcast
 ```
+
+---
+
+# Gas Estimates
+
+---
+
+## Deployments for Gas Estimates
+
+```r
+# deployed testnet contract addresses (mumbai)
+TRONIC_MEMBERSHIP_ERC721_ADDRESS=0x36cC4336bfAE65BFa628f99cB599499E41331600
+TRONIC_TOKEN_ERC1155_ADDRESS=0xA0170915d747738D7dA22c153aD555A4F018F7CB
+TRONIC_MAIN_CONTRACT_ADDRESS=0xFF71EC5D8a847FB8fa02375a8eB882021A09297D
+
+# MEMBERSHIP x contracts
+MEMBERSHIP_X_ERC721_ADDRESS=0x8Fae95Da9413697d78489e6Be9DCb2d587575311
+MEMBERSHIP_X_ERC1155_ADDRESS=0x55257573dcAC41187fDC4Ea5660C6D1790348363
+
+# MEMBERSHIP y contracts
+MEMBERSHIP_Y_ERC721_ADDRESS=0x602569759DaA0A5Fa2591cF1330A667F765D45fB
+MEMBERSHIP_Y_ERC1155_ADDRESS=0x4686B9bef4Cb70c6235daB64152353f9C6b9dfFc
+```
+
+### Run script `GasEstimatesMemberships.s.sol`:
+
+[Polygon Gas Price Tracker](https://polygonscan.com/gastracker)
+
+```bash
+forge script script/GasEstimatesMemberships.s.sol:GasEstimatesMemberships -vvvv --rpc-url mumbai --broadcast
+```
+
+```r
+# Gas Estimates for Memberships when minted individually
+average gas used per mint:  209,313
+baseline gas price:  100.0 Gwei
+
+# Current MATIC Price: $0.69
+average gas cost per mint: 0.0209313 MATIC ($0.0144)
+gas cost per 1000 mints: 20.9313 MATIC ($14.40)
+gas cost per 1,000,000 mints: 20,931.3 MATIC ($14,400.00)
+
+# with MATIC at $2.00
+average gas cost per mint: 0.0209313 MATIC ($0.042)
+
+# with MATIC at $3.00 and gas price at 200 Gwei
+average gas cost per mint: 0.0418626 MATIC ($0.1256)
+
+```
+
+> NOTE: Gas can be cut by 50% if Tokenbound was not utilized
+
+> NOTE: Gas prices can vary between 50-200 Gwei
+
+> NOTE: MATIC prices will vary with the market
