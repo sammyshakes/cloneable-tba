@@ -105,7 +105,6 @@ contract TronicToken is ERC1155, Initializable {
         returns (uint256 nftTypeId)
     {
         nftTypeId = _tokenTypeCounter++;
-        require(_nftTypes[nftTypeId].maxMintable == 0, "Token type already exists");
         require(maxMintable > 0, "Max mintable must be greater than 0");
 
         _nftTypes[nftTypeId] = NFTokenInfo({
@@ -169,14 +168,15 @@ contract TronicToken is ERC1155, Initializable {
 
         require(nftType.maxMintable > 0, "NFT type does not exist");
         // Get the next token ID to mint, and increment the totalMinted count
-        uint256 tokenId = getNextTokenIdForType(typeId);
+        uint256 tokenId = nftType.startingTokenId + ++nftType.totalMinted;
         require(
             tokenId <= nftType.startingTokenId + nftType.maxMintable,
             "Exceeds max mintable for this NFT type"
         );
 
-        nftOwners[tokenId] = to; // Update the owner of the NFT
-        nftIdsForOwner[to].push(tokenId); //update nftIdsForOwner
+        // Update the owner of the NFT
+        nftOwners[tokenId] = to;
+        nftIdsForOwner[to].push(tokenId);
 
         // update the struct with new totalMinted
         _nftTypes[typeId] = nftType;
@@ -214,7 +214,7 @@ contract TronicToken is ERC1155, Initializable {
         // Build the token ID and amount arrays for batchMint call
         uint256[] memory tokenIds = new uint256[](amount);
         uint256[] memory amounts = new uint256[](amount);
-        uint256 _tokenId = getNextTokenIdForType(typeId);
+        uint256 _tokenId = nftType.startingTokenId + nftType.totalMinted + 1;
 
         for (uint256 i = 0; i < amount; i++) {
             tokenIds[i] = _tokenId;
@@ -303,13 +303,6 @@ contract TronicToken is ERC1155, Initializable {
         } else {
             _updateOwnership(account, address(0), id);
         }
-    }
-
-    /// @notice Gets the next token ID for a specific token type.
-    /// @param typeId The ID of the token type.
-    /// @return The next token ID for the token type.
-    function getNextTokenIdForType(uint256 typeId) public view returns (uint256) {
-        return _nftTypes[typeId].startingTokenId + _nftTypes[typeId].totalMinted + 1;
     }
 
     /// @notice Gets the next non-fungible token (NFT) type start ID.

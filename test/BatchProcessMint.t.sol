@@ -168,10 +168,6 @@ contract BatchProcessMint is TronicTestBase {
             user2
         );
 
-        //get next tokenid for nonfungibletypeidX1
-        uint256 nextTokenId = membershipXERC1155.getNextTokenIdForType(nonFungibleTypeIdX1);
-        console.log("nextTokenId: ", nextTokenId);
-
         //test with membership id arrays of mismatched lengths
         uint256[] memory _membershipIds = new uint256[](4);
         _membershipIds[0] = membershipIDX;
