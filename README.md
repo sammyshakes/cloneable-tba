@@ -1,4 +1,72 @@
-# Tronic Membership Contract Scenario
+# Tronic Membership Contract Repository
+
+## Installation
+
+- Install [Foundry CLI](https://book.getfoundry.sh/getting-started/installation)
+- Clone this repository and cd into project root:
+  ```bash
+  git clone https://github.com/tronicapp/tronic-platform-contracts
+  cd tronic-platform-contracts
+  ```
+- Install dependencies:
+
+  ```bash
+  forge install
+  ```
+
+## Running Tests
+
+### Required .env variables for testing
+
+```r
+# etherscan api key
+ETHERSCAN_API_KEY=
+
+# rpc address
+MUMBAI_RPC_URL=
+
+# tokenbound.org defaults
+ERC6551_REGISTRY_ADDRESS=0x02101dfB77FDE026414827Fdc604ddAF224F0921
+TOKENBOUND_ACCOUNT_DEFAULT_IMPLEMENTATION_ADDRESS=0x2d25602551487c3f3354dd80d76d54383a243358
+
+# sample user
+SAMPLE_USER1_ADDRESS=0x1f2c1e4e9c77667920c920c91bf33a27c1662508
+
+# deployed testnet contract addresses (mumbai)
+TRONIC_MEMBERSHIP_ERC721_ADDRESS=0x1aAecB6c833f8E1e9afB60341c14322f41449DC5
+TRONIC_TOKEN_ERC1155_ADDRESS=0xdc5d23E77Ed9AB7CB4cEA5F8AFB62396A9278e7a
+TRONIC_MAIN_CONTRACT_ADDRESS=0xFfd684e5A7ee922ffaB47f11C02d0975cb82c484
+
+# MEMBERSHIP x contracts
+MEMBERSHIP_X_ERC721_ADDRESS=0xeF8f59899f777F4490a300996f5CB5095f2a767B
+MEMBERSHIP_X_ERC1155_ADDRESS=0xadF3858D4873a973580d0CDfFe7f593C4406fDe7
+
+# MEMBERSHIP y contracts
+MEMBERSHIP_Y_ERC721_ADDRESS=0xa949BF02E59092ecf43C66bd2501a2D246A41a09
+MEMBERSHIP_Y_ERC1155_ADDRESS=0x4A1CCC4BB5A0362aBee3fF2D9930852A6434F375
+
+TOKENBOUND_ACCOUNT_TOKENID_1=0x96Ccb8DB82BF451a7A1a97B4b6CB8E9C2D87fC3b
+MEMBERSHIP_X_TOKENBOUND_ACCOUNT_TOKENID_1=0x324eBfc95B58053cFdF408C61819113d232bB607
+MEMBERSHIP_Y_TOKENBOUND_ACCOUNT_TOKENID_1=0xA9661FA8A72a3E46D8BCe1dF3847d285D203178D
+```
+
+### To run all tests:
+
+```bash
+# without traces
+forge test --rpc-url mumbai
+
+# with traces
+forge test --rpc-url mumbai --vvvv
+
+# specific test
+forge test --match-test testInitialSetup --rpc-url mumbai
+
+# get test coverage
+forge coverage --rpc-url mumbai
+```
+
+## Tronic Membership Contract Deployment Scenario
 
 ### Scripts executed in this order:
 
@@ -10,12 +78,6 @@
 6. `NewUserEarns1.s.sol`
 7. `NewUserEarns2.s.sol`
 8. `NewUserEarns3.s.sol`
-
-TODO:
-
-- User Transfers Tronic Membership and TBA owned Memberships
-- User Transfers TBA owned Tronic Tokens and Nested Membership Loyalty Tokens
-- Tronic transfers on behalf of Users, Memberships And Tokens
 
 ---
 
