@@ -1,0 +1,33 @@
+name: Forge Test Smart Contracts
+
+on:
+  pull_request:
+    types:
+      - opened
+    branches:
+      - main
+
+jobs:
+  check:
+    strategy:
+      fail-fast: true
+
+    name: Forge Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      - name: Install Doppler CLI
+        uses: dopplerhq/cli-action@v2
+      
+      - name: Fetch Environment Variables from Doppler and Run Forge tests
+        run: doppler run -- forge test --rpc-url mumbai
+        env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
