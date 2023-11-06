@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-// import "./TronicToken.sol";
-// import "./TronicMembership.sol";
 import "./interfaces/IERC6551Account.sol";
 import "./interfaces/IERC6551Registry.sol";
 import "./interfaces/ITronicMembership.sol";
@@ -10,6 +8,11 @@ import "./interfaces/ITronicToken.sol";
 import "@openzeppelin/contracts/proxy/Clones.sol";
 
 contract TronicMain {
+    /// @notice The struct for membership information.
+    /// @param membershipAddress The address of the membership ERC721 contract.
+    /// @param tokenAddress The address of the token ERC1155 contract.
+    /// @param membershipName The name of the membership.
+    /// @dev The membership ID is the index of the membership in the memberships mapping.
     struct MembershipInfo {
         address membershipAddress;
         address tokenAddress;
