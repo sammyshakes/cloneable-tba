@@ -19,6 +19,9 @@ contract TronicMain {
         string membershipName;
     }
 
+    /// @notice The enum for token type.
+    /// @param ERC1155 The ERC1155 token type.
+    /// @param ERC721 The ERC721 token type.
     enum TokenType {
         ERC1155,
         ERC721
@@ -38,14 +41,12 @@ contract TronicMain {
         address indexed tokenAddress
     );
 
-    event FungibleTokenTypeCreated(uint256 indexed tokenId);
-
     event MembershipRemoved(uint256 indexed membershipId);
+    event FungibleTokenTypeCreated(uint256 indexed tokenId);
 
     address public owner;
     address public tronicAdmin;
     address payable public tbaAccountImplementation;
-
     uint8 public maxTiersPerMembership = 10;
 
     uint256 public membershipCounter;
