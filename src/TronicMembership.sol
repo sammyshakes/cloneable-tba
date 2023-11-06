@@ -2,30 +2,13 @@
 pragma solidity ^0.8.19;
 
 import "./interfaces/IERC6551Registry.sol";
+import "./interfaces/ITronicMembership.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 
 /// @title TronicMembership
 /// @notice This contract represents the membership token for the Tronic ecosystem.
-contract TronicMembership is ERC721, Initializable {
-    /// @dev Struct representing a membership tier.
-    /// @param tierId The ID of the tier.
-    /// @param duration The duration of the tier in seconds.
-    /// @param isOpen Whether the tier is open or closed.
-    struct MembershipTier {
-        string tierId;
-        uint128 duration;
-        bool isOpen;
-    }
-
-    /// @dev Struct representing the membership details of a token.
-    /// @param tierIndex The index of the membership tier.
-    /// @param timestamp The timestamp of the membership.
-    struct TokenMembership {
-        uint8 tierIndex;
-        uint128 timestamp;
-    }
-
+contract TronicMembership is ITronicMembership, ERC721, Initializable {
     string private _name;
     string private _symbol;
     string private _baseURI_;

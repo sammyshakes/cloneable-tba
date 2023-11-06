@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 import "./TronicToken.sol";
 import "./TronicMembership.sol";
 import "./interfaces/IERC6551Account.sol";
+import "./interfaces/ITronicMembership.sol";
 import "@openzeppelin/contracts/proxy/Clones.sol";
 
 contract TronicMain {
