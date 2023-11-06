@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import "./TronicToken.sol";
-import "./TronicMembership.sol";
+// import "./TronicToken.sol";
+// import "./TronicMembership.sol";
 import "./interfaces/IERC6551Account.sol";
+import "./interfaces/IERC6551Registry.sol";
 import "./interfaces/ITronicMembership.sol";
+import "./interfaces/ITronicToken.sol";
 import "@openzeppelin/contracts/proxy/Clones.sol";
 
 contract TronicMain {
@@ -49,8 +51,8 @@ contract TronicMain {
 
     // Deployments
     IERC6551Registry public registry;
-    TronicMembership public tronicMembership;
-    TronicToken public tronicERC1155;
+    ITronicMembership public tronicMembership;
+    ITronicToken public tronicERC1155;
 
     /// @notice Constructs the TronicMain contract.
     /// @param _admin The address of the Tronic admin.
@@ -67,8 +69,8 @@ contract TronicMain {
     ) {
         owner = msg.sender;
         tronicAdmin = _admin;
-        tronicERC1155 = TronicToken(_tronicToken);
-        tronicMembership = TronicMembership(_tronicMembership);
+        tronicERC1155 = ITronicToken(_tronicToken);
+        tronicMembership = ITronicMembership(_tronicMembership);
         registry = IERC6551Registry(_registry);
         tbaAccountImplementation = payable(_tbaImplementation);
     }
@@ -138,7 +140,7 @@ contract TronicMain {
 
         // Deploy tiers
         if (tierIds.length > 0) {
-            tronicMembership = TronicMembership(membershipAddress);
+            tronicMembership = ITronicMembership(membershipAddress);
             tronicMembership.createMembershipTiers(tierIds, durations, isOpens);
         }
 
@@ -162,7 +164,7 @@ contract TronicMain {
         bool isBound
     ) private returns (address membershipAddress) {
         membershipAddress = Clones.clone(address(tronicMembership));
-        TronicMembership(membershipAddress).initialize(
+        ITronicMembership(membershipAddress).initialize(
             tbaAccountImplementation,
             address(registry),
             name,
@@ -180,7 +182,7 @@ contract TronicMain {
     /// @return tokenAddress The address of the newly cloned ERC1155 contract.
     function _deployToken() private returns (address tokenAddress) {
         tokenAddress = Clones.clone(address(tronicERC1155));
-        TronicToken(tokenAddress).initialize(tronicAdmin);
+        ITronicToken(tokenAddress).initialize(tronicAdmin);
     }
 
     /// @notice Removes a membership from the contract.
@@ -201,7 +203,7 @@ contract TronicMain {
     {
         MembershipInfo memory membership = memberships[membershipId];
         require(membership.tokenAddress != address(0), "Membership does not exist");
-        typeId = TronicToken(membership.tokenAddress).createFungibleType(uint64(maxSupply), uri);
+        typeId = ITronicToken(membership.tokenAddress).createFungibleType(uint64(maxSupply), uri);
 
         emit FungibleTokenTypeCreated(typeId);
     }
@@ -218,7 +220,7 @@ contract TronicMain {
     ) external onlyAdmin returns (uint256 nftTypeID) {
         MembershipInfo memory membership = memberships[membershipId];
         require(membership.tokenAddress != address(0), "Membership does not exist");
-        nftTypeID = TronicToken(membership.tokenAddress).createNFTType(baseUri, maxMintable);
+        nftTypeID = ITronicToken(membership.tokenAddress).createNFTType(baseUri, maxMintable);
     }
 
     /// @notice Mints a new ERC721 token for a specified membership.
@@ -233,7 +235,7 @@ contract TronicMain {
         MembershipInfo memory membership = memberships[_membershipId];
         require(membership.membershipAddress != address(0), "Membership does not exist");
         (address payable recipientAddress, uint256 tokenId) =
-            TronicMembership(membership.membershipAddress).mint(_recipient);
+            ITronicMembership(membership.membershipAddress).mint(_recipient);
 
         emit MembershipMinted(membership.membershipAddress, recipientAddress, tokenId);
 
@@ -253,7 +255,7 @@ contract TronicMain {
     function _assignMembershipTier(address _membershipAddress, uint8 _tierIndex, uint256 _tokenId)
         private
     {
-        TronicMembership(_membershipAddress).setTokenMembership(_tokenId, _tierIndex);
+        ITronicMembership(_membershipAddress).setTokenMembership(_tokenId, _tierIndex);
 
         emit TierAssigned(_membershipAddress, _tokenId, _tierIndex);
     }
@@ -275,7 +277,7 @@ contract TronicMain {
         MembershipInfo memory membership = memberships[_membershipId];
         require(membership.membershipAddress != address(0), "Membership does not exist");
 
-        return TronicMembership(membership.membershipAddress).createMembershipTier(
+        return ITronicMembership(membership.membershipAddress).createMembershipTier(
             _tierId, _duration, _isOpen
         );
     }
@@ -299,7 +301,7 @@ contract TronicMain {
         MembershipInfo memory membership = memberships[_membershipId];
         require(membership.membershipAddress != address(0), "Membership does not exist");
 
-        TronicMembership(membership.membershipAddress).setMembershipTier(
+        ITronicMembership(membership.membershipAddress).setMembershipTier(
             _tierIndex, _tierId, _duration, _isOpen
         );
     }
@@ -313,12 +315,12 @@ contract TronicMain {
     function getMembershipTierInfo(uint256 _membershipId, uint8 _tierIndex)
         external
         view
-        returns (TronicMembership.MembershipTier memory)
+        returns (ITronicMembership.MembershipTier memory)
     {
         MembershipInfo memory membership = memberships[_membershipId];
         require(membership.membershipAddress != address(0), "Membership does not exist");
 
-        return TronicMembership(membership.membershipAddress).getMembershipTierDetails(_tierIndex);
+        return ITronicMembership(membership.membershipAddress).getMembershipTierDetails(_tierIndex);
     }
 
     /// @notice Retrieves tier index of a given tier ID.
@@ -333,7 +335,7 @@ contract TronicMain {
         MembershipInfo memory membership = memberships[_membershipId];
         require(membership.membershipAddress != address(0), "Membership does not exist");
 
-        return TronicMembership(membership.membershipAddress).getTierIndexByTierId(tierId);
+        return ITronicMembership(membership.membershipAddress).getTierIndexByTierId(tierId);
     }
 
     /// @notice Mints a fungible ERC1155 token.
@@ -349,7 +351,7 @@ contract TronicMain {
     ) external onlyAdmin {
         MembershipInfo memory membership = memberships[_membershipId];
         require(membership.tokenAddress != address(0), "Membership does not exist");
-        TronicToken(membership.tokenAddress).mintFungible(_recipient, _tokenId, _amount);
+        ITronicToken(membership.tokenAddress).mintFungible(_recipient, _tokenId, _amount);
     }
 
     /// @notice Mints a new nonfungible ERC1155 token.
@@ -365,7 +367,7 @@ contract TronicMain {
     ) external onlyAdmin {
         MembershipInfo memory membership = memberships[_membershipId];
         require(membership.tokenAddress != address(0), "Membership does not exist");
-        TronicToken(membership.tokenAddress).mintNFTs(_typeId, _recipient, _amount);
+        ITronicToken(membership.tokenAddress).mintNFTs(_typeId, _recipient, _amount);
     }
 
     /// @notice Processes multiple minting operations for both ERC1155 and ERC721 tokens on behalf of memberships.
@@ -403,11 +405,11 @@ contract TronicMain {
 
                 for (uint256 k = 0; k < _contractTypes[i][j].length; k++) {
                     if (_contractTypes[i][j][k] == TokenType.ERC1155) {
-                        TronicToken(membership.tokenAddress).mintBatch(
+                        ITronicToken(membership.tokenAddress).mintBatch(
                             recipient, _tokenTypeIDs[i][j][k], _amounts[i][j][k], ""
                         );
                     } else {
-                        TronicMembership(membership.membershipAddress).mint(recipient);
+                        ITronicMembership(membership.membershipAddress).mint(recipient);
                     }
                 }
             }
@@ -448,7 +450,7 @@ contract TronicMain {
 
         // get Membership TBA address
         address membershipTbaAddress =
-            TronicMembership(membership.membershipAddress).getTBAccount(_membershipTokenId);
+            ITronicMembership(membership.membershipAddress).getTBAccount(_membershipTokenId);
 
         // construct SafeTransferCall for membership ERC1155
         bytes memory tokenTransferCall = abi.encodeWithSignature(
@@ -542,13 +544,13 @@ contract TronicMain {
     /// @notice Sets the ERC721 implementation address, callable only by the owner.
     /// @param newImplementation The address of the new ERC721 implementation.
     function setERC721Implementation(address newImplementation) external onlyOwner {
-        tronicMembership = TronicMembership(newImplementation);
+        tronicMembership = ITronicMembership(newImplementation);
     }
 
     /// @notice Sets the ERC1155 implementation address, callable only by the owner.
     /// @param newImplementation The address of the new ERC1155 implementation.
     function setERC1155Implementation(address newImplementation) external onlyOwner {
-        tronicERC1155 = TronicToken(newImplementation);
+        tronicERC1155 = ITronicToken(newImplementation);
     }
 
     /// @notice Sets the account implementation address, callable only by the owner.

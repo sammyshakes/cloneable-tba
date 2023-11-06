@@ -4,6 +4,8 @@ pragma solidity ^0.8.13;
 // Imports
 import "forge-std/Script.sol";
 import "../src/TronicMain.sol";
+import "../src/TronicMembership.sol";
+import "../src/TronicToken.sol";
 
 contract DeployTronic is Script {
     // Deployments

@@ -5,6 +5,8 @@ pragma solidity ^0.8.13;
 import "forge-std/Test.sol";
 import "../src/TronicMain.sol";
 import "../src/interfaces/IERC6551Account.sol";
+import "../src/TronicMembership.sol";
+import "../src/TronicToken.sol";
 
 /// @dev Sets up the initial state for testing the TronicMain system
 /// @notice Deploys the core TronicMain, ERC721, and ERC1155 contracts

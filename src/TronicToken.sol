@@ -2,6 +2,7 @@
 
 pragma solidity ^0.8.13;
 
+import "./interfaces/ITronicToken.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
@@ -10,25 +11,10 @@ import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 /// @notice This contract represents the fungible and non-fungible tokens (NFTs) for the Tronic ecosystem.
 /// @dev This contract is based on the ERC1155 standard.
 /// @dev This contract is cloneable.
-contract TronicToken is ERC1155, Initializable {
+contract TronicToken is ITronicToken, ERC1155, Initializable {
     using Strings for uint256;
 
-    struct FungibleTokenInfo {
-        uint64 maxSupply;
-        uint64 totalMinted;
-        uint64 totalBurned;
-        string uri;
-    }
-
-    struct NFTokenInfo {
-        uint64 startingTokenId;
-        uint64 totalMinted;
-        uint64 maxMintable;
-        string baseURI;
-    }
-
     event FungibleTokenTypeCreated(uint256 indexed typeId, uint64 maxSupply, string uri);
-
     event NFTokenTypeCreated(uint256 indexed typeId, uint64 maxMintable, string baseURI);
 
     uint32 private _tokenTypeCounter;
