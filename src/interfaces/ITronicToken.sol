@@ -2,6 +2,11 @@
 pragma solidity ^0.8.13;
 
 interface ITronicToken {
+    /// @dev Struct representing a fungible token type.
+    /// @param maxSupply The maximum supply of the token.
+    /// @param totalMinted The total amount of tokens minted.
+    /// @param totalBurned The total amount of tokens burned.
+    /// @param uri The URI of the token.
     struct FungibleTokenInfo {
         uint64 maxSupply;
         uint64 totalMinted;
@@ -9,6 +14,11 @@ interface ITronicToken {
         string uri;
     }
 
+    /// @dev Struct representing a non-fungible token type.
+    /// @param startingTokenId The starting token ID of the type.
+    /// @param totalMinted The total amount of tokens minted.
+    /// @param maxMintable The maximum amount of tokens mintable.
+    /// @param baseURI The base URI of the token.
     struct NFTokenInfo {
         uint64 startingTokenId;
         uint64 totalMinted;
