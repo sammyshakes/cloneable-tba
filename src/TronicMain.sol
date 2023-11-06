@@ -27,21 +27,38 @@ contract TronicMain {
         ERC721
     }
 
+    /// @notice The event emitted when a membership is minted.
+    /// @param membershipAddress The address of the membership ERC721 contract.
+    /// @param recipientAddress The address of the recipient of the minted token.
+    /// @param tokenId The ID of the minted token.
     event MembershipMinted(
         address indexed membershipAddress, address indexed recipientAddress, uint256 indexed tokenId
     );
 
+    /// @notice The event emitted when a membership tier is assigned to a token.
+    /// @param membershipAddress The address of the membership ERC721 contract that token belongs to.
+    /// @param tokenId The ID of the token that tier will be assigned to.
+    /// @param tierIndex The index of the membership tier that will be assigned to token.
     event TierAssigned(
         address indexed membershipAddress, uint256 indexed tokenId, uint256 indexed tierIndex
     );
 
+    /// @notice The event emitted when a membership is added.
+    /// @param membershipId The ID of the membership.
+    /// @param membershipAddress The address of the membership ERC721 contract.
+    /// @param tokenAddress The address of the achievement token ERC1155 contract.
     event MembershipAdded(
         uint256 indexed membershipId,
         address indexed membershipAddress,
         address indexed tokenAddress
     );
 
+    /// @notice The event emitted when a membership is removed.
+    /// @param membershipId The ID of the membership.
     event MembershipRemoved(uint256 indexed membershipId);
+
+    /// @notice The event emitted when a fungible token type is created.
+    /// @param tokenId The ID of the newly created token type.
     event FungibleTokenTypeCreated(uint256 indexed tokenId);
 
     address public owner;
