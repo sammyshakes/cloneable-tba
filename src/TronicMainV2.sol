@@ -7,9 +7,8 @@ import "./interfaces/ITronicMembership.sol";
 import "./interfaces/ITronicToken.sol";
 import "@openzeppelin/contracts/proxy/Clones.sol";
 import "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
-import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 
-contract TronicMain is Initializable, UUPSUpgradeable {
+contract TronicMainV2 is UUPSUpgradeable {
     /// @notice The struct for membership information.
     /// @param membershipAddress The address of the membership ERC721 contract.
     /// @param tokenAddress The address of the token ERC1155 contract.
@@ -77,26 +76,8 @@ contract TronicMain is Initializable, UUPSUpgradeable {
     ITronicMembership public tronicMembership;
     ITronicToken public tronicERC1155;
 
-    /// @notice Initializes the TronicMain contract.
-    /// @param _admin The address of the Tronic admin.
-    /// @param _tronicMembership The address of the Tronic Membership contract (ERC721 implementation).
-    /// @param _tronicToken The address of the Tronic Token contract (ERC1155 implementation).
-    /// @param _registry The address of the registry contract.
-    /// @param _tbaImplementation The address of the tokenbound account implementation.
-    function initialize(
-        address _admin,
-        address _tronicMembership,
-        address _tronicToken,
-        address _registry,
-        address _tbaImplementation
-    ) public initializer {
-        owner = msg.sender;
-        tronicAdmin = _admin;
-        tronicERC1155 = ITronicToken(_tronicToken);
-        tronicMembership = ITronicMembership(_tronicMembership);
-        registry = IERC6551Registry(_registry);
-        tbaAccountImplementation = payable(_tbaImplementation);
-    }
+    //upraded variable
+    string public constant VERSION = "v0.2.0";
 
     /// @notice Checks if the caller is the owner.
     modifier onlyOwner() {

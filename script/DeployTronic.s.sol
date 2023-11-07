@@ -6,6 +6,7 @@ import "forge-std/Script.sol";
 import "../src/TronicMain.sol";
 import "../src/TronicMembership.sol";
 import "../src/TronicToken.sol";
+import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
 contract DeployTronic is Script {
     // Deployments
@@ -28,13 +29,25 @@ contract DeployTronic is Script {
         tronicToken = new TronicToken();
 
         // deploy new Tronic Admin Contract
-        tronicMainContract = new TronicMain(
+        tronicMainContract = new TronicMain();
+
+        // deploy new proxy contract
+        ERC1967Proxy proxy = new ERC1967Proxy(address(tronicMainContract), abi.encodeWithSignature(
+            "initialize(address,address,address,address,address)",
             tronicAdminAddress,
             address(tronicMembership),
             address(tronicToken),
             registryAddress,
             tbaAddress
-        );
+        ));
+
+        // proxy.initialize(
+        //     tronicAdminAddress,
+        //     address(tronicMembership),
+        //     address(tronicToken),
+        //     registryAddress,
+        //     tbaAddress
+        // );
 
         vm.stopBroadcast();
     }

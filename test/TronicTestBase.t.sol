@@ -7,6 +7,7 @@ import "../src/TronicMain.sol";
 import "../src/interfaces/IERC6551Account.sol";
 import "../src/TronicMembership.sol";
 import "../src/TronicToken.sol";
+import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
 /// @dev Sets up the initial state for testing the TronicMain system
 /// @notice Deploys the core TronicMain, ERC721, and ERC1155 contracts
@@ -60,7 +61,11 @@ contract TronicTestBase is Test {
     uint8 public constant TronicTier1Index = 1;
     uint8 public constant TronicTier2Index = 2;
 
+    ERC1967Proxy public proxy;
+
     TronicMain tronicMainContract;
+
+    TronicMain tronicMainContractImplementation;
     TronicMembership tronicERC721;
     TronicToken tronicERC1155;
 
@@ -124,11 +129,21 @@ contract TronicTestBase is Test {
         tronicERC721 = new TronicMembership();
         tronicERC1155 = new TronicToken();
 
-        tronicMainContract =
-        new TronicMain(tronicAdmin, address(tronicERC721), address(tronicERC1155), registryAddress, defaultTBAImplementationAddress);
+        tronicMainContractImplementation = new TronicMain();
+        //tronicMainContract is a proxy contract
+        proxy = new ERC1967Proxy(address(tronicMainContractImplementation), abi.encodeWithSignature(
+            "initialize(address,address,address,address,address)",
+            tronicAdmin,
+            address(tronicERC721),
+            address(tronicERC1155),
+            registryAddress,
+            defaultTBAImplementationAddress
+        ));
+
+        tronicMainContract = TronicMain(address(proxy));
 
         //initialize Tronic erc1155
-        tronicERC1155.initialize(address(tronicMainContract));
+        tronicERC1155.initialize(address(proxy));
 
         //initialize tronicERC721
         tronicERC721.initialize(
@@ -150,7 +165,7 @@ contract TronicTestBase is Test {
         vm.startPrank(tronicAdmin);
 
         //set admin
-        tronicERC721.addAdmin(address(tronicMainContract));
+        tronicERC721.addAdmin(address(proxy));
 
         (membershipIDX, clone721AddressX, clone1155AddressX) = tronicMainContract.deployMembership(
             "XClone721",
@@ -193,7 +208,7 @@ contract TronicTestBase is Test {
 
         vm.stopPrank();
 
-        vm.startPrank(address(tronicMainContract));
+        vm.startPrank(address(proxy));
 
         //mint TronicMembership nfts to users 1-4 and return their tbas
         (tronicTokenId1TBA,) = tronicERC721.mint(user1);
