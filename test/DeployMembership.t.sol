@@ -137,6 +137,9 @@ contract DeployMembership is TronicTestBase {
     }
 
     function testCreateMembershipTiers() public {
+        //assert the number of max tiers from main
+        assertEq(tronicMainContract.maxTiersPerMembership(), 10);
+
         //create input arrays
         string[] memory tierIds = new string[](2);
         tierIds[0] = "tier1111";
