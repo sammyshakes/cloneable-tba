@@ -33,12 +33,13 @@ contract DeployTronic is Script {
 
         // deploy new proxy contract
         ERC1967Proxy proxy = new ERC1967Proxy(address(tronicMainContract), abi.encodeWithSignature(
-            "initialize(address,address,address,address,address)",
+            "initialize(address,address,address,address,address, uint8)",
             tronicAdminAddress,
             address(tronicMembership),
             address(tronicToken),
             registryAddress,
-            tbaAddress
+            tbaAddress,
+            10//max tiers per membership
         ));
 
         // proxy.initialize(
