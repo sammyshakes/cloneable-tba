@@ -65,7 +65,7 @@ contract TronicMainV2 is UUPSUpgradeable {
     address public owner;
     address public tronicAdmin;
     address payable public tbaAccountImplementation;
-    uint8 public maxTiersPerMembership = 10;
+    uint8 public maxTiersPerMembership;
 
     uint256 public membershipCounter;
     mapping(uint256 => MembershipInfo) private memberships;

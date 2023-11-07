@@ -69,7 +69,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
     address public owner;
     address public tronicAdmin;
     address payable public tbaAccountImplementation;
-    uint8 public maxTiersPerMembership = 10;
+    uint8 public maxTiersPerMembership;
 
     uint256 public membershipCounter;
     mapping(uint256 => MembershipInfo) private memberships;
@@ -91,7 +91,8 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         address _tronicMembership,
         address _tronicToken,
         address _registry,
-        address _tbaImplementation
+        address _tbaImplementation,
+        uint8 _maxTiersPerMembership
     ) public initializer {
         owner = msg.sender;
         tronicAdmin = _admin;
@@ -99,6 +100,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         tronicMembership = ITronicMembership(_tronicMembership);
         registry = IERC6551Registry(_registry);
         tbaAccountImplementation = payable(_tbaImplementation);
+        maxTiersPerMembership = _maxTiersPerMembership;
     }
 
     /// @notice Checks if the caller is the owner.

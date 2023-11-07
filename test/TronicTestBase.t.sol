@@ -132,15 +132,18 @@ contract TronicTestBase is Test {
         tronicMainContractImplementation = new TronicMain();
         //tronicMainContract is a proxy contract
         proxy = new ERC1967Proxy(address(tronicMainContractImplementation), abi.encodeWithSignature(
-            "initialize(address,address,address,address,address)",
+            "initialize(address,address,address,address,address,uint8)",
             tronicAdmin,
             address(tronicERC721),
             address(tronicERC1155),
             registryAddress,
-            defaultTBAImplementationAddress
+            defaultTBAImplementationAddress,
+            10 //maxtiers
         ));
 
         tronicMainContract = TronicMain(address(proxy));
+
+        assertEq(tronicMainContract.maxTiersPerMembership(), 10);
 
         //initialize Tronic erc1155
         tronicERC1155.initialize(address(proxy));
