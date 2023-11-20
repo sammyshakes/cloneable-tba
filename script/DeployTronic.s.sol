@@ -6,12 +6,21 @@ import "forge-std/Script.sol";
 import "../src/TronicMain.sol";
 import "../src/TronicMembership.sol";
 import "../src/TronicToken.sol";
+import "../src/TronicBrandLoyalty.sol";
+import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
 contract DeployTronic is Script {
-    // Deployments
-    TronicMembership public tronicMembership;
-    TronicToken public tronicToken;
-    TronicMain public tronicMainContract;
+    // Implementation Deployments
+    TronicMembership public tronicMembershipImpl;
+    TronicToken public tronicTokenImpl;
+    TronicMain public tronicMainImpl;
+    TronicBrandLoyalty public tronicBrandLoyaltyImpl;
+
+    //Proxy Deployments
+    ERC1967Proxy public proxyMain;
+    TronicMain public tronicMain;
+
+    uint8 public maxTiersPerMembership = 10;
 
     address public tronicAdminAddress = vm.envAddress("TRONIC_ADMIN_ADDRESS");
     address public registryAddress = vm.envAddress("ERC6551_REGISTRY_ADDRESS");
@@ -24,16 +33,28 @@ contract DeployTronic is Script {
         //Deploy Tronic Master Contracts
         vm.startBroadcast(deployerPrivateKey);
 
-        tronicMembership = new TronicMembership();
-        tronicToken = new TronicToken();
+        tronicBrandLoyaltyImpl = new TronicBrandLoyalty();
+        tronicMembershipImpl = new TronicMembership();
+        tronicTokenImpl = new TronicToken();
 
-        // deploy new Tronic Admin Contract
-        tronicMainContract = new TronicMain(
+        // deploy new Tronic Main Contract implementation
+        tronicMainImpl = new TronicMain();
+
+        // deploy proxy contract
+        proxyMain = new ERC1967Proxy(address(tronicMainImpl), "");
+
+        // Wrap proxy in main contract abi
+        tronicMain = TronicMain(address(proxyMain));
+
+        // initialize main contract
+        tronicMain.initialize(
             tronicAdminAddress,
-            address(tronicMembership),
-            address(tronicToken),
+            address(tronicBrandLoyaltyImpl),
+            address(tronicMembershipImpl),
+            address(tronicTokenImpl),
             registryAddress,
-            tbaAddress
+            tbaAddress,
+            maxTiersPerMembership
         );
 
         vm.stopBroadcast();

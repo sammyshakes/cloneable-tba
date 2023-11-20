@@ -13,20 +13,18 @@ contract TronicMembership is ITronicMembership, ERC721, Initializable {
     string private _symbol;
     string private _baseURI_;
 
+    bool public isElastic;
+    uint256 public maxMintable;
+
     address public owner;
-    address public accountImplementation;
     uint8 private _numTiers;
     uint8 private _maxTiers;
-    bool public isElastic;
-    bool public isBound;
-    uint256 public maxSupply;
     uint256 private _totalBurned;
     uint256 private _totalMinted;
 
-    IERC6551Registry public registry;
-
+    mapping(string => uint8) private _tierIdToTierIndex;
     mapping(uint8 => MembershipTier) private _membershipTiers;
-    mapping(uint256 => TokenMembership) private _tokenMemberships;
+    mapping(uint256 => MembershipToken) private _membershipTokens;
     mapping(address => bool) private _admins;
 
     /// @dev Modifier to ensure only the owner can call certain functions.
@@ -61,31 +59,23 @@ contract TronicMembership is ITronicMembership, ERC721, Initializable {
     constructor() ERC721("", "") {}
 
     /// @notice Initializes the contract with given parameters.
-    /// @param _accountImplementation Implementation of the account.
-    /// @param _registry Address of the registry contract.
     /// @param name_ Name of the token.
     /// @param symbol_ Symbol of the token.
     /// @param uri Base URI of the token.
+    /// @param _maxMintable Maximum number of tokens that can be minted.
+    /// @param _isElastic Whether max mintable is adjustable or not.
     /// @param _maxMembershipTiers Maximum number of membership tiers.
-    /// @param _maxSupply Maximum supply of the token.
-    /// @param _isElastic Whether the max token supply is elastic or not.
-    /// @param _isBound Whether the token is soulbound or not.
     /// @param tronicAdmin Address of the initial admin.
     /// @dev This function is called by the tronicMain contract.
     function initialize(
-        address payable _accountImplementation,
-        address _registry,
         string memory name_,
         string memory symbol_,
         string memory uri,
-        uint8 _maxMembershipTiers,
-        uint256 _maxSupply,
+        uint256 _maxMintable,
         bool _isElastic,
-        bool _isBound,
+        uint8 _maxMembershipTiers,
         address tronicAdmin
     ) external initializer {
-        accountImplementation = _accountImplementation;
-        registry = IERC6551Registry(_registry);
         owner = tronicAdmin;
         _admins[tronicAdmin] = true;
         _admins[msg.sender] = true;
@@ -93,73 +83,71 @@ contract TronicMembership is ITronicMembership, ERC721, Initializable {
         _symbol = symbol_;
         _baseURI_ = uri;
         _maxTiers = _maxMembershipTiers;
-        maxSupply = _maxSupply;
+        maxMintable = _maxMintable;
         isElastic = _isElastic;
-        isBound = _isBound;
     }
 
     /// @notice Mints a new token.
     /// @param to Address to mint the token to.
-    /// @return tbaAccount The payable address of the created tokenbound account.
-    /// @dev The tokenbound account is created using the registry contract.
-    function mint(address to) public onlyAdmin returns (address payable tbaAccount, uint256) {
-        uint256 _tokenId = ++_totalMinted;
-        require(_tokenId <= maxSupply, "Max supply reached");
+    /// @param tierIndex The index of the membership tier to associate with the token.
+    /// @return tokenId The ID of the token.
+    /// @dev This function can only be called by an admin.
+    /// @dev The tier must exist.
+    function mint(address to, uint8 tierIndex) external onlyAdmin returns (uint256 tokenId) {
+        require(balanceOf(to) == 0, "Recipient already owns a membership token");
+        require(tierIndex <= _numTiers, "Tier does not exist");
 
-        // Deploy token account
-        tbaAccount = payable(
-            registry.createAccount(
-                accountImplementation,
-                block.chainid,
-                address(this),
-                _totalMinted,
-                0, // salt
-                abi.encodeWithSignature("initialize()") // init data
-            )
-        );
+        tokenId = ++_totalMinted;
+        require(tokenId <= maxMintable, "Max supply reached");
 
-        // Mint token
-        _mint(to, _totalMinted);
-
-        return (tbaAccount, _tokenId);
+        _membershipTokens[tokenId] = MembershipToken(tierIndex, uint128(block.timestamp));
+        _mint(to, tokenId);
     }
 
     /// @notice Creates a new membership tier.
     /// @param tierId The ID of the new tier.
     /// @param duration The duration of the new tier in seconds.
     /// @param isOpen Whether the tier is open or closed.
+    /// @param tierURI The URI of the tier.
     /// @dev Only callable by admin.
-    function createMembershipTier(string memory tierId, uint128 duration, bool isOpen)
-        external
-        onlyAdmin
-        returns (uint8 tierIndex)
-    {
+    function createMembershipTier(
+        string memory tierId,
+        uint128 duration,
+        bool isOpen,
+        string calldata tierURI
+    ) external onlyAdmin returns (uint8 tierIndex) {
         tierIndex = ++_numTiers;
         require(tierIndex <= _maxTiers, "Max Tier limit reached");
         _membershipTiers[tierIndex] =
-            MembershipTier({tierId: tierId, duration: duration, isOpen: isOpen});
+            MembershipTier({tierId: tierId, duration: duration, isOpen: isOpen, tierURI: tierURI});
+
+        _tierIdToTierIndex[tierId] = tierIndex;
     }
 
     /// @notice Creates multiple new membership tiers.
-    /// @param tierIds The IDs of the new tiers.
-    /// @param durations The durations of the new tiers in seconds.
-    /// @param isOpens Whether the tiers are open or closed.
+    /// @param tiers An array of `MembershipTier` structs.
     /// @dev Only callable by admin. Arrays must all have the same length.
-    function createMembershipTiers(
-        string[] memory tierIds,
-        uint128[] memory durations,
-        bool[] memory isOpens
-    ) external onlyAdmin {
-        require(
-            isOpens.length == tierIds.length && tierIds.length == durations.length,
-            "Input array mismatch"
-        );
-        require(_numTiers + tierIds.length <= _maxTiers, "Max Tier limit reached");
+    function createMembershipTiers(MembershipTier[] calldata tiers) external onlyAdmin {
+        require(_numTiers + tiers.length <= _maxTiers, "Max Tier limit reached");
 
-        for (uint256 i = 0; i < tierIds.length; i++) {
-            _membershipTiers[++_numTiers] =
-                MembershipTier({tierId: tierIds[i], duration: durations[i], isOpen: isOpens[i]});
+        for (uint256 i = 0; i < tiers.length; i++) {
+            _membershipTiers[++_numTiers] = MembershipTier({
+                tierId: tiers[i].tierId,
+                duration: tiers[i].duration,
+                isOpen: tiers[i].isOpen,
+                tierURI: tiers[i].tierURI
+            });
+
+            _tierIdToTierIndex[tiers[i].tierId] = _numTiers;
         }
+    }
+
+    /// @notice Retrieves tier index of a given tier ID.
+    /// @param tierId The ID of the tier.
+    /// @return The index of the tier.
+    /// @dev Returns 0 if the tier does not exist.
+    function getTierIndexByTierId(string memory tierId) external view returns (uint8) {
+        return _tierIdToTierIndex[tierId];
     }
 
     /// @notice Sets the details of a membership tier.
@@ -172,11 +160,13 @@ contract TronicMembership is ITronicMembership, ERC721, Initializable {
         uint8 tierIndex,
         string calldata tierId,
         uint128 duration,
-        bool isOpen
+        bool isOpen,
+        string calldata tierURI
     ) external onlyAdmin tierExists(tierIndex) {
         _membershipTiers[tierIndex].tierId = tierId;
         _membershipTiers[tierIndex].duration = duration;
         _membershipTiers[tierIndex].isOpen = isOpen;
+        _membershipTiers[tierIndex].tierURI = tierURI;
     }
 
     /// @notice Retrieves the details of a membership tier.
@@ -202,80 +192,47 @@ contract TronicMembership is ITronicMembership, ERC721, Initializable {
     /// @param tierIndex The index of the membership tier to associate with the token.
     /// @dev This function can only be called by an admin.
     /// @dev The tier must exist.
-    /// @dev The token must exist.
-    function setTokenMembership(uint256 tokenId, uint8 tierIndex)
+    function setMembershipToken(uint256 tokenId, uint8 tierIndex)
         external
         onlyAdmin
         tierExists(tierIndex)
-        tokenExists(tokenId)
     {
-        _tokenMemberships[tokenId] = TokenMembership(tierIndex, uint128(block.timestamp));
+        _membershipTokens[tokenId] = MembershipToken(tierIndex, uint128(block.timestamp));
     }
 
     /// @notice Retrieves the membership details of a specific token.
     /// @param tokenId The ID of the token whose membership details are to be retrieved.
     /// @return The membership details of the token, represented by a `TokenMembership` struct.
-    /// @dev The token must exist.
-    function getTokenMembership(uint256 tokenId)
-        external
-        view
-        tokenExists(tokenId)
-        returns (TokenMembership memory)
-    {
-        return _tokenMemberships[tokenId];
-    }
-
-    /// @notice Retrieves the tokenbound account of a given token ID.
-    /// @param tokenId The ID of the token.
-    /// @return The address of the tokenbound account.
-    function getTBAccount(uint256 tokenId) external view returns (address) {
-        return registry.account(accountImplementation, block.chainid, address(this), tokenId, 0);
-    }
-
-    /// @notice Retrieves tier index of a given tier ID.
-    /// @param tierId The ID of the tier.
-    /// @return The index of the tier.
-    /// @dev Returns 0 if the tier does not exist.
-    function getTierIndexByTierId(string memory tierId) external view returns (uint8) {
-        for (uint8 i = 1; i <= _numTiers; i++) {
-            string memory candidateTierId = _membershipTiers[i].tierId;
-            if (keccak256(abi.encodePacked(candidateTierId)) == keccak256(abi.encodePacked(tierId)))
-            {
-                return i;
-            }
-        }
-
-        return 0;
+    function getMembershipToken(uint256 tokenId) external view returns (MembershipToken memory) {
+        return _membershipTokens[tokenId];
     }
 
     //function to determine if a token has a valid membership
     /// @notice Checks if a token has a valid membership.
     /// @param tokenId The ID of the token.
     /// @return True if the token has a valid membership, false otherwise.
-    /// @dev The token must exist.
-    function isValid(uint256 tokenId) external view tokenExists(tokenId) returns (bool) {
-        TokenMembership memory membership = _tokenMemberships[tokenId];
+    function isValid(uint256 tokenId) external view returns (bool) {
+        MembershipToken memory membership = _membershipTokens[tokenId];
         MembershipTier memory tier = _membershipTiers[membership.tierIndex];
         return membership.timestamp + tier.duration > block.timestamp;
+    }
+
+    /// @notice Sets the max supply of the token.
+    /// @param _maxMintable The new max supply.
+    /// @dev Only callable by admin.
+    /// @dev Only callable for elastic tokens.
+    /// @dev The max supply must be greater than the total minted.
+    function setMaxMintable(uint256 _maxMintable) external onlyAdmin {
+        require(isElastic, "Max mintable can only be set for elastic tokens");
+        require(_maxMintable > _totalMinted, "Max mintable must be greater than total minted");
+        maxMintable = _maxMintable;
     }
 
     /// @notice Burns a token with the given ID.
     /// @param tokenId ID of the token to burn.
     function burn(uint256 tokenId) external onlyAdmin {
         ++_totalBurned;
-        _tokenMemberships[tokenId] = TokenMembership(0, 0);
         _burn(tokenId);
-    }
-
-    /// @notice Sets the max supply of the token.
-    /// @param _maxSupply The new max supply.
-    /// @dev Only callable by admin.
-    /// @dev Only callable for elastic tokens.
-    /// @dev The max supply must be greater than the total minted.
-    function setMaxSupply(uint256 _maxSupply) external onlyAdmin {
-        require(isElastic, "Max supply can only be set for elastic tokens");
-        require(_maxSupply > _totalMinted, "Max supply must be greater than total minted");
-        maxSupply = _maxSupply;
     }
 
     /// @notice Sets the base URI for the token.
@@ -317,13 +274,6 @@ contract TronicMembership is ITronicMembership, ERC721, Initializable {
         return _admins[_admin];
     }
 
-    /// @notice Updates the implementation of the account.
-    /// @param _accountImplementation The new account implementation address.
-    /// @dev Only callable by owner.
-    function updateImplementation(address payable _accountImplementation) external onlyOwner {
-        accountImplementation = _accountImplementation;
-    }
-
     /// @notice Overrides the supportsInterface function to include support for IERC721.
     /// @param interfaceId The interface ID to check for.
     /// @return True if the interface is supported, false otherwise.
@@ -339,35 +289,16 @@ contract TronicMembership is ITronicMembership, ERC721, Initializable {
         owner = newOwner;
     }
 
-    /// @notice Transfers an unbound token from one address to another.
-    /// @param from The address to transfer the token from.
-    /// @param to The address to transfer the token to.
-    /// @param tokenId The ID of the token to transfer.
-    /// @dev This function overrides the transferFrom function of ERC721.
-    /// @dev it reverts if the token is bound.
-    function transferFrom(address from, address to, uint256 tokenId) public override {
-        require(!isBound, "Token is bound");
-        super.transferFrom(from, to, tokenId);
-    }
-
-    /// @notice Safely transfers an unbound token from one address to another.
-    /// @param from The address to transfer the token from.
-    /// @param to The address to transfer the token to.
-    /// @param tokenId The ID of the token to transfer.
-    /// @dev This function overrides the safeTransferFrom function of ERC721.
-    /// @dev it reverts if the token is bound.
-    function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory _data)
-        public
-        override
-    {
-        require(!isBound, "Token is bound");
-        super.safeTransferFrom(from, to, tokenId, _data);
-    }
-
     /// @notice Returns the total supply of the token.
     /// @return The total supply of the token.
     function totalSupply() external view returns (uint256) {
         return _totalMinted - _totalBurned;
+    }
+
+    /// @notice Returns the max supply of the token.
+    /// @return The max supply of the token.
+    function maxSupply() external view returns (uint256) {
+        return maxMintable - _totalBurned;
     }
 
     /// @notice Returns _baseURI_.
