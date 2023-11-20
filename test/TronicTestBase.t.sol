@@ -269,10 +269,6 @@ contract TronicTestBase is Test {
         tronicMainContract.mintMembership(user3, membershipIDY, 1);
         tronicMainContract.mintMembership(user4, membershipIDY, 1);
 
-        // tronicMembership.setMembershipToken(tokenId1, TronicTier1Index);
-        // tronicMembership.setMembershipToken(tokenId2, TronicTier1Index);
-        // tronicMembership.setMembershipToken(tokenId3, TronicTier2Index);
-        // tronicMembership.setMembershipToken(tokenId4, TronicTier2Index);
         vm.stopPrank();
 
         // get membership x and y details, membership ids: x=0 and y=1
