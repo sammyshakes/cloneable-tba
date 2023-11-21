@@ -93,7 +93,7 @@ forge coverage --rpc-url mumbai
 Verifies all contracts on etherscan
 
 ```bash
-forge script script/DeployTronic.s.sol:DeployTronic -vvvv --rpc-url mumbai --broadcast --verify
+forge script script/01_DeployTronic.s.sol:DeployTronic -vvvv --rpc-url mumbai --broadcast --verify
 ```
 
 ```r
@@ -126,8 +126,35 @@ forge verify-contract 0x64404e78db6106CA78acD873Ce2CbE00deb7301F src/TronicToken
 - Creates 4 Fungible Reward Tokens for Tronic
 
 ```bash
-forge script script/InitializeTronic.s.sol:InitializeTronic -vvvv --rpc-url mumbai --broadcast
+forge script script/02_InitializeTronic.s.sol:InitializeTronic -vvvv --rpc-url mumbai --broadcast
 ```
+
+TODO: DEPLOY BRAND LOYALTY SECTION
+
+### `DeployBrand.s.sol` - Deploys Brand Loyalty and Token Contracts for Brands X and Y
+
+- Deploys Brand X Loyalty (Clones Tronic Brand Loyalty ERC721)
+- Deploys Brand X Token (Clones Tronic Brand Token ERC1155)
+- Deploys Brand Y Loyalty (Clones Tronic Brand Loyalty ERC721)
+- Deploys Brand Y Token (Clones Tronic Brand Token ERC1155)
+
+```bash
+forge script script/03_DeployBrand.s.sol:DeployBrand -vvvv --rpc-url mumbai --broadcast
+```
+
+```r
+# Brand x contracts
+BRAND_X_ID=1
+BRAND_X_LOYALTY_ADDRESS=0x142279B824c8A16b590065Fbb9F58AA260055EE3
+BRAND_X_TOKEN_ADDRESS=0x879D376cBcd6b067e904F4C12163BbEe0C0dea34
+
+# Brand y contracts
+BRAND_Y_ID=2
+BRAND_Y_LOYALTY_ADDRESS=0xC34274138bB4ce12af1321b135311569ae84089c
+BRAND_Y_TOKEN_ADDRESS=0x23FA794D25DE22252F3C147995AF68A2a34D0AfD
+```
+
+---
 
 ### `DeployMembership.s.sol` - Deploys New Memberships (Memberships X and Y)
 
@@ -141,13 +168,10 @@ forge script script/DeployMembership.s.sol:DeployMembership -vvvv --rpc-url mumb
 ```
 
 ```r
-# MEMBERSHIP x contracts
-MEMBERSHIP_X_ERC721_ADDRESS=0x0A3Cc0808fD11dd208C3C3Ab81051Aa59Da107B1
-MEMBERSHIP_X_ERC1155_ADDRESS=0x879D376cBcd6b067e904F4C12163BbEe0C0dea34
+# Deployed MEMBERSHIP contract addresses
+BRAND_X_MEMBERSHIP_ADDRESS=0xFd48c9b03f97e1c97F74ac290922715F7251fD44
+BRAND_Y_MEMBERSHIP_ADDRESS=0x1164eC1fDD371C88FbE56f269bAC77f275859ad5
 
-# MEMBERSHIP y contracts
-MEMBERSHIP_Y_ERC721_ADDRESS=0x7f68B25EB513599e4914DEe26396d3F734E4521c
-MEMBERSHIP_Y_ERC1155_ADDRESS=0xBFa7658D6e6B6df6Be25B95d6EAD6405ea3EDf53
 
 ```
 
