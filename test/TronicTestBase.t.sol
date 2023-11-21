@@ -134,6 +134,12 @@ contract TronicTestBase is Test {
     string initialUriX = "http://setup-exampleX.com/token/";
     string initialUriY = "http://setup-exampleY.com/token/";
 
+    //create tier uris
+    string public tier1XURI = "http://tier1X.com/";
+    string public tier2XURI = "http://tier2X.com/";
+    string public tier1YURI = "http://tier1Y.com/";
+    string public tier2YURI = "http://tier2Y.com/";
+
     function setUp() public {
         //deploy tronic contracts
         vm.startPrank(tronicOwner);
@@ -206,17 +212,17 @@ contract TronicTestBase is Test {
         //create membership tiers for tronicMembership
         TronicMembership.MembershipTier[] memory tiers = new TronicMembership.MembershipTier[](2);
         tiers[0] = ITronicMembership.MembershipTier({
-            tierId: "tierX",
+            tierId: "tier1",
             duration: 30 days,
             isOpen: true,
-            tierURI: "http://tierX.com/"
+            tierURI: tier1XURI
         });
 
         tiers[1] = ITronicMembership.MembershipTier({
-            tierId: "tierY",
+            tierId: "tier2",
             duration: 120 days,
             isOpen: false,
-            tierURI: "http://tierY.com/"
+            tierURI: tier2XURI
         });
 
         tronicMembership.createMembershipTiers(tiers);

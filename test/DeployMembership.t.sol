@@ -13,6 +13,9 @@ contract DeployMembership is TronicTestBase {
         assertEq(tronicAdmin, brandYToken.owner());
         assertEq(tronicAdmin, brandLoyaltyX.owner());
         assertEq(tronicAdmin, brandLoyaltyY.owner());
+        //verify membershiptier uris for brandx
+        assertEq(brandXMembership.getMembershipTierDetails(1).tierURI, tier1XURI);
+        assertEq(brandXMembership.getMembershipTierDetails(2).tierURI, tier2XURI);
 
         // check if tronicMainContract isAdmin
         assertEq(brandXMembership.isAdmin(address(tronicMainContract)), true);
@@ -29,26 +32,50 @@ contract DeployMembership is TronicTestBase {
         // console.log("brandXMembership membership tier: ", brandXMembership.getMembershipTier(1));
 
         // Mint a brand loyalty nft to user1
-        (address user1TBAmembershipX, uint256 BrandXTokenId) =
+        (address user1TBALoyaltyX, uint256 brandXTokenId) =
             tronicMainContract.mintBrandLoyaltyToken(user1, brandIDX);
 
-        // mint membership to user1's Brand X TBA
-        uint256 membershipTokenIdUser1 =
-            tronicMainContract.mintMembership(user1TBAmembershipX, membershipIDX, 0);
         // get tba account address from brand x loyalty contract
-        address tbaAccount = brandLoyaltyX.getTBAccount(BrandXTokenId);
+        address tbaAccount = brandLoyaltyX.getTBAccount(brandXTokenId);
         console.log("tbaAccount: ", tbaAccount);
         //verify tba account is correct
-        assertEq(tbaAccount, user1TBAmembershipX);
+        assertEq(tbaAccount, user1TBALoyaltyX);
 
-        // verify that user1TBA owns token
-        assertEq(brandLoyaltyX.ownerOf(membershipTokenIdUser1), user1);
+        // verify that user1TBA owns membershiptoken
+        assertEq(brandLoyaltyX.ownerOf(brandXTokenId), user1);
 
         // check uri
-        string memory uri = brandLoyaltyX.tokenURI(membershipTokenIdUser1);
+        string memory uri = brandLoyaltyX.tokenURI(brandXTokenId);
         console.log("uri: ", uri);
         //verify uri is correct
         assertEq(uri, "http://BrandX.com/3");
+
+        // Mint membership to user1's Brand X TBA
+        uint256 membershipTokenIdUser1 =
+            tronicMainContract.mintMembership(user1TBALoyaltyX, membershipIDX, 1);
+
+        //verify that user1TBA owns token
+        assertEq(brandXMembership.ownerOf(membershipTokenIdUser1), user1TBALoyaltyX);
+
+        //check total supply of membershipX
+        assertEq(brandXMembership.totalSupply(), 3);
+
+        //get membership tier
+        console.log(
+            "brandXMembership membership tier id: ",
+            brandXMembership.getMembershipTierDetails(1).tierId
+        );
+
+        //get token membership tier
+        console.log(
+            "brandXMembership membership tier index: ",
+            brandXMembership.getMembershipToken(membershipTokenIdUser1).tierIndex
+        );
+
+        //check uri of membershipTokenIdUser1
+        string memory uri2 = brandXMembership.tokenURI(membershipTokenIdUser1);
+        assertEq(uri2, tier1XURI);
+        console.log("uri2: ", tier1XURI);
 
         // Mint a brand loyalty nft to user2
         (address user2TBAmembershipY, uint256 BrandYTokenId) =
@@ -65,12 +92,12 @@ contract DeployMembership is TronicTestBase {
         // verify that user2TBA owns token
         assertEq(brandLoyaltyY.ownerOf(membershipTokenIdUser2), user2);
 
-        // mint fungible tokens id=0 to user1TBAmembershipX and user2TBAmembershipY
-        brandXToken.mintFungible(user1TBAmembershipX, 0, 100);
+        // mint fungible tokens id=0 to user1TBALoyaltyX and user2TBAmembershipY
+        brandXToken.mintFungible(user1TBALoyaltyX, 0, 100);
         brandYToken.mintFungible(user2TBAmembershipY, 0, 100);
 
-        //verify that user1TBAmembershipX and user2TBAmembershipY have 100 tokens
-        assertEq(brandXToken.balanceOf(user1TBAmembershipX, 0), 100);
+        //verify that user1TBALoyaltyX and user2TBAmembershipY have 100 tokens
+        assertEq(brandXToken.balanceOf(user1TBALoyaltyX, 0), 100);
         assertEq(brandYToken.balanceOf(user2TBAmembershipY, 0), 100);
 
         //verify uris from membershipX and membershipY erc1155s

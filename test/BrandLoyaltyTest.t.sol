@@ -4,8 +4,8 @@ pragma solidity ^0.8.13;
 
 import "./TronicTestBase.t.sol";
 
-contract ERC721Test is TronicTestBase {
-    function testMinting721() public {
+contract BrandLoyaltyTest is TronicTestBase {
+    function testMintingBrandLoyalty() public {
         console.log("SETUP - tokenbound account address: ", defaultTBAImplementationAddress);
         console.log(
             "SETUP - Tronic Brand Loyalty address: ", address(tronicBrandLoyaltyImplementation)
@@ -16,13 +16,13 @@ contract ERC721Test is TronicTestBase {
         vm.prank(tronicAdmin);
 
         (address brandXTBA, uint256 brandXTokenId) =
-            tronicMainContract.mintBrandLoyaltyToken(user2, brandIDX);
+            tronicMainContract.mintBrandLoyaltyToken(user4, brandIDX);
 
         //  brandIDX, brandLoyaltyAddressX, tokenAddressX
-        // check that user2 owns token
+        // check that user4 owns token
         // get brand loyalty contract
         TronicBrandLoyalty tronicBrandLoyalty = TronicBrandLoyalty(brandLoyaltyAddressX);
-        assertEq(tronicBrandLoyalty.ownerOf(brandXTokenId), user2);
+        assertEq(tronicBrandLoyalty.ownerOf(brandXTokenId), user4);
 
         // get tba address for token from tronicBrandLoyalty contract
         address tba = tronicBrandLoyalty.getTBAccount(brandXTokenId);
@@ -32,14 +32,14 @@ contract ERC721Test is TronicTestBase {
         IERC6551Account tbaAccount = IERC6551Account(payable(address(tba)));
 
         // user1 should own tokenbound account
-        assertEq(tbaAccount.owner(), user2);
+        assertEq(tbaAccount.owner(), user4);
 
         console.log("token owner: ", tronicBrandLoyalty.ownerOf(brandXTokenId));
         console.log("tbaAccount owner: ", tbaAccount.owner());
 
         //transfer token to another user
-        vm.prank(user2);
-        tronicBrandLoyalty.transferFrom(user2, user3, brandXTokenId);
+        vm.prank(user4);
+        tronicBrandLoyalty.transferFrom(user4, user3, brandXTokenId);
 
         //user1 should own token and therefore control tba
         assertEq(tronicBrandLoyalty.ownerOf(brandXTokenId), user3);
@@ -47,7 +47,7 @@ contract ERC721Test is TronicTestBase {
     }
 
     // test admin functions
-    function testAdmin721() public {
+    function testAdminBrandLoyalty() public {
         // console tronicBrandLoyaltyImplementation owner
         console.log(
             "tronicBrandLoyaltyImplementation owner: ", tronicBrandLoyaltyImplementation.owner()
