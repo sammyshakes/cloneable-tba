@@ -6,6 +6,7 @@ interface ITronicMembership {
     /// @param tierId The ID of the tier.
     /// @param duration The duration of the tier in seconds.
     /// @param isOpen Whether the tier is open or closed.
+    /// @param tierURI The URI of the tier.
     struct MembershipTier {
         string tierId;
         uint128 duration;

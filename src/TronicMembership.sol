@@ -217,6 +217,16 @@ contract TronicMembership is ITronicMembership, ERC721, Initializable {
         return membership.timestamp + tier.duration > block.timestamp;
     }
 
+    // write tokenURI function that returns the membership tier URI
+    function tokenURI(uint256 tokenID) public view override returns (string memory) {
+        require(tokenID < totalSupply, "This token does not exist");
+        //get tier index from token id
+        uint8 tierIndex = _membershipTokens[tokenID].tierIndex;
+        //get tier uri from tier index
+        string memory tierURI = _membershipTiers[tierIndex].tierURI;
+        return bytes(tierURI).length > 0 ? string(abi.encodePacked(tierURI)) : "";
+    }
+
     /// @notice Sets the max supply of the token.
     /// @param _maxMintable The new max supply.
     /// @dev Only callable by admin.
