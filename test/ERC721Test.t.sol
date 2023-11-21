@@ -13,7 +13,7 @@ contract ERC721Test is TronicTestBase {
         console.log("SETUP - registry address: ", registryAddress);
 
         // Mint test token
-        vm.prank(address(tronicMainContract));
+        vm.prank(tronicAdmin);
 
         (address brandXTBA, uint256 brandXTokenId) =
             tronicMainContract.mintBrandLoyaltyToken(user2, brandIDX);
@@ -39,10 +39,10 @@ contract ERC721Test is TronicTestBase {
 
         //transfer token to another user
         vm.prank(user2);
-        tronicBrandLoyaltyImplementation.transferFrom(user2, user3, tokenId);
+        tronicBrandLoyalty.transferFrom(user2, user3, brandXTokenId);
 
         //user1 should own token and therefore control tba
-        assertEq(tronicBrandLoyaltyImplementation.ownerOf(tokenId), user3);
+        assertEq(tronicBrandLoyalty.ownerOf(brandXTokenId), user3);
         assertEq(tbaAccount.owner(), user3);
     }
 

@@ -219,7 +219,7 @@ contract TronicMembership is ITronicMembership, ERC721, Initializable {
 
     // write tokenURI function that returns the membership tier URI
     function tokenURI(uint256 tokenID) public view override returns (string memory) {
-        require(tokenID < totalSupply, "This token does not exist");
+        require(tokenID < totalSupply(), "This token does not exist");
         //get tier index from token id
         uint8 tierIndex = _membershipTokens[tokenID].tierIndex;
         //get tier uri from tier index
@@ -301,7 +301,7 @@ contract TronicMembership is ITronicMembership, ERC721, Initializable {
 
     /// @notice Returns the total supply of the token.
     /// @return The total supply of the token.
-    function totalSupply() external view returns (uint256) {
+    function totalSupply() public view returns (uint256) {
         return _totalMinted - _totalBurned;
     }
 
