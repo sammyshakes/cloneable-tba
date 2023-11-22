@@ -166,12 +166,20 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         _;
     }
 
-    /// @notice Gets MembershipInfo for a given membership ID.
-    /// @param membershipId The ID of the membership to get info for.
-    /// @return The MembershipInfo struct for the given membership ID.
+    /// @notice Gets brand id for a given membership ID.
+    /// @param membershipId The ID of the membership to get the brand ID for.
+    /// @return The brand ID for the given membership ID.
     /// @dev The membership ID is the index of the membership in the memberships mapping.
-    function getMembershipInfo(uint256 membershipId) public view returns (MembershipInfo memory) {
-        return memberships[membershipId];
+    function getBrandIdFromMembershipInfo(uint256 membershipId) external view returns (uint256) {
+        return memberships[membershipId].brandId;
+    }
+
+    /// @notice Gets memberhip address for a given membership ID.
+    /// @param membershipId The ID of the membership to get the membership address for.
+    /// @return The address of the membership contract for the given membership ID.
+    /// @dev The membership ID is the index of the membership in the memberships mapping.
+    function getMembershipAddress(uint256 membershipId) external view returns (address) {
+        return memberships[membershipId].membershipAddress;
     }
 
     /// @notice Gets brand loyalty address for a given brand ID.
