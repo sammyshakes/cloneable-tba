@@ -166,44 +166,20 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         _;
     }
 
-    /// @notice Gets brand id for a given membership ID.
-    /// @param membershipId The ID of the membership to get the brand ID for.
-    /// @return The brand ID for the given membership ID.
+    /// @notice Gets MembershipInfo for a given membership ID.
+    /// @param membershipId The ID of the membership to get info for.
+    /// @return The MembershipInfo struct for the given membership ID.
     /// @dev The membership ID is the index of the membership in the memberships mapping.
-    function getBrandIdFromMembershipInfo(uint256 membershipId) external view returns (uint256) {
-        return memberships[membershipId].brandId;
+    function getMembershipInfo(uint256 membershipId) public view returns (MembershipInfo memory) {
+        return memberships[membershipId];
     }
 
-    /// @notice Gets memberhip address for a given membership ID.
-    /// @param membershipId The ID of the membership to get the membership address for.
-    /// @return The address of the membership contract for the given membership ID.
+    /// @notice Gets BrandInfo for a given membership ID.
+    /// @param brandId The ID of the membership to get info for.
+    /// @return The BrandInfo struct for the given membership ID.
     /// @dev The membership ID is the index of the membership in the memberships mapping.
-    function getMembershipAddress(uint256 membershipId) external view returns (address) {
-        return memberships[membershipId].membershipAddress;
-    }
-
-    /// @notice Gets brand loyalty address for a given brand ID.
-    /// @param brandId The ID of the brand to get the brand loyalty address for.
-    /// @return The address of the brand loyalty contract for the given brand ID.
-    /// @dev The brand ID is the index of the brand in the brands mapping.
-    function getBrandLoyaltyAddress(uint256 brandId) public view returns (address) {
-        return brands[brandId].brandLoyaltyAddress;
-    }
-
-    /// @notice Gets token address for a given brand ID.
-    /// @param brandId The ID of the brand to get the token address for.
-    /// @return The address of the token contract for the given brand ID.
-    /// @dev The brand ID is the index of the brand in the brands mapping.
-    function getBrandTokenAddress(uint256 brandId) public view returns (address) {
-        return brands[brandId].tokenAddress;
-    }
-
-    /// @notice Gets tronic membership IDs for a given brand ID.
-    /// @param brandId The ID of the brand to get the tronic membership IDs for.
-    /// @return The list of tronic membership IDs for the given brand ID.
-    /// @dev The brand ID is the index of the brand in the brands mapping.
-    function getBrandMembershipIds(uint256 brandId) public view returns (uint256[] memory) {
-        return brands[brandId].membershipIds;
+    function getBrandInfo(uint256 brandId) public view returns (BrandInfo memory) {
+        return brands[brandId];
     }
 
     /// @notice Deploys a new membership's contracts.

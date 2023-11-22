@@ -81,9 +81,8 @@ contract BrandLoyaltyTest is TronicTestBase {
         assertEq(brandInfo.tokenAddress, tokenAddressX);
         assertEq(brandInfo.brandLoyaltyAddress, brandLoyaltyAddressX);
 
-        // //get membership ids for this brand
-        // uint256[] memory membershipIds =
-        //     ITronicBrandLoyalty(brandInfo.brandLoyaltyAddress).getTronicMembershipIds();
+        //get membership ids for this brand
+        uint256[] memory membershipIds = brandInfo.membershipIds;
     }
 
     function testMembershipTiers() public {}
