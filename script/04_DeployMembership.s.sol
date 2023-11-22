@@ -62,16 +62,16 @@ contract DeployMembership is Script {
             tiersArray
         );
 
-        //deploy membership y
-        tronicMainContract.deployMembership(
-            brandIdY,
-            membershipYName,
-            membershipYSymbol,
-            membershipYBaseURI,
-            maxMintable,
-            isElastic,
-            tiersArray
-        );
+        // //deploy membership y
+        // tronicMainContract.deployMembership(
+        //     brandIdY,
+        //     membershipYName,
+        //     membershipYSymbol,
+        //     membershipYBaseURI,
+        //     maxMintable,
+        //     isElastic,
+        //     tiersArray
+        // );
 
         vm.stopBroadcast();
     }

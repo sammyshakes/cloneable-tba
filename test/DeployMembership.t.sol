@@ -21,6 +21,17 @@ contract DeployMembership is TronicTestBase {
         assertEq(brandXMembership.isAdmin(address(tronicMainContract)), true);
         assertEq(tronicMainContract.isAdmin(tronicAdmin), true);
 
+        // check BrandInfo from TronicMain
+        TronicMain.BrandInfo memory brandXInfo = tronicMainContract.getBrandInfo(brandIDX);
+        assertEq(brandXInfo.brandName, "Brand X");
+        assertEq(brandXInfo.brandLoyaltyAddress, brandLoyaltyAddressX);
+        assertEq(brandXInfo.tokenAddress, tokenAddressX);
+
+        TronicMain.BrandInfo memory brandYInfo = tronicMainContract.getBrandInfo(brandIDY);
+        assertEq(brandYInfo.brandName, "Brand Y");
+        assertEq(brandYInfo.brandLoyaltyAddress, brandLoyaltyAddressY);
+        assertEq(brandYInfo.tokenAddress, tokenAddressY);
+
         //get name and symbol
         console.log("brandXMembership name: ", brandXMembership.name());
 

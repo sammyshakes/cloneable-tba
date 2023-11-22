@@ -122,6 +122,11 @@ contract TronicMain is Initializable, UUPSUpgradeable {
     ITronicMembership public tronicMembership;
     ITronicToken public tronicToken;
 
+    //disable initializer for upgradeability in the constructor
+    constructor() {
+        _disableInitializers();
+    }
+
     /// @notice Initializes the TronicMain contract.
     /// @param _admin The address of the Tronic admin.
     /// @param _brandLoyalty The address of the Tronic Brand Loyalty contract (ERC721 implementation).
@@ -564,17 +569,17 @@ contract TronicMain is Initializable, UUPSUpgradeable {
     //     }
     // }
 
-    /// @notice transfers tokens from a membership TBA to a specified address
+    /// @notice transfers tokens from a Brand Loyalty TBA to a specified address
     /// @param _tronicTokenId The ID of the tronic token that owns the Tronic TBA
-    /// @param _brandId The ID of the brand that issued the membership TBA
-    /// @param _brandLoyaltyTokenId The ID of the membership TBA
+    /// @param _brandId The ID of the brand that issued the brand loyalty TBA
+    /// @param _brandLoyaltyTokenId The ID of the brand loyalty TBA
     /// @param _to The address to transfer the tokens to
     /// @param _transferTokenId The ID of the token to transfer
     /// @param _amount The amount of tokens to transfer
     /// @dev This contract address must be granted permissions to transfer tokens from the membership TBA
     /// @dev The membership TBA must be owned by the Tronic tokenId TBA
     /// @dev This function is only callable by the tronic admin or an authorized account
-    function transferTokensFromMembershipTBA(
+    function transferTokensFromBrandLoyaltyTBA(
         uint256 _tronicTokenId,
         uint256 _brandId,
         uint256 _brandLoyaltyTokenId,
