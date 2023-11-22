@@ -17,6 +17,7 @@ contract DeployBrand is Script {
     string public erc721URIY = vm.envString("MEMBERSHIP_Y_ERC721_BASE_URI");
 
     address public tronicMainContractAddress = vm.envAddress("TRONIC_MAIN_PROXY_ADDRESS");
+    // address public tronicMainContractAddress = vm.envAddress("TRONIC_MAIN_CONTRACT_ADDRESS"); //implementation for testing
 
     string public brandXName = "Brand X ERC721";
     string public brandXSymbol = "BX721";
@@ -33,10 +34,12 @@ contract DeployBrand is Script {
         vm.startBroadcast(adminPrivateKey);
 
         //deploy brand x
-        tronicMainContract.deployBrand(brandXName, brandXSymbol, erc721URIX, isBound);
+        (uint256 brandXId, address brandLoyaltyXAddress, address tokenXAddress) =
+            tronicMainContract.deployBrand(brandXName, brandXSymbol, erc721URIX, isBound);
 
         //deploy brand y
-        tronicMainContract.deployBrand(brandYName, brandYSymbol, erc721URIY, isBound);
+        (uint256 brandYId, address brandLoyaltyYAddress, address tokenYAddress) =
+            tronicMainContract.deployBrand(brandYName, brandYSymbol, erc721URIY, isBound);
 
         vm.stopBroadcast();
     }

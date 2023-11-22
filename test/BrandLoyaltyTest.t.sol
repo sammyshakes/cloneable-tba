@@ -74,5 +74,17 @@ contract BrandLoyaltyTest is TronicTestBase {
         assertEq(tronicBrandLoyaltyImplementation.owner(), tronicAdmin);
     }
 
+    //test getBrandInfo
+    function testGetBrandInfo() public {
+        TronicMain.BrandInfo memory brandInfo = tronicMainContract.getBrandInfo(brandIDX);
+
+        assertEq(brandInfo.tokenAddress, tokenAddressX);
+        assertEq(brandInfo.brandLoyaltyAddress, brandLoyaltyAddressX);
+
+        // //get membership ids for this brand
+        // uint256[] memory membershipIds =
+        //     ITronicBrandLoyalty(brandInfo.brandLoyaltyAddress).getTronicMembershipIds();
+    }
+
     function testMembershipTiers() public {}
 }

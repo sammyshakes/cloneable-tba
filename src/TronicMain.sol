@@ -174,12 +174,28 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         return memberships[membershipId];
     }
 
-    /// @notice Gets BrandInfo for a given membership ID.
-    /// @param brandId The ID of the membership to get info for.
-    /// @return The BrandInfo struct for the given membership ID.
-    /// @dev The membership ID is the index of the membership in the memberships mapping.
-    function getBrandInfo(uint256 brandId) public view returns (BrandInfo memory) {
-        return brands[brandId];
+    /// @notice Gets brand loyalty address for a given brand ID.
+    /// @param brandId The ID of the brand to get the brand loyalty address for.
+    /// @return The address of the brand loyalty contract for the given brand ID.
+    /// @dev The brand ID is the index of the brand in the brands mapping.
+    function getBrandLoyaltyAddress(uint256 brandId) public view returns (address) {
+        return brands[brandId].brandLoyaltyAddress;
+    }
+
+    /// @notice Gets token address for a given brand ID.
+    /// @param brandId The ID of the brand to get the token address for.
+    /// @return The address of the token contract for the given brand ID.
+    /// @dev The brand ID is the index of the brand in the brands mapping.
+    function getBrandTokenAddress(uint256 brandId) public view returns (address) {
+        return brands[brandId].tokenAddress;
+    }
+
+    /// @notice Gets tronic membership IDs for a given brand ID.
+    /// @param brandId The ID of the brand to get the tronic membership IDs for.
+    /// @return The list of tronic membership IDs for the given brand ID.
+    /// @dev The brand ID is the index of the brand in the brands mapping.
+    function getBrandMembershipIds(uint256 brandId) public view returns (uint256[] memory) {
+        return brands[brandId].membershipIds;
     }
 
     /// @notice Deploys a new membership's contracts.
