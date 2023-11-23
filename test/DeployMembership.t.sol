@@ -36,11 +36,6 @@ contract DeployMembership is TronicTestBase {
         console.log("brandXMembership name: ", brandXMembership.name());
 
         vm.startPrank(tronicAdmin);
-        // // set membership tier
-        // brandXMembership.setMembershipTier(1, "tier1111");
-
-        // // get membership tier
-        // console.log("brandXMembership membership tier: ", brandXMembership.getMembershipTier(1));
 
         // Mint a brand loyalty nft to user1
         (address user1TBALoyaltyX, uint256 brandXTokenId) =

@@ -243,7 +243,7 @@ contract TronicTestBase is Test {
             "Y1",
             "http://MembershipY.com/",
             10_000,
-            true, //iselastic
+            false, //iselastic
             tiers
         );
 
