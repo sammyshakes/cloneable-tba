@@ -16,81 +16,73 @@ contract OnboardUser is TronicTestBase {
 
         //these users are created in the setup function
         //they have tronic memberships and can start subscribing to memberships
-        console.log("tronicTokenId1TBA: ", tronicTokenId1TBA);
-        console.log("tronicTokenId2TBA: ", tronicTokenId2TBA);
-        console.log("tronicTokenId3TBA: ", tronicTokenId3TBA);
-        console.log("tronicTokenId4TBA: ", tronicTokenId4TBA);
+        console.log("brandLoyaltyXTokenId1TBA: ", brandLoyaltyXTokenId1TBA);
+        console.log("brandLoyaltyXTokenId2TBA: ", brandLoyaltyXTokenId2TBA);
+        console.log("brandLoyaltyYTokenId1TBA: ", brandLoyaltyYTokenId1TBA);
+        console.log("brandLoyaltyYTokenId2TBA: ", brandLoyaltyYTokenId2TBA);
 
-        // verify that users have tronic membership nfts
-        assertEq(tronicBrandLoyaltyImplementation.ownerOf(1), user1);
-        assertEq(tronicBrandLoyaltyImplementation.ownerOf(2), user2);
-        assertEq(tronicBrandLoyaltyImplementation.ownerOf(3), user3);
-        assertEq(tronicBrandLoyaltyImplementation.ownerOf(4), user4);
-
-        IERC6551Account tokenId1TronicTBA = IERC6551Account(payable(address(tronicTokenId1TBA)));
-        IERC6551Account tokenId2TronicTBA = IERC6551Account(payable(address(tronicTokenId2TBA)));
-        IERC6551Account tokenId3TronicTBA = IERC6551Account(payable(address(tronicTokenId3TBA)));
-        IERC6551Account tokenId4TronicTBA = IERC6551Account(payable(address(tronicTokenId4TBA)));
+        IERC6551Account tokenId1BrandXTBA = IERC6551Account(payable(brandLoyaltyXTokenId1TBA));
+        IERC6551Account tokenId2BrandXTBA = IERC6551Account(payable(brandLoyaltyXTokenId2TBA));
+        IERC6551Account tokenId3BrandYTBA = IERC6551Account(payable(brandLoyaltyYTokenId1TBA));
+        IERC6551Account tokenId4BrandYTBA = IERC6551Account(payable(brandLoyaltyYTokenId2TBA));
 
         // verify that users have tokenbound accounts
-        assertEq(tokenId1TronicTBA.owner(), user1);
-        assertEq(tokenId2TronicTBA.owner(), user2);
-        assertEq(tokenId3TronicTBA.owner(), user3);
-        assertEq(tokenId4TronicTBA.owner(), user4);
+        assertEq(tokenId1BrandXTBA.owner(), user1);
+        assertEq(tokenId2BrandXTBA.owner(), user2);
+        assertEq(tokenId3BrandYTBA.owner(), user3);
+        assertEq(tokenId4BrandYTBA.owner(), user4);
 
         //verify tba account addresses are correct
-        assertEq(tronicBrandLoyaltyImplementation.getTBAccount(1), address(tokenId1TronicTBA));
-        assertEq(tronicBrandLoyaltyImplementation.getTBAccount(2), address(tokenId2TronicTBA));
-        assertEq(tronicBrandLoyaltyImplementation.getTBAccount(3), address(tokenId3TronicTBA));
-        assertEq(tronicBrandLoyaltyImplementation.getTBAccount(4), address(tokenId4TronicTBA));
+        assertEq(brandLoyaltyX.getTBAccount(1), address(tokenId1BrandXTBA));
+        assertEq(brandLoyaltyX.getTBAccount(2), address(tokenId2BrandXTBA));
+        assertEq(brandLoyaltyY.getTBAccount(3), address(tokenId3BrandYTBA));
+        assertEq(brandLoyaltyY.getTBAccount(4), address(tokenId4BrandYTBA));
 
         // users subscribe to membershipX
-        // membershipX mints a membership token to user's tronic tba
+        // brands X and Y mints membership token to user's brand loyalty tba
         vm.startPrank(address(tronicMainContract));
-        (address membershipXTokenId1TBA,) = brandLoyaltyX.mint(address(tokenId1TronicTBA));
-        (address membershipXTokenId2TBA,) = brandLoyaltyX.mint(address(tokenId2TronicTBA));
-        (address membershipXTokenId3TBA,) = brandLoyaltyX.mint(address(tokenId3TronicTBA));
-        (address membershipXTokenId4TBA,) = brandLoyaltyX.mint(address(tokenId4TronicTBA));
+        uint256 membershipXTokenId_1 =
+            tronicMainContract.mintMembership(brandLoyaltyXTokenId1TBA, brandIDX, 1);
+        uint256 membershipXTokenId_2 =
+            tronicMainContract.mintMembership(brandLoyaltyXTokenId2TBA, brandIDX, 1);
+        uint256 membershipYTokenId_1 =
+            tronicMainContract.mintMembership(brandLoyaltyYTokenId1TBA, brandIDY, 1);
+        uint256 membershipYTokenId_2 =
+            tronicMainContract.mintMembership(brandLoyaltyYTokenId2TBA, brandIDY, 1);
 
-        // verify that users' tronic TBAs have membershipX nfts
-        assertEq(brandLoyaltyX.ownerOf(1), address(tokenId1TronicTBA));
-        assertEq(brandLoyaltyX.ownerOf(2), address(tokenId2TronicTBA));
-        assertEq(brandLoyaltyX.ownerOf(3), address(tokenId3TronicTBA));
-        assertEq(brandLoyaltyX.ownerOf(4), address(tokenId4TronicTBA));
+        // verify that users' brand loyalty TBAs have membershipX nfts
+        assertEq(brandXMembership.ownerOf(membershipXTokenId_1), brandLoyaltyXTokenId1TBA);
+        assertEq(brandXMembership.ownerOf(membershipXTokenId_2), brandLoyaltyXTokenId2TBA);
+        assertEq(brandYMembership.ownerOf(membershipYTokenId_1), brandLoyaltyYTokenId1TBA);
+        assertEq(brandYMembership.ownerOf(membershipYTokenId_2), brandLoyaltyYTokenId2TBA);
 
-        // verify tba account addresses are correct
-        assertEq(membershipXTokenId1TBA, brandLoyaltyX.getTBAccount(1));
-        assertEq(membershipXTokenId2TBA, brandLoyaltyX.getTBAccount(2));
-        assertEq(membershipXTokenId3TBA, brandLoyaltyX.getTBAccount(3));
-        assertEq(membershipXTokenId4TBA, brandLoyaltyX.getTBAccount(4));
-
-        // membershipX mints loyalty tokens to user's membershipx tba
-        brandXToken.mintFungible(membershipXTokenId1TBA, fungibleTypeIdX1, 1000);
-        brandXToken.mintFungible(membershipXTokenId2TBA, fungibleTypeIdX1, 1000);
-        brandXToken.mintFungible(membershipXTokenId3TBA, fungibleTypeIdX1, 1000);
-        brandXToken.mintFungible(membershipXTokenId4TBA, fungibleTypeIdX1, 1000);
+        // membershipX mints loyalty tokens to user's brand loyalty tba
+        brandXToken.mintFungible(brandLoyaltyXTokenId1TBA, fungibleTypeIdX1, 1000);
+        brandXToken.mintFungible(brandLoyaltyXTokenId2TBA, fungibleTypeIdX1, 1000);
+        brandYToken.mintFungible(brandLoyaltyYTokenId1TBA, fungibleTypeIdY1, 1000);
+        brandYToken.mintFungible(brandLoyaltyYTokenId2TBA, fungibleTypeIdY1, 1000);
 
         // verify that users' membershipX TBAs have loyalty tokens
         assertEq(
-            brandXToken.balanceOf(membershipXTokenId1TBA, fungibleTypeIdX1),
+            brandXToken.balanceOf(brandLoyaltyXTokenId1TBA, fungibleTypeIdX1),
             1000,
             "user1 should have 1000"
         );
 
         assertEq(
-            brandXToken.balanceOf(membershipXTokenId2TBA, fungibleTypeIdX1),
+            brandXToken.balanceOf(brandLoyaltyXTokenId2TBA, fungibleTypeIdX1),
             1000,
             "user2 should have 1000"
         );
 
         assertEq(
-            brandXToken.balanceOf(membershipXTokenId3TBA, fungibleTypeIdX1),
+            brandXToken.balanceOf(brandLoyaltyYTokenId1TBA, fungibleTypeIdY1),
             1000,
             "user3 should have 1000"
         );
 
         assertEq(
-            brandXToken.balanceOf(membershipXTokenId4TBA, fungibleTypeIdX1),
+            brandXToken.balanceOf(brandLoyaltyYTokenId2TBA, fungibleTypeIdY1),
             1000,
             "user4 should have 1000"
         );
@@ -108,13 +100,13 @@ contract OnboardUser is TronicTestBase {
         approvedValues[1] = true;
 
         vm.prank(user1);
-        tokenId1TronicTBA.setPermissions(approved, approvedValues);
+        tokenId1BrandXTBA.setPermissions(approved, approvedValues);
 
         // expect revert for unauthorized user
         vm.prank(unauthorizedUser);
         vm.expectRevert();
         tronicMainContract.transferTokensFromBrandLoyaltyTBA(
-            1, brandIDX, 1, membershipXTokenId2TBA, fungibleTypeIdX1, 500
+            1, brandIDX, 1, user2, fungibleTypeIdX1, 500
         );
 
         //expect revert for invalid membership id
@@ -171,16 +163,16 @@ contract OnboardUser is TronicTestBase {
         //attempt to transfer from unauthorized user
         vm.prank(unauthorizedUser);
         vm.expectRevert();
-        tronicMainContract.transferTokensFromBrandLoyaltyTBA(2, membershipIDX, 2, user5);
+        tronicMainContract.transferMembershipFromTronicTBA(2, membershipIDX, 2, user5);
 
         //attempt to transfer with invalid membership id
         vm.prank(user2);
         vm.expectRevert();
-        tronicMainContract.transferTokensFromBrandLoyaltyTBA(2, 3, 2, user5);
+        tronicMainContract.transferMembershipFromTronicTBA(2, 3, 2, user5);
 
         // transfer user2's membershipX nft to user5
         vm.prank(user2);
-        tronicMainContract.transferTokensFromBrandLoyaltyTBA(2, membershipIDX, 2, user5);
+        tronicMainContract.transferMembershipFromTronicTBA(2, membershipIDX, 2, user5);
 
         // verify that user5 has membershipX nft
         assertEq(brandLoyaltyX.ownerOf(2), user5);

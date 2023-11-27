@@ -64,22 +64,24 @@ contract TronicTestBase is Test {
 
     ERC1967Proxy public tronicMainProxy;
 
-    TronicMain tronicMainContract;
-
+    // Implementation Deployments
     TronicMain tronicMainContractImplementation;
     TronicMembership tronicMembership;
     TronicToken tronicToken;
     TronicBrandLoyalty tronicBrandLoyaltyImplementation;
 
+    // this variable represents TronicMain via proxy
+    TronicMain tronicMainContract;
+
     //brand membership X
+    TronicBrandLoyalty brandLoyaltyX;
     TronicMembership brandXMembership;
     TronicToken brandXToken;
-    TronicBrandLoyalty brandLoyaltyX;
 
     //brand membership Y
+    TronicBrandLoyalty brandLoyaltyY;
     TronicMembership brandYMembership;
     TronicToken brandYToken;
-    TronicBrandLoyalty brandLoyaltyY;
 
     TronicMain.MembershipInfo membershipX;
     TronicMain.MembershipInfo membershipY;
@@ -123,6 +125,12 @@ contract TronicTestBase is Test {
     address public tronicTokenId2TBA;
     address public tronicTokenId3TBA;
     address public tronicTokenId4TBA;
+
+    //brandloyalty token tbas
+    address public brandLoyaltyXTokenId1TBA;
+    address public brandLoyaltyXTokenId2TBA;
+    address public brandLoyaltyYTokenId1TBA;
+    address public brandLoyaltyYTokenId2TBA;
 
     uint256 fungibleTypeIdX1;
     uint256 fungibleTypeIdY1;
@@ -264,10 +272,10 @@ contract TronicTestBase is Test {
 
         ///mint brand loyalty nfts
 
-        (tronicTokenId1TBA,) = tronicMainContract.mintBrandLoyaltyToken(user1, brandIDX);
-        (tronicTokenId2TBA,) = tronicMainContract.mintBrandLoyaltyToken(user2, brandIDX);
-        (tronicTokenId3TBA,) = tronicMainContract.mintBrandLoyaltyToken(user3, brandIDY);
-        (tronicTokenId4TBA,) = tronicMainContract.mintBrandLoyaltyToken(user4, brandIDY);
+        (brandLoyaltyXTokenId1TBA,) = tronicMainContract.mintBrandLoyaltyToken(user1, brandIDX);
+        (brandLoyaltyXTokenId2TBA,) = tronicMainContract.mintBrandLoyaltyToken(user2, brandIDX);
+        (brandLoyaltyYTokenId1TBA,) = tronicMainContract.mintBrandLoyaltyToken(user3, brandIDY);
+        (brandLoyaltyYTokenId2TBA,) = tronicMainContract.mintBrandLoyaltyToken(user4, brandIDY);
 
         //mint Tronic Brand Loyalty nfts from TronicMain to users 1-4 and return their tbas
         tronicMainContract.mintMembership(user1, membershipIDX, 1);
