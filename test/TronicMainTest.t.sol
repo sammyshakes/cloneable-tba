@@ -9,28 +9,29 @@ contract TronicMainTest is TronicTestBase {
         assertEq(tronicMainContract.owner(), tronicOwner);
         assertEq(tronicMainContract.membershipCounter(), 2);
         console.log("tronicMainContract address: ", address(tronicMainContract));
-        console.log("tronicERC721 address: ", address(tronicERC721));
+        console.log("tronicMembership address: ", address(tronicMembership));
+        console.log("tronicBrandLoyalty address: ", address(tronicBrandLoyaltyImplementation));
         console.log("defaultTBAImplementationAddress: ", defaultTBAImplementationAddress);
         console.log("registryAddress: ", registryAddress);
-        console.log("clone721AddressX: ", clone721AddressX);
-        console.log("clone1155AddressX: ", clone1155AddressX);
-        console.log("clone721AddressY: ", clone721AddressY);
-        console.log("clone1155AddressY: ", clone1155AddressY);
+        console.log("brandLoyaltyAddressX: ", brandLoyaltyAddressX);
+        console.log("brandXMembershipAddress: ", address(brandXMembership));
+        console.log("brandXTokenAddress: ", address(brandXToken));
+        console.log("brandLoyaltyAddressY: ", brandLoyaltyAddressY);
+        console.log("brandYMembershipAddress: ", address(brandYMembership));
+        console.log("brandYTokenAddress: ", address(brandYToken));
 
         // check that the membership details are correctly set
-        assertEq(membershipX.membershipAddress, clone721AddressX);
-        assertEq(membershipX.tokenAddress, clone1155AddressX);
-        assertEq(membershipY.membershipAddress, clone721AddressY);
-        assertEq(membershipY.tokenAddress, clone1155AddressY);
+        assertEq(membershipX.membershipAddress, address(brandXMembership));
+        assertEq(membershipY.membershipAddress, address(brandYMembership));
 
         //assert that TronicAdmin Contract is the owner of membership erc721 and erc1155 token contracts
-        assertEq(tronicAdmin, membershipXERC721.owner());
-        assertEq(tronicAdmin, membershipXERC1155.owner());
-        assertEq(tronicAdmin, membershipYERC721.owner());
-        assertEq(tronicAdmin, membershipYERC1155.owner());
+        assertEq(tronicAdmin, brandLoyaltyX.owner());
+        assertEq(tronicAdmin, brandXToken.owner());
+        assertEq(tronicAdmin, brandLoyaltyY.owner());
+        assertEq(tronicAdmin, brandYToken.owner());
 
         // get owner of tokenid 1
-        address owner = tronicERC721.ownerOf(1);
+        address owner = brandLoyaltyX.ownerOf(1);
         console.log("owner of tokenid 1: ", owner);
     }
 
@@ -53,7 +54,7 @@ contract TronicMainTest is TronicTestBase {
 
         // Verify that the new token type has the correct attributes
         TronicToken.FungibleTokenInfo memory tokenInfo =
-            membershipXERC1155.getFungibleTokenInfo(fungibleIDX);
+            brandXToken.getFungibleTokenInfo(fungibleIDX);
 
         assertEq(tokenInfo.maxSupply, initialMaxSupply, "Incorrect maxSupply");
         assertEq(tokenInfo.uri, initialUriX, "Incorrect URI");
@@ -62,7 +63,7 @@ contract TronicMainTest is TronicTestBase {
 
         // Verify that the new token type has the correct attributes
         TronicToken.FungibleTokenInfo memory tokenInfoY =
-            membershipYERC1155.getFungibleTokenInfo(fungibleIDY);
+            brandYToken.getFungibleTokenInfo(fungibleIDY);
 
         assertEq(tokenInfoY.maxSupply, initialMaxSupply, "Incorrect maxSupply");
         assertEq(tokenInfoY.uri, initialUriY, "Incorrect URI");
@@ -71,13 +72,15 @@ contract TronicMainTest is TronicTestBase {
 
         // mint 100 tokens to user1's tba
         vm.startPrank(tronicAdmin);
-        tronicMainContract.mintFungibleToken(membershipIDX, tronicTokenId1TBA, fungibleIDX, 100);
+        tronicMainContract.mintFungibleToken(
+            membershipIDX, brandLoyaltyXTokenId1TBA, fungibleIDX, 100
+        );
 
-        assertEq(membershipXERC1155.balanceOf(tronicTokenId1TBA, fungibleIDX), 100);
+        assertEq(brandXToken.balanceOf(brandLoyaltyXTokenId1TBA, fungibleIDX), 100);
 
         // attempt to mint from invalid membership
-        vm.expectRevert("Membership does not exist");
-        tronicMainContract.mintFungibleToken(100, tronicTokenId1TBA, fungibleIDX, 100);
+        vm.expectRevert("Brand does not exist");
+        tronicMainContract.mintFungibleToken(100, brandLoyaltyXTokenId1TBA, fungibleIDX, 100);
 
         vm.stopPrank();
     }
@@ -100,27 +103,26 @@ contract TronicMainTest is TronicTestBase {
         vm.stopPrank();
 
         // Verify that the new token type has the correct attributes
-        TronicToken.NFTokenInfo memory tokenInfo = membershipXERC1155.getNFTokenInfo(nonFungibleIDX);
+        TronicToken.NFTokenInfo memory tokenInfo = brandXToken.getNFTokenInfo(nonFungibleIDX);
 
         assertEq(tokenInfo.baseURI, initialUriX, "Incorrect URI");
         assertEq(tokenInfo.maxMintable, maxMintable, "Incorrect maxMintable");
         assertEq(tokenInfo.totalMinted, 0, "Incorrect totalMinted");
 
         // Verify that the new token type has the correct attributes
-        TronicToken.NFTokenInfo memory tokenInfoY =
-            membershipYERC1155.getNFTokenInfo(nonFungibleIDY);
+        TronicToken.NFTokenInfo memory tokenInfoY = brandYToken.getNFTokenInfo(nonFungibleIDY);
 
         assertEq(tokenInfoY.baseURI, initialUriY, "Incorrect URI");
         assertEq(tokenInfoY.maxMintable, maxMintable, "Incorrect maxMintable");
         assertEq(tokenInfoY.totalMinted, 0, "Incorrect totalMinted");
 
-        // uint256 userBalanceBefore = membershipXERC1155.balanceOf(user1, nonFungibleIDX);
+        // uint256 userBalanceBefore = brandXToken.balanceOf(user1, nonFungibleIDX);
 
         // mint a non-fungible token to user1
         // vm.prank(tronicAdmin);
         // tronicMainContract.mintNonFungibleERC1155(membershipIDX, user1, nonFungibleIDX, 1);
 
-        // assertEq(membershipXERC1155.balanceOf(user1, nonFungibleIDX), userBalanceBefore + 1);
+        // assertEq(brandXToken.balanceOf(user1, nonFungibleIDX), userBalanceBefore + 1);
     }
 
     function testDeployAndAddMembership() public {
@@ -134,18 +136,25 @@ contract TronicMainTest is TronicTestBase {
 
         // maxsupply for membership erc721
         uint64 maxSupply = 10_000;
-        string[] memory tiers;
-        uint128[] memory durations;
-        bool[] memory isOpens;
+
+        //create tiers for membershipX
+        ITronicMembership.MembershipTier[] memory tiers = new ITronicMembership.MembershipTier[](2);
+        ITronicMembership.MembershipTier memory tier1 =
+            ITronicMembership.MembershipTier("tier1", 1 days, true, "tier1URI");
+
+        ITronicMembership.MembershipTier memory tier2 =
+            ITronicMembership.MembershipTier("tier2", 2 days, true, "tier2URI");
+
+        tiers[0] = tier1;
+        tiers[1] = tier2;
 
         // Simulate as admin
         vm.prank(tronicAdmin);
 
         vm.expectEmit();
         // Call the deployAndAddMembership function
-        (uint256 membershipIDX, address testClone721Address, address testClone1155AddressY) =
-        tronicMainContract.deployMembership(
-            name721, symbol721, uri721, maxSupply, true, false, tiers, durations, isOpens
+        (uint256 membershipIDX, address testClone721Address) = tronicMainContract.deployMembership(
+            brandIDX, name721, symbol721, uri721, maxSupply, true, tiers
         );
 
         // Make sure membershipCount was next index
@@ -157,8 +166,6 @@ contract TronicMainTest is TronicTestBase {
 
         // Assert that the membership's details are correctly set
         assertEq(membership.membershipAddress, testClone721Address);
-        assertEq(membership.tokenAddress, testClone1155AddressY);
-        assertEq(membership.membershipName, name721);
 
         //get tier index by tier id from tronicMain
         uint8 tierIndex = tronicMainContract.getTierIndexByTierId(membershipIDX, "tier1");
@@ -173,37 +180,29 @@ contract TronicMainTest is TronicTestBase {
         // get membership count
         uint256 membershipCount = tronicMainContract.membershipCounter();
 
+        // Define membership tiers
+        ITronicMembership.MembershipTier[] memory tiers = new ITronicMembership.MembershipTier[](2);
+        ITronicMembership.MembershipTier memory tier1 =
+            ITronicMembership.MembershipTier("tier1", 1 days, true, "tier1URI");
+
+        ITronicMembership.MembershipTier memory tier2 =
+            ITronicMembership.MembershipTier("tier2", 2 days, true, "tier2URI");
+
+        tiers[0] = tier1;
+        tiers[1] = tier2;
+
         // Define membership details
         string memory name721 = "TestClone721";
         string memory symbol721 = "TCL721";
         string memory uri721 = "http://testclone721.com/";
-
-        // maxsupply for membership erc721
-        uint64 maxSupply = 10_000;
-
-        //create tiers for membershipX
-        string[] memory tiers = new string[](2);
-        tiers[0] = "tier1";
-        tiers[1] = "tier2";
-
-        //create durations for membershipX
-        uint128[] memory durations = new uint128[](2);
-        durations[0] = 100;
-        durations[1] = 200;
-
-        //create isOpens for membershipX
-        bool[] memory isOpens = new bool[](2);
-        isOpens[0] = true;
-        isOpens[1] = false;
 
         // Simulate as admin
         vm.prank(tronicAdmin);
 
         vm.expectEmit();
         // Call the deployAndAddMembership function
-        (uint256 membershipIDX, address testClone721Address, address testClone1155AddressY) =
-        tronicMainContract.deployMembership(
-            name721, symbol721, uri721, maxSupply, true, false, tiers, durations, isOpens
+        (uint256 membershipIDX, address testClone721Address) = tronicMainContract.deployMembership(
+            brandIDX, name721, symbol721, uri721, 10_000, true, tiers
         );
 
         // Make sure membershipCount was next index
@@ -215,14 +214,13 @@ contract TronicMainTest is TronicTestBase {
 
         // Assert that the membership's details are correctly set
         assertEq(membership.membershipAddress, testClone721Address);
-        assertEq(membership.tokenAddress, testClone1155AddressY);
         assertEq(membership.membershipName, name721);
     }
 
     // test getAccount function from tronic membership contract
     function testGetAccount() public {
         // get the token bound account
-        address account = tronicERC721.getTBAccount(1);
+        address account = brandLoyaltyX.getTBAccount(1);
 
         console.log("tokenbound account address: ", account);
 
@@ -259,37 +257,31 @@ contract TronicMainTest is TronicTestBase {
         //try to mint with invalid tierIndex
         vm.startPrank(tronicAdmin);
         vm.expectRevert("Tier does not exist");
-        (address payable tba, uint256 tokenId) =
-            tronicMainContract.mintMembership(recipient, membershipId, 250);
+        uint256 tokenId = tronicMainContract.mintMembership(recipient, membershipId, 250);
 
         //try to mint with invalid membershipId
         vm.expectRevert("Membership does not exist");
-        (tba, tokenId) = tronicMainContract.mintMembership(recipient, 250, 6);
+        tokenId = tronicMainContract.mintMembership(recipient, 250, 6);
 
-        //mint valid membership
         //create tiers for membershipX
-        string[] memory tiers = new string[](2);
-        tiers[0] = "tier1";
-        tiers[1] = "tier2";
+        ITronicMembership.MembershipTier[] memory tiers = new ITronicMembership.MembershipTier[](2);
+        ITronicMembership.MembershipTier memory tier1 =
+            ITronicMembership.MembershipTier("tier1", 1 days, true, "tier1URI");
 
-        //create durations for membershipX
-        uint128[] memory durations = new uint128[](2);
-        durations[0] = 100;
-        durations[1] = 200;
+        ITronicMembership.MembershipTier memory tier2 =
+            ITronicMembership.MembershipTier("tier2", 2 days, true, "tier2URI");
 
-        //create isOpens for membershipX
-        bool[] memory isOpens = new bool[](2);
-        isOpens[0] = true;
-        isOpens[1] = false;
+        tiers[0] = tier1;
+        tiers[1] = tier2;
 
         //call setMembershipTiers function
-        membershipXERC721.createMembershipTiers(tiers, durations, isOpens);
+        brandXMembership.createMembershipTiers(tiers);
 
         //mint with tier id 0 (no tier)
-        (tba, tokenId) = tronicMainContract.mintMembership(recipient, membershipId, 0);
+        tokenId = tronicMainContract.mintMembership(recipient, membershipId, 0);
 
         //mint with tier id 1
-        (tba, tokenId) = tronicMainContract.mintMembership(recipient, membershipId, 1);
+        tokenId = tronicMainContract.mintMembership(recipient, membershipId, 1);
 
         vm.stopPrank();
     }
@@ -304,10 +296,10 @@ contract TronicMainTest is TronicTestBase {
         //first try to set membership tier with invalid membership id
         vm.startPrank(tronicAdmin);
         vm.expectRevert("Membership does not exist");
-        tronicMainContract.createMembershipTier(100, tier, duration, isOpen);
+        tronicMainContract.createMembershipTier(100, tier, duration, isOpen, "tierURI");
 
         //call createMembershipTier function
-        tronicMainContract.createMembershipTier(membershipIDX, tier, duration, isOpen);
+        tronicMainContract.createMembershipTier(membershipIDX, tier, duration, isOpen, "tierURI");
 
         //get tier index by tier id from tronicMain
         uint8 tierIndex = tronicMainContract.getTierIndexByTierId(membershipIDX, "tier1");
@@ -316,7 +308,7 @@ contract TronicMainTest is TronicTestBase {
         vm.expectRevert("Membership does not exist");
         tronicMainContract.getMembershipTierInfo(100, tierIndex);
 
-        //get tier info from membershipXERC721
+        //get tier info from brandXMembership
         TronicMembership.MembershipTier memory membershipTier =
             tronicMainContract.getMembershipTierInfo(membershipIDX, tierIndex);
 
@@ -327,18 +319,18 @@ contract TronicMainTest is TronicTestBase {
 
         //attempt to set membership tier with invalid membership id
         vm.expectRevert("Membership does not exist");
-        tronicMainContract.setMembershipTier(100, tierIndex, tier, duration, isOpen);
+        tronicMainContract.setMembershipTier(100, tierIndex, tier, duration, isOpen, "tierURI");
 
         //attempt to set membership tier with invalid tier index
         vm.expectRevert("Tier does not exist");
-        tronicMainContract.setMembershipTier(membershipIDX, 100, tier, duration, isOpen);
+        tronicMainContract.setMembershipTier(membershipIDX, 100, tier, duration, isOpen, "tierURI");
 
         // set a valid membership tier
         tronicMainContract.setMembershipTier(
-            membershipIDX, tierIndex, "changedTier", 1_000_000, isOpen
+            membershipIDX, tierIndex, "changedTier", 1_000_000, isOpen, "changedTierURI"
         );
 
-        //get tier info from membershipXERC721
+        //get tier info from brandXMembership
         membershipTier = tronicMainContract.getMembershipTierInfo(membershipIDX, tierIndex);
 
         //assert that tier info is correct
@@ -371,10 +363,10 @@ contract TronicMainTest is TronicTestBase {
         );
 
         //get the tokenid of tokens owned by recipient
-        uint256[] memory tokenIds = membershipXERC1155.getNftIdsForOwner(recipient);
+        uint256[] memory tokenIds = brandXToken.getNftIdsForOwner(recipient);
 
         //verify that the token was minted to the correct recipient
-        assertEq(membershipXERC1155.balanceOf(recipient, tokenIds[0]), amount);
+        assertEq(brandXToken.balanceOf(recipient, tokenIds[0]), amount);
 
         vm.stopPrank();
     }
@@ -382,7 +374,7 @@ contract TronicMainTest is TronicTestBase {
     function testUpdateERC721Implementation() public {
         //update implementation address
         vm.prank(tronicOwner);
-        tronicMainContract.setERC721Implementation(payable(address(0xdeadbeef)));
+        tronicMainContract.setMembershipImplementation(payable(address(0xdeadbeef)));
 
         //get new implementation address
         address newImplementation = address(tronicMainContract.tronicMembership());
@@ -395,10 +387,10 @@ contract TronicMainTest is TronicTestBase {
     function testUpdateERC1155Implementation() public {
         //update implementation address
         vm.prank(tronicOwner);
-        tronicMainContract.setERC1155Implementation(payable(address(0xdeadbeef)));
+        tronicMainContract.setTokenImplementation(payable(address(0xdeadbeef)));
 
         //get new implementation address
-        address newImplementation = address(tronicMainContract.tronicERC1155());
+        address newImplementation = address(tronicMainContract.tronicToken());
 
         //verify that implementation address has changed
         assertEq(newImplementation, address(0xdeadbeef));
@@ -436,10 +428,10 @@ contract TronicMainTest is TronicTestBase {
         assertTrue(tronicMainContract.isAdmin(tronicAdmin));
 
         //check admin of membershipX
-        assertTrue(membershipXERC721.isAdmin(tronicAdmin));
+        assertTrue(brandXMembership.isAdmin(tronicAdmin));
 
         //check admin of membershipY
-        assertTrue(membershipYERC721.isAdmin(tronicAdmin));
+        assertTrue(brandYMembership.isAdmin(tronicAdmin));
 
         // set admin of tronicMain to user1
         vm.prank(tronicOwner);

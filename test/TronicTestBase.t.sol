@@ -143,10 +143,10 @@ contract TronicTestBase is Test {
     string initialUriY = "http://setup-exampleY.com/token/";
 
     //create tier uris
-    string public tier1XURI = "http://tier1X.com/";
-    string public tier2XURI = "http://tier2X.com/";
-    string public tier1YURI = "http://tier1Y.com/";
-    string public tier2YURI = "http://tier2Y.com/";
+    string public tier1XURI = "tier1XURI";
+    string public tier2XURI = "tier2XURI";
+    string public tier1YURI = "tier1YURI";
+    string public tier2YURI = "tier2YURI";
 
     function setUp() public {
         //deploy tronic contracts

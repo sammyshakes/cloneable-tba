@@ -80,7 +80,7 @@ contract DeployMembership is TronicTestBase {
 
         //check uri of membershipTokenIdUser1
         string memory uri2 = brandXMembership.tokenURI(membershipTokenIdUser1);
-        assertEq(uri2, tier1XURI);
+        assertEq(uri2, "http://MembershipX.com/tier1XURI");
         console.log("uri2: ", tier1XURI);
 
         // Mint a brand loyalty nft to user2
