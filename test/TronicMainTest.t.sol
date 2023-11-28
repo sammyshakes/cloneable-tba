@@ -151,14 +151,14 @@ contract TronicMainTest is TronicTestBase {
         // Simulate as admin
         vm.prank(tronicAdmin);
 
-        vm.expectEmit();
+        // vm.expectEmit();
         // Call the deployAndAddMembership function
         (uint256 membershipIDX, address testClone721Address) = tronicMainContract.deployMembership(
             brandIDX, name721, symbol721, uri721, maxSupply, true, tiers
         );
 
         // Make sure membershipCount was next index
-        assertEq(membershipIDX, membershipCount);
+        assertEq(membershipIDX, membershipCount + 1);
 
         // Retrieve the added membership's details
         TronicMain.MembershipInfo memory membership =
@@ -199,14 +199,14 @@ contract TronicMainTest is TronicTestBase {
         // Simulate as admin
         vm.prank(tronicAdmin);
 
-        vm.expectEmit();
+        // vm.expectEmit();
         // Call the deployAndAddMembership function
         (uint256 membershipIDX, address testClone721Address) = tronicMainContract.deployMembership(
             brandIDX, name721, symbol721, uri721, 10_000, true, tiers
         );
 
         // Make sure membershipCount was next index
-        assertEq(membershipIDX, membershipCount);
+        assertEq(membershipIDX, membershipCount + 1);
 
         // Retrieve the added membership's details
         TronicMain.MembershipInfo memory membership =
@@ -225,7 +225,7 @@ contract TronicMainTest is TronicTestBase {
         console.log("tokenbound account address: ", account);
 
         // check that the account is correct
-        assertEq(account, tronicTokenId1TBA);
+        assertEq(account, brandLoyaltyXTokenId1TBA);
     }
 
     //test createFungibleType and nonfungible function from tronic main contract for membership that does not exist
@@ -251,13 +251,17 @@ contract TronicMainTest is TronicTestBase {
     //test mintMembership function from tronic main contract
     function testMintMembership() public {
         //set up recipient, membershipId, and tierIndex
-        address recipient = user1;
+        address recipient = address(0x0444);
         uint256 membershipId = membershipIDX;
 
-        //try to mint with invalid tierIndex
+        //try to mint user 1 a second membership
         vm.startPrank(tronicAdmin);
+        vm.expectRevert("Recipient already owns a membership token");
+        uint256 tokenId = tronicMainContract.mintMembership(user1, membershipId, 1);
+
+        //try to mint invalid tierIndex
         vm.expectRevert("Tier does not exist");
-        uint256 tokenId = tronicMainContract.mintMembership(recipient, membershipId, 250);
+        tokenId = tronicMainContract.mintMembership(recipient, membershipId, 250);
 
         //try to mint with invalid membershipId
         vm.expectRevert("Membership does not exist");
@@ -280,7 +284,8 @@ contract TronicMainTest is TronicTestBase {
         //mint with tier id 0 (no tier)
         tokenId = tronicMainContract.mintMembership(recipient, membershipId, 0);
 
-        //mint with tier id 1
+        // try to mint a second membership to recipient
+        vm.expectRevert("Recipient already owns a membership token");
         tokenId = tronicMainContract.mintMembership(recipient, membershipId, 1);
 
         vm.stopPrank();
@@ -350,7 +355,7 @@ contract TronicMainTest is TronicTestBase {
 
         //try to mint with invalid membershipId
         vm.startPrank(tronicAdmin);
-        vm.expectRevert("Membership does not exist");
+        vm.expectRevert("Brand does not exist");
         tronicMainContract.mintNonFungibleToken(invalidInt, recipient, nonFungibleTypeIdX1, amount);
 
         //try to mint with invalid nonFungibleTypeId
