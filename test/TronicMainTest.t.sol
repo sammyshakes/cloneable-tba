@@ -10,7 +10,6 @@ contract TronicMainTest is TronicTestBase {
         assertEq(tronicMainContract.membershipCounter(), 2);
         console.log("tronicMainContract address: ", address(tronicMainContract));
         console.log("tronicERC721 address: ", address(tronicERC721));
-        console.log("tronicERC1155 address: ", address(tronicERC1155));
         console.log("defaultTBAImplementationAddress: ", defaultTBAImplementationAddress);
         console.log("registryAddress: ", registryAddress);
         console.log("clone721AddressX: ", clone721AddressX);

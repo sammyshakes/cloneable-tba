@@ -224,7 +224,8 @@ contract TronicMembership is ITronicMembership, ERC721, Initializable {
         uint8 tierIndex = _membershipTokens[tokenID].tierIndex;
         //get tier uri from tier index
         string memory tierURI = _membershipTiers[tierIndex].tierURI;
-        return bytes(tierURI).length > 0 ? string(abi.encodePacked(tierURI)) : "";
+        //return baseURI + tierURI
+        return bytes(tierURI).length > 0 ? string(abi.encodePacked(_baseURI(), tierURI)) : "";
     }
 
     /// @notice Sets the max supply of the token.
