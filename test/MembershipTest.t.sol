@@ -124,52 +124,54 @@ contract MembershipTest is TronicTestBase {
         assertEq(membershipZERC721.totalSupply(), 0);
     }
 
-    //write function to test bound memberships then try to transfer
-    function testBoundMemberships() public {
-        // deploy membership with isBound set to false
-        vm.prank(tronicAdmin);
-        (uint256 memberZID, address membershipZ) = tronicMainContract.deployMembership(
-            brandIDX,
-            "membershipZ",
-            "MEMZ",
-            "http://example.com/token/",
-            10_000,
-            false,
-            membershipTiers
-        );
+    // TODO: Rewrite to test Bound BRandLoyalty tokens
 
-        //instance of membershipZERC721
-        TronicMembership membershipZERC721 = TronicMembership(membershipZ);
+    // //write function to test bound memberships then try to transfer
+    // function testBoundMemberships() public {
+    //     // deploy membership with isBound set to false
+    //     vm.prank(tronicAdmin);
+    //     (uint256 memberZID, address membershipZ) = tronicMainContract.deployMembership(
+    //         brandIDX,
+    //         "membershipZ",
+    //         "MEMZ",
+    //         "http://example.com/token/",
+    //         10_000,
+    //         false,
+    //         membershipTiers
+    //     );
 
-        // mint token to user1's TBA
-        vm.prank(tronicAdmin);
-        membershipZERC721.mint(tronicTokenId1TBA, 0);
+    // //instance of membershipZERC721
+    // TronicMembership membershipZERC721 = TronicMembership(membershipZ);
 
-        // try to transfer token to user2's tba (should revert because token is soulbound)
-        vm.startPrank(user1);
+    // // mint token to user1's TBA
+    // vm.prank(tronicAdmin);
+    // membershipZERC721.mint(tronicTokenId1TBA, 0);
 
-        // -------------memberships are no longer bound, but brand loyalty tokens are---------//
-        //
-        // //setPermissions for tronicMainContract to transfer membership
-        // bool[] memory approved = new bool[](1);
-        // approved[0] = true;
-        // address[] memory approvedAddresses = new address[](1);
-        // approvedAddresses[0] = address(tronicMainContract);
+    // // try to transfer token to user2's tba (should revert because token is soulbound)
+    // vm.startPrank(user1);
 
-        // IERC6551Account tokenId1TronicTBA = IERC6551Account(payable(address(tronicTokenId1TBA)));
-        // tokenId1TronicTBA.setPermissions(approvedAddresses, approved);
+    // -------------memberships are no longer bound, but brand loyalty tokens are---------//
+    //
+    // //setPermissions for tronicMainContract to transfer membership
+    // bool[] memory approved = new bool[](1);
+    // approved[0] = true;
+    // address[] memory approvedAddresses = new address[](1);
+    // approvedAddresses[0] = address(tronicMainContract);
 
-        // // transfer user1's membershipZ nft to user2's tba
-        // vm.expectRevert("Token is bound");
-        // tronicMainContract.transferMembershipFromTronicTBA(1, memberZID, 1, tronicTokenId2TBA);
-        // vm.stopPrank();
+    // IERC6551Account tokenId1TronicTBA = IERC6551Account(payable(address(tronicTokenId1TBA)));
+    // tokenId1TronicTBA.setPermissions(approvedAddresses, approved);
 
-        // //also try fropm membership contract
-        // vm.startPrank(tronicAdmin);
-        // vm.expectRevert("Token is bound");
-        // membershipZERC721.transferFrom(tronicTokenId1TBA, tronicTokenId2TBA, 1);
-        // vm.stopPrank();
-    }
+    // // transfer user1's membershipZ nft to user2's tba
+    // vm.expectRevert("Token is bound");
+    // tronicMainContract.transferMembershipFromTronicTBA(1, memberZID, 1, tronicTokenId2TBA);
+    // vm.stopPrank();
+
+    // //also try fropm membership contract
+    // vm.startPrank(tronicAdmin);
+    // vm.expectRevert("Token is bound");
+    // membershipZERC721.transferFrom(tronicTokenId1TBA, tronicTokenId2TBA, 1);
+    // vm.stopPrank();
+    // }
 
     //test admin functionality of tronicMembership
     function testAdmin() public {

@@ -188,7 +188,7 @@ contract DeployMembership is TronicTestBase {
         );
 
         // deploy membership with isBound set to false
-        vm.prank(tronicAdmin);
+        vm.startPrank(tronicAdmin);
         (uint256 membershipID, address membershipZAddress) = tronicMainContract.deployMembership(
             brandId,
             "membershipZ",
@@ -204,12 +204,13 @@ contract DeployMembership is TronicTestBase {
 
         uint8 tierId = 0;
 
-        // mint token to user1's TBA
-        vm.prank(tronicAdmin);
-        tronicMainContract.mintMembership(tronicTokenId1TBA, membershipID, tierId);
+        // mint token to user1's brand loyalty TBA
+        tronicMainContract.mintMembership(brandLoyaltyXTokenId1TBA, membershipID, tierId);
+
+        vm.stopPrank();
 
         // verify that user1TBA owns token
-        assertEq(membershipZERC721.balanceOf(tronicTokenId1TBA), 1);
+        assertEq(membershipZERC721.balanceOf(brandLoyaltyXTokenId1TBA), 1);
 
         // Verify that the membership contract was deployed successfully
         assertTrue(membershipID > 0, "Membership ID should be greater than 0");

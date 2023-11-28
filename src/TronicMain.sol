@@ -569,6 +569,49 @@ contract TronicMain is Initializable, UUPSUpgradeable {
     //     }
     // }
 
+    /// @notice transfers Membership token from a brand loyalty TBA to a specified address
+    /// @param _loyaltyTokenId The ID of the brand loyalty token that owns the TBA
+    /// @param _membershipId The membership ID of the membership token to be transferred
+    /// @param _membershipTokenId The tokenID of the membership token to be transferred
+    /// @param _to The address to transfer the membership to
+    /// @dev This contract address must be granted permissions to transfer tokens from the Brand Loyalty token TBA
+    /// @dev The membership token must be owned by the Brand Loyalty token TBA
+    function transferMembershipFromBrandLoyaltyTBA(
+        uint256 _loyaltyTokenId,
+        uint256 _membershipId,
+        uint256 _membershipTokenId,
+        address _to
+    ) external {
+        // get brand id from membership id
+        uint256 brandId = memberships[_membershipId].brandId;
+
+        // get brand loyalty address from brand id
+        address brandLoyaltyAddress = brands[brandId].brandLoyaltyAddress;
+        require(brandLoyaltyAddress != address(0), "Brand does not exist");
+
+        // get brand loyalty TBA address from brand loyalty address
+        address payable brandLoyaltyTbaAddress =
+            payable(ITronicBrandLoyalty(brandLoyaltyAddress).getTBAccount(_loyaltyTokenId));
+        IERC6551Account brandLoyaltyTBA = IERC6551Account(brandLoyaltyTbaAddress);
+
+        //ensure caller is either admin or authorized to transfer tokens
+        require(
+            brandLoyaltyTBA.isAuthorized(msg.sender) || _admins[msg.sender]
+                || msg.sender == tronicAdmin,
+            "Unauthorized caller"
+        );
+
+        // construct SafeTransferCall for membership ERC721
+        bytes memory membershipTransferCall = abi.encodeWithSignature(
+            "safeTransferFrom(address,address,uint256)",
+            brandLoyaltyTbaAddress,
+            _to,
+            _membershipTokenId
+        );
+
+        brandLoyaltyTBA.executeCall(brandLoyaltyTbaAddress, 0, membershipTransferCall);
+    }
+
     /// @notice transfers tokens from a Brand Loyalty TBA to a specified address
     /// @param _tronicTokenId The ID of the tronic token that owns the Tronic TBA
     /// @param _brandId The ID of the brand that issued the brand loyalty TBA
@@ -621,77 +664,6 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         );
 
         tronicTBA.executeCall(brandLoyaltyTbaAddress, 0, executeCall);
-    }
-
-    /// @notice transfers tokens from a tronic TBA to a specified address
-    /// @param _tronicTokenId The ID of the tronic token that owns the Tronic TBA
-    /// @param _transferTokenId The ID of the achievement token to transfer
-    /// @param _amount The amount of tokens to transfer
-    /// @param _to The address to transfer the tokens to
-    /// @dev This contract address must be granted permissions to transfer tokens from the Tronic token TBA
-    /// @dev The tronic TBA must be owned by the Tronic tokenId TBA
-    /// @dev This function is only callable by the tronic admin or an authorized account
-    function transferTokensFromTronicTBA(
-        uint256 _tronicTokenId,
-        uint256 _transferTokenId,
-        uint256 _amount,
-        address _to
-    ) external {
-        // get Tronic TBA address for tronic token id
-        address payable tronicTbaAddress = payable(tronicBrandLoyalty.getTBAccount(_tronicTokenId));
-        IERC6551Account tronicTBA = IERC6551Account(tronicTbaAddress);
-
-        //ensure caller is tronic admin or authorized to transfer tokens
-        require(
-            tronicTBA.isAuthorized(msg.sender) || _admins[msg.sender] || msg.sender == tronicAdmin,
-            "Unauthorized caller"
-        );
-
-        // construct SafeTransferCall for tronic ERC1155
-        bytes memory tokenTransferCall = abi.encodeWithSignature(
-            "safeTransferFrom(address,address,uint256,uint256,bytes)",
-            tronicTbaAddress,
-            _to,
-            _transferTokenId,
-            _amount,
-            ""
-        );
-
-        tronicTBA.executeCall(address(tronicToken), 0, tokenTransferCall);
-    }
-
-    /// @notice transfers brand loyalty token from a tronic TBA to a specified address
-    /// @param _tronicTokenId The ID of the tronic token that owns the Tronic TBA
-    /// @param _brandId The ID of the membership that issued the membership TBA
-    /// @param _loyaltyTokenId The ID of the membership TBA
-    /// @param _to The address to transfer the membership to
-    /// @dev This contract address must be granted permissions to transfer tokens from the Tronic token TBA
-    /// @dev The membership token TBA must be owned by the Tronic token TBA
-    function transferMembershipFromTronicTBA(
-        uint256 _tronicTokenId,
-        uint256 _brandId,
-        uint256 _loyaltyTokenId,
-        address _to
-    ) external {
-        // get Tronic TBA address for tronic token id
-        address payable tronicTbaAddress = payable(tronicBrandLoyalty.getTBAccount(_tronicTokenId));
-        IERC6551Account tronicTBA = IERC6551Account(tronicTbaAddress);
-        //ensure caller is either admin or authorized to transfer tokens
-        require(
-            tronicTBA.isAuthorized(msg.sender) || _admins[msg.sender] || msg.sender == tronicAdmin,
-            "Unauthorized caller"
-        );
-
-        // get membership contract address
-        address brandLoyaltyAddress = brands[_brandId].brandLoyaltyAddress;
-        require(brandLoyaltyAddress != address(0), "Brand does not exist");
-
-        // construct and execute SafeTransferCall for brandLoyalty ERC721
-        bytes memory brandLoyaltyTransferCall = abi.encodeWithSignature(
-            "safeTransferFrom(address,address,uint256)", tronicTbaAddress, _to, _loyaltyTokenId
-        );
-
-        tronicTBA.executeCall(brandLoyaltyAddress, 0, brandLoyaltyTransferCall);
     }
 
     /// @notice Sets the Tronic Loyalty contract address, callable only by the owner.
