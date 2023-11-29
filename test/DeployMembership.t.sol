@@ -123,13 +123,13 @@ contract DeployMembership is TronicTestBase {
         //attempt to transfer ownership to zero address
         vm.startPrank(tronicAdmin);
         vm.expectRevert("New owner address cannot be zero");
-        tronicBrandLoyaltyImplementation.transferOwnership(address(0));
+        brandLoyaltyX.transferOwnership(address(0));
 
         //transfer ownership of brandXMembership to user1
-        tronicBrandLoyaltyImplementation.transferOwnership(user1);
+        brandLoyaltyX.transferOwnership(user1);
 
         //verify that user1 is the owner of brandXMembership
-        assertEq(user1, tronicBrandLoyaltyImplementation.owner());
+        assertEq(user1, brandLoyaltyX.owner());
         vm.stopPrank();
     }
 

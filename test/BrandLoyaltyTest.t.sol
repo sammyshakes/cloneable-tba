@@ -48,30 +48,27 @@ contract BrandLoyaltyTest is TronicTestBase {
 
     // test admin functions
     function testAdminBrandLoyalty() public {
-        // console tronicBrandLoyaltyImplementation owner
-        console.log(
-            "tronicBrandLoyaltyImplementation owner: ", tronicBrandLoyaltyImplementation.owner()
-        );
+        // console brandLoyaltyX owner
+        console.log("brandLoyaltyX owner: ", brandLoyaltyX.owner());
 
         // add admin
-        vm.prank(tronicAdmin);
-        tronicBrandLoyaltyImplementation.addAdmin(user1);
-        assertEq(tronicBrandLoyaltyImplementation.isAdmin(user1), true);
+        vm.startPrank(tronicAdmin);
+        brandLoyaltyX.addAdmin(user1);
+        assertEq(brandLoyaltyX.isAdmin(user1), true);
 
         // remove admin
-        vm.prank(tronicAdmin);
-        tronicBrandLoyaltyImplementation.removeAdmin(user1);
-        assertEq(tronicBrandLoyaltyImplementation.isAdmin(user1), false);
+        brandLoyaltyX.removeAdmin(user1);
+        assertEq(brandLoyaltyX.isAdmin(user1), false);
 
         // transfer ownership
-        vm.prank(tronicAdmin);
-        tronicBrandLoyaltyImplementation.transferOwnership(user1);
-        assertEq(tronicBrandLoyaltyImplementation.owner(), user1);
+        brandLoyaltyX.transferOwnership(user1);
+        assertEq(brandLoyaltyX.owner(), user1);
+        vm.stopPrank();
 
         // transfer ownership back
         vm.prank(user1);
-        tronicBrandLoyaltyImplementation.transferOwnership(tronicAdmin);
-        assertEq(tronicBrandLoyaltyImplementation.owner(), tronicAdmin);
+        brandLoyaltyX.transferOwnership(tronicAdmin);
+        assertEq(brandLoyaltyX.owner(), tronicAdmin);
     }
 
     //test getBrandInfo

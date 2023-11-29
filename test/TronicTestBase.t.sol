@@ -148,6 +148,8 @@ contract TronicTestBase is Test {
     string public tier1YURI = "tier1YURI";
     string public tier2YURI = "tier2YURI";
 
+    uint64 public nftStartId = 100_000;
+
     function setUp() public {
         //deploy tronic contracts
         vm.startPrank(tronicOwner);
@@ -160,14 +162,15 @@ contract TronicTestBase is Test {
         //tronicMainContract is a proxy contract
         tronicMainProxy =
         new ERC1967Proxy(address(tronicMainContractImplementation), abi.encodeWithSignature(
-            "initialize(address,address,address,address,address,address,uint8)",
+            "initialize(address,address,address,address,address,address,uint8,uint64)",
             tronicAdmin,
             address(tronicBrandLoyaltyImplementation),
             address(tronicMembership),
             address(tronicToken),
             registryAddress,
             defaultTBAImplementationAddress,
-            10 //maxtiers
+            10 ,//maxtiers
+            nftStartId
         ));
 
         tronicMainContract = TronicMain(address(tronicMainProxy));

@@ -4,9 +4,9 @@ pragma solidity ^0.8.13;
 import "./TronicTestBase.t.sol";
 
 contract TokenTest is TronicTestBase {
-    //function to test tronicToken nftminting capabilities
+    //function to test brandXToken nftminting capabilities
     function testCreateNFTType() public {
-        // prank as main contract and createNFTType on tronicToken ERC1155
+        // prank as main contract and createNFTType on brandXToken ERC1155
         //test base uri
         string memory baseURI = "https://example.com/token/";
         uint64 maxMintable = 1000;
@@ -16,65 +16,65 @@ contract TokenTest is TronicTestBase {
         // test some invalid cases
         // max mintable of 0
         vm.expectRevert();
-        tronicToken.createNFTType(baseURI, 0);
+        brandXToken.createNFTType(baseURI, 0);
 
-        uint256 typeId = tronicToken.createNFTType(baseURI, maxMintable);
+        uint256 typeId = brandXToken.createNFTType(baseURI, maxMintable);
 
         //attempt to mint for invalid typeId
         vm.expectRevert();
-        tronicToken.mintNFT(1000, user1);
+        brandXToken.mintNFT(1000, user1);
 
         //mint tokennft type
-        tronicToken.mintNFT(typeId, user1);
+        brandXToken.mintNFT(typeId, user1);
 
         //verify that user1 owns token
-        uint256[] memory tokenIds = tronicToken.getNftIdsForOwner(user1);
+        uint256[] memory tokenIds = brandXToken.getNftIdsForOwner(user1);
 
-        //get user address form nftOwners mapping on tronicToken
-        address owner = tronicToken.nftOwners(tokenIds[0]);
+        //get user address form nftOwners mapping on brandXToken
+        address owner = brandXToken.nftOwners(tokenIds[0]);
 
         //verify that user1 owns token
         assertEq(owner, user1);
 
         //create another type and verify starting tokenid
-        uint256 typeId2 = tronicToken.createNFTType(baseURI, 10_000);
-        tronicToken.mintNFT(typeId2, user1);
+        uint256 typeId2 = brandXToken.createNFTType(baseURI, 10_000);
+        brandXToken.mintNFT(typeId2, user1);
 
         //get tokeninfo to ensure starting tokenid is correct
-        assertEq(tronicToken.getNFTokenInfo(typeId2).startingTokenId, 100_000 + maxMintable);
+        assertEq(brandXToken.getNFTokenInfo(typeId2).startingTokenId, 1_000_000 + maxMintable);
 
         //create another type and verify starting tokenid
-        uint256 typeId3 = tronicToken.createNFTType(baseURI, 100_000 + 10_000 + maxMintable);
-        tronicToken.mintNFT(typeId3, user1);
+        uint256 typeId3 = brandXToken.createNFTType(baseURI, 100_000 + 10_000 + maxMintable);
+        brandXToken.mintNFT(typeId3, user1);
 
-        tokenIds = tronicToken.getNftIdsForOwner(user1);
+        tokenIds = brandXToken.getNftIdsForOwner(user1);
 
         //attempt to mint more than maxMintable
         // create NFTtype with lower maxMintable
-        uint256 typeId4 = tronicToken.createNFTType(baseURI, 2);
+        uint256 typeId4 = brandXToken.createNFTType(baseURI, 2);
 
-        tronicToken.mintNFT(typeId4, user1);
-        tronicToken.mintNFT(typeId4, user1);
+        brandXToken.mintNFT(typeId4, user1);
+        brandXToken.mintNFT(typeId4, user1);
 
         //attempt to mint more than maxMintable
         vm.expectRevert();
-        tronicToken.mintNFT(typeId4, user1);
+        brandXToken.mintNFT(typeId4, user1);
 
-        tokenIds = tronicToken.getNftIdsForOwner(user1);
+        tokenIds = brandXToken.getNftIdsForOwner(user1);
 
         //mint using mintNFTs function
-        tronicToken.mintNFTs(typeId, user3, 100);
+        brandXToken.mintNFTs(typeId, user3, 100);
 
         //verify that user1 owns token
-        tokenIds = tronicToken.getNftIdsForOwner(user3);
+        tokenIds = brandXToken.getNftIdsForOwner(user3);
         assertEq(tokenIds.length, 100);
 
         // attempt to mint more than maxMintable using mintNFTs function
         vm.expectRevert();
-        tronicToken.mintNFTs(typeId, user3, 1000);
+        brandXToken.mintNFTs(typeId, user3, 1000);
 
         //burn nft type token
-        tronicToken.burn(user3, tokenIds[50], 1);
+        brandXToken.burn(user3, tokenIds[50], 1);
 
         vm.stopPrank();
     }
@@ -86,15 +86,15 @@ contract TokenTest is TronicTestBase {
         uint64 maxMintable = 1000;
 
         vm.startPrank(address(tronicMainContract));
-        uint256 typeId = tronicToken.createNFTType(baseURI, maxMintable);
+        uint256 typeId = brandXToken.createNFTType(baseURI, maxMintable);
 
         //mint token
-        tronicToken.mintNFT(typeId, user1);
-        uint256[] memory tokenIds = tronicToken.getNftIdsForOwner(user1);
+        brandXToken.mintNFT(typeId, user1);
+        uint256[] memory tokenIds = brandXToken.getNftIdsForOwner(user1);
         uint256 tokenId = tokenIds[0];
 
         //verify that token is not fungible
-        assertEq(tronicToken.isFungible(tokenId), false);
+        assertEq(brandXToken.isFungible(tokenId), false);
 
         vm.stopPrank();
     }
@@ -106,17 +106,17 @@ contract TokenTest is TronicTestBase {
         uint64 maxMintable = 1000;
 
         vm.startPrank(address(tronicMainContract));
-        uint256 typeId = tronicToken.createNFTType(baseURI, maxMintable);
+        uint256 typeId = brandXToken.createNFTType(baseURI, maxMintable);
 
         //mint token
-        tronicToken.mintNFT(typeId, user1);
-        uint256[] memory tokenIds = tronicToken.getNftIdsForOwner(user1);
+        brandXToken.mintNFT(typeId, user1);
+        uint256[] memory tokenIds = brandXToken.getNftIdsForOwner(user1);
         uint256 tokenId = tokenIds[0];
         uint256 level = 100;
 
         //set level
-        tronicToken.setLevel(tokenId, level);
-        assertEq(tronicToken.getLevel(tokenId), level);
+        brandXToken.setLevel(tokenId, level);
+        assertEq(brandXToken.getLevel(tokenId), level);
 
         vm.stopPrank();
     }
@@ -127,19 +127,21 @@ contract TokenTest is TronicTestBase {
         string memory baseURI = "https://example.com/token";
         uint64 maxMintable = 1000;
 
+        address recipient = address(0x123);
+
         vm.startPrank(address(tronicMainContract));
-        uint256 typeId = tronicToken.createNFTType(baseURI, maxMintable);
+        uint256 typeId = brandXToken.createNFTType(baseURI, maxMintable);
 
         //mint token
-        tronicToken.mintNFT(typeId, user1);
-        uint256[] memory tokenIds = tronicToken.getNftIdsForOwner(user1);
+        brandXToken.mintNFT(typeId, recipient);
+        uint256[] memory tokenIds = brandXToken.getNftIdsForOwner(recipient);
         uint256 tokenId = tokenIds[0];
 
         //verify uri
-        assertEq(tronicToken.uri(tokenId), "https://example.com/token/100001");
+        assertEq(brandXToken.uri(tokenId), "https://example.com/token/1100001");
 
         //try to get uri from invalid tokenid
-        assertEq(tronicToken.uri(50_000), "");
+        assertEq(brandXToken.uri(5000), "");
 
         vm.stopPrank();
     }
@@ -154,35 +156,35 @@ contract TokenTest is TronicTestBase {
         uint64 maxMintable = 1000;
 
         vm.startPrank(address(tronicMainContract));
-        uint256 typeId = tronicToken.createNFTType(baseURI, maxMintable);
+        uint256 typeId = brandXToken.createNFTType(baseURI, maxMintable);
 
         //mint token
-        tronicToken.mintNFT(typeId, testUser);
-        uint256[] memory tokenIds = tronicToken.getNftIdsForOwner(testUser);
+        brandXToken.mintNFT(typeId, testUser);
+        uint256[] memory tokenIds = brandXToken.getNftIdsForOwner(testUser);
         uint256 tokenId = tokenIds[0];
 
         //burn token
-        tronicToken.burn(testUser, tokenId, 1);
+        brandXToken.burn(testUser, tokenId, 1);
 
         //verify that testUser no longer owns token
-        tokenIds = tronicToken.getNftIdsForOwner(testUser);
+        tokenIds = brandXToken.getNftIdsForOwner(testUser);
         assertEq(tokenIds.length, 0);
 
         //attempt to create fungible type with maxSupply of 0
         vm.expectRevert();
-        tronicToken.createFungibleType(0, baseURI);
+        brandXToken.createFungibleType(0, baseURI);
 
         //create fungible token
-        uint256 fungibleTypeId = tronicToken.createFungibleType(maxMintable, baseURI);
+        uint256 fungibleTypeId = brandXToken.createFungibleType(maxMintable, baseURI);
 
         //mint fungible token
-        tronicToken.mintFungible(testUser, fungibleTypeId, maxMintable);
+        brandXToken.mintFungible(testUser, fungibleTypeId, maxMintable);
 
         //burn fungible token
-        tronicToken.burn(testUser, fungibleTypeId, maxMintable);
+        brandXToken.burn(testUser, fungibleTypeId, maxMintable);
 
         //verify that testUser no longer owns token
-        assertEq(tronicToken.balanceOf(testUser, fungibleTypeId), 0);
+        assertEq(brandXToken.balanceOf(testUser, fungibleTypeId), 0);
 
         vm.stopPrank();
     }
@@ -194,16 +196,16 @@ contract TokenTest is TronicTestBase {
 
         // set testUser as admin
         vm.startPrank(tronicAdmin);
-        tronicToken.addAdmin(testUser);
+        brandXToken.addAdmin(testUser);
 
         //verify that testUser is admin
-        assertEq(tronicToken.isAdmin(testUser), true);
+        assertEq(brandXToken.isAdmin(testUser), true);
 
         //revoke admin
-        tronicToken.removeAdmin(testUser);
+        brandXToken.removeAdmin(testUser);
 
         //verify that testUser is not admin
-        assertEq(tronicToken.isAdmin(testUser), false);
+        assertEq(brandXToken.isAdmin(testUser), false);
 
         vm.stopPrank();
     }
@@ -211,10 +213,10 @@ contract TokenTest is TronicTestBase {
     //test supportsInterface
     function testSupportsInterface() public {
         // call supportsInterface
-        assertEq(tronicToken.supportsInterface(type(IERC165).interfaceId), true);
+        assertEq(brandXToken.supportsInterface(type(IERC165).interfaceId), true);
     }
 
-    //test safeBatchTransferFrom function on TronicToken.sol
+    //test safeBatchTransferFrom function on BrandXToken.sol
     function testSafeBatchTransferFrom() public {
         //create testuser
         address testUser = address(0x123);
@@ -224,25 +226,25 @@ contract TokenTest is TronicTestBase {
         uint64 maxMintable = 1000;
 
         vm.startPrank(address(tronicMainContract));
-        uint256 typeId = tronicToken.createNFTType(baseURI, maxMintable);
+        uint256 typeId = brandXToken.createNFTType(baseURI, maxMintable);
 
         //mint token
-        tronicToken.mintNFT(typeId, testUser);
+        brandXToken.mintNFT(typeId, testUser);
 
         //verify that testUser owns token
-        uint256[] memory tokenIds = tronicToken.getNftIdsForOwner(testUser);
+        uint256[] memory tokenIds = brandXToken.getNftIdsForOwner(testUser);
         assertEq(tokenIds.length, 1);
 
         //create another nft type
-        uint256 typeId2 = tronicToken.createNFTType(baseURI, maxMintable);
+        uint256 typeId2 = brandXToken.createNFTType(baseURI, maxMintable);
 
         //mint token
-        tronicToken.mintNFT(typeId2, testUser);
+        brandXToken.mintNFT(typeId2, testUser);
 
         vm.stopPrank();
 
         //verify that testUser owns token
-        tokenIds = tronicToken.getNftIdsForOwner(testUser);
+        tokenIds = brandXToken.getNftIdsForOwner(testUser);
         assertEq(tokenIds.length, 2);
 
         //create amounts array
@@ -252,18 +254,18 @@ contract TokenTest is TronicTestBase {
 
         // try to transfer tokens to another user
         vm.prank(testUser);
-        tronicToken.safeBatchTransferFrom(testUser, user1, tokenIds, amounts, "");
+        brandXToken.safeBatchTransferFrom(testUser, user1, tokenIds, amounts, "");
 
         //verify that testUser no longer owns token
-        tokenIds = tronicToken.getNftIdsForOwner(testUser);
+        tokenIds = brandXToken.getNftIdsForOwner(testUser);
         assertEq(tokenIds.length, 0);
 
         //verify that user1 owns token
-        tokenIds = tronicToken.getNftIdsForOwner(user1);
+        tokenIds = brandXToken.getNftIdsForOwner(user1);
         assertEq(tokenIds.length, 2);
     }
 
-    //testSafeTransferFrom function on TronicToken.sol
+    //testSafeTransferFrom function on BrandXToken.sol
     function testSafeTransferFrom() public {
         //create testuser
         address testUser = address(0x123);
@@ -273,53 +275,53 @@ contract TokenTest is TronicTestBase {
         uint64 maxMintable = 1000;
 
         vm.startPrank(address(tronicMainContract));
-        uint256 typeId = tronicToken.createNFTType(baseURI, maxMintable);
+        uint256 typeId = brandXToken.createNFTType(baseURI, maxMintable);
 
         //mint token
-        tronicToken.mintNFT(typeId, testUser);
+        brandXToken.mintNFT(typeId, testUser);
         vm.stopPrank();
 
         //verify that testUser owns token
-        uint256[] memory tokenIds = tronicToken.getNftIdsForOwner(testUser);
+        uint256[] memory tokenIds = brandXToken.getNftIdsForOwner(testUser);
         assertEq(tokenIds.length, 1);
 
         //test safeTransferFrom
         vm.prank(testUser);
-        tronicToken.safeTransferFrom(testUser, user1, tokenIds[0], 1, "");
+        brandXToken.safeTransferFrom(testUser, user1, tokenIds[0], 1, "");
 
         //verify that testUser no longer owns token
-        tokenIds = tronicToken.getNftIdsForOwner(testUser);
+        tokenIds = brandXToken.getNftIdsForOwner(testUser);
         assertEq(tokenIds.length, 0);
 
         //verify that user1 owns token
-        tokenIds = tronicToken.getNftIdsForOwner(user1);
+        tokenIds = brandXToken.getNftIdsForOwner(user1);
         assertEq(tokenIds.length, 1);
 
         vm.startPrank(address(tronicMainContract));
 
         //create a fungible type
-        uint256 fungibleTypeId = tronicToken.createFungibleType(maxMintable, baseURI);
+        uint256 fungibleTypeId = brandXToken.createFungibleType(maxMintable, baseURI);
 
         //mint fungible token
-        tronicToken.mintFungible(testUser, fungibleTypeId, maxMintable);
+        brandXToken.mintFungible(testUser, fungibleTypeId, maxMintable);
 
         vm.stopPrank();
 
         //verify that testUser owns token
-        assertEq(tronicToken.balanceOf(testUser, fungibleTypeId), maxMintable);
+        assertEq(brandXToken.balanceOf(testUser, fungibleTypeId), maxMintable);
 
         //test safeTransferFrom
         vm.prank(testUser);
-        tronicToken.safeTransferFrom(testUser, user1, fungibleTypeId, maxMintable, "");
+        brandXToken.safeTransferFrom(testUser, user1, fungibleTypeId, maxMintable, "");
 
         //verify that testUser no longer owns token
-        assertEq(tronicToken.balanceOf(testUser, fungibleTypeId), 0);
+        assertEq(brandXToken.balanceOf(testUser, fungibleTypeId), 0);
 
         //verify that user1 owns token
-        assertEq(tronicToken.balanceOf(user1, fungibleTypeId), maxMintable);
+        assertEq(brandXToken.balanceOf(user1, fungibleTypeId), maxMintable);
     }
 
-    //test mintFungible function on TronicToken.sol
+    //test mintFungible function on BrandXToken.sol
     function testMintFungible() public {
         //create testuser
         address testUser = address(0x123);
@@ -331,24 +333,24 @@ contract TokenTest is TronicTestBase {
         vm.startPrank(address(tronicMainContract));
 
         //create fungible type
-        fungibleTypeId = tronicToken.createFungibleType(maxMintable, baseURI);
+        fungibleTypeId = brandXToken.createFungibleType(maxMintable, baseURI);
 
         //attempt to mint fungible token for invalid tokentype
         vm.expectRevert();
-        tronicToken.mintFungible(testUser, 1000, maxMintable);
+        brandXToken.mintFungible(testUser, 1000, maxMintable);
 
         //mint fungible token
-        tronicToken.mintFungible(testUser, fungibleTypeId, maxMintable);
+        brandXToken.mintFungible(testUser, fungibleTypeId, maxMintable);
 
         //verify that testUser owns token
-        assertEq(tronicToken.balanceOf(testUser, fungibleTypeId), maxMintable);
+        assertEq(brandXToken.balanceOf(testUser, fungibleTypeId), maxMintable);
 
         //attempt to mint more fungible tokens than maxMintable
         vm.expectRevert();
-        tronicToken.mintFungible(testUser, fungibleTypeId, 1);
+        brandXToken.mintFungible(testUser, fungibleTypeId, 1);
     }
 
-    // test mintBatch function on TronicToken.sol
+    // test mintBatch function on BrandXToken.sol
     function testMintBatch() public {
         //create testuser
         address testUser = address(0x123);
@@ -360,12 +362,12 @@ contract TokenTest is TronicTestBase {
         vm.startPrank(address(tronicMainContract));
 
         //create fungible types
-        uint256 fungibleTypeId = tronicToken.createFungibleType(maxMintable, baseURI);
-        uint256 fungibleTypeId2 = tronicToken.createFungibleType(maxMintable, baseURI);
+        uint256 fungibleTypeId = brandXToken.createFungibleType(maxMintable, baseURI);
+        uint256 fungibleTypeId2 = brandXToken.createFungibleType(maxMintable, baseURI);
 
         //create nft types
-        uint256 nftTypeId = tronicToken.createNFTType(baseURI, maxMintable);
-        uint256 nftTypeId2 = tronicToken.createNFTType(baseURI, maxMintable);
+        uint256 nftTypeId = brandXToken.createNFTType(baseURI, maxMintable);
+        uint256 nftTypeId2 = brandXToken.createNFTType(baseURI, maxMintable);
 
         uint256[] memory tokenIds = new uint256[](4);
         tokenIds[0] = fungibleTypeId;
@@ -380,12 +382,12 @@ contract TokenTest is TronicTestBase {
         amounts[3] = 10;
 
         //mint tokens
-        tronicToken.mintBatch(testUser, tokenIds, amounts, "");
+        brandXToken.mintBatch(testUser, tokenIds, amounts, "");
 
         //Expect reverts
         //attempt to mint to zero address
         vm.expectRevert();
-        tronicToken.mintBatch(address(0), tokenIds, amounts, "");
+        brandXToken.mintBatch(address(0), tokenIds, amounts, "");
 
         //attempt with wrong sized arrays
         uint256[] memory tokenIds2 = new uint256[](3);
@@ -394,7 +396,7 @@ contract TokenTest is TronicTestBase {
         tokenIds2[2] = nftTypeId;
 
         vm.expectRevert();
-        tronicToken.mintBatch(testUser, tokenIds2, amounts, "");
+        brandXToken.mintBatch(testUser, tokenIds2, amounts, "");
 
         //attempt to mint fungibles with invalid token type
         uint256[] memory tokenIds3 = new uint256[](4);
@@ -404,7 +406,7 @@ contract TokenTest is TronicTestBase {
         tokenIds3[3] = nftTypeId2;
 
         vm.expectRevert();
-        tronicToken.mintBatch(testUser, tokenIds3, amounts, "");
+        brandXToken.mintBatch(testUser, tokenIds3, amounts, "");
 
         //attempt to mint nfttypes with invalid token type
         uint256[] memory tokenIds4 = new uint256[](4);
@@ -414,7 +416,7 @@ contract TokenTest is TronicTestBase {
         tokenIds4[3] = 1001;
 
         vm.expectRevert();
-        tronicToken.mintBatch(testUser, tokenIds4, amounts, "");
+        brandXToken.mintBatch(testUser, tokenIds4, amounts, "");
 
         //attempt to mint more than maxMintable fungible
         uint256[] memory amounts2 = new uint256[](4);
@@ -424,7 +426,7 @@ contract TokenTest is TronicTestBase {
         amounts2[3] = 1;
 
         vm.expectRevert();
-        tronicToken.mintBatch(testUser, tokenIds, amounts2, "");
+        brandXToken.mintBatch(testUser, tokenIds, amounts2, "");
 
         //attempt to mint more than maxMintable non fungible
         amounts2[0] = 1;
@@ -433,16 +435,16 @@ contract TokenTest is TronicTestBase {
         amounts2[3] = 1001;
 
         vm.expectRevert();
-        tronicToken.mintBatch(testUser, tokenIds, amounts2, "");
+        brandXToken.mintBatch(testUser, tokenIds, amounts2, "");
 
         vm.stopPrank();
 
         //attempt to mint from non-admin
         vm.prank(testUser);
         vm.expectRevert();
-        tronicToken.mintBatch(testUser, tokenIds, amounts, "");
+        brandXToken.mintBatch(testUser, tokenIds, amounts, "");
 
-        uint256[] memory _tokenIds = tronicToken.getNftIdsForOwner(testUser);
+        uint256[] memory _tokenIds = brandXToken.getNftIdsForOwner(testUser);
         assertEq(_tokenIds.length, 20);
 
         tokenIds[2] = _tokenIds[15];
@@ -453,10 +455,10 @@ contract TokenTest is TronicTestBase {
 
         //test safeBatchTransferFrom
         vm.prank(testUser);
-        tronicToken.safeBatchTransferFrom(testUser, user1, tokenIds, amounts, "");
+        brandXToken.safeBatchTransferFrom(testUser, user1, tokenIds, amounts, "");
 
         //verify that testUser no longer owns token
-        tokenIds = tronicToken.getNftIdsForOwner(testUser);
+        tokenIds = brandXToken.getNftIdsForOwner(testUser);
         assertEq(tokenIds.length, 18);
     }
 }

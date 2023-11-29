@@ -118,6 +118,8 @@ contract TronicMain is Initializable, UUPSUpgradeable {
     address payable public tbaAccountImplementation;
     uint8 public maxTiersPerMembership;
 
+    uint64 public nftTypeStartId;
+
     uint256 public brandCounter;
     mapping(uint256 => BrandInfo) private brands;
 
@@ -144,6 +146,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
     /// @param _registry The address of the registry contract.
     /// @param _tbaImplementation The address of the tokenbound account implementation.
     /// @param _maxTiersPerMembership The maximum number of tiers per membership.
+    /// @param _nftTypeStartId The starting ID for non-fungible token types.
     function initialize(
         address _admin,
         address _brandLoyalty,
@@ -151,7 +154,8 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         address _tronicToken,
         address _registry,
         address _tbaImplementation,
-        uint8 _maxTiersPerMembership
+        uint8 _maxTiersPerMembership,
+        uint64 _nftTypeStartId
     ) public initializer {
         owner = msg.sender;
         tronicAdmin = _admin;
@@ -161,6 +165,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         registry = IERC6551Registry(_registry);
         tbaAccountImplementation = payable(_tbaImplementation);
         maxTiersPerMembership = _maxTiersPerMembership;
+        nftTypeStartId = _nftTypeStartId;
     }
 
     /// @notice Checks if the caller is the owner.
@@ -326,7 +331,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
     /// @return tokenAddress The address of the newly cloned ERC1155 contract.
     function _deployToken() private returns (address tokenAddress) {
         tokenAddress = Clones.clone(address(tronicToken));
-        ITronicToken(tokenAddress).initialize(tronicAdmin);
+        ITronicToken(tokenAddress).initialize(tronicAdmin, nftTypeStartId);
     }
 
     /// @notice Removes a membership from the contract.

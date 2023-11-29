@@ -18,7 +18,8 @@ contract TronicToken is ITronicToken, ERC1155, Initializable {
     event NFTokenTypeCreated(uint256 indexed typeId, uint64 maxMintable, string baseURI);
 
     uint32 private _tokenTypeCounter;
-    uint64 private _nextNFTTypeStartId = 100_000;
+    uint64 public nftTypeStartId;
+    uint64 private _nextNFTTypeStartId;
     address public owner;
     string public name;
     string public symbol;
@@ -49,12 +50,15 @@ contract TronicToken is ITronicToken, ERC1155, Initializable {
 
     /// @notice Initializes the contract with tronic Admin address.
     /// @param _tronicAdmin Address of the Tronic admin.
+    /// @param _nftTypeStartId The starting ID for non-fungible tokens (NFTs).
     /// @dev This function is called by the TronicMain contract.
-    function initialize(address _tronicAdmin) external initializer {
+    function initialize(address _tronicAdmin, uint64 _nftTypeStartId) external initializer {
         owner = _tronicAdmin;
         _admins[_tronicAdmin] = true;
         //sets TronicAdmin.sol as admin
         _admins[msg.sender] = true;
+        nftTypeStartId = _nftTypeStartId;
+        _nextNFTTypeStartId = _nftTypeStartId;
     }
 
     /// @notice Gets the information of a fungible token type.
@@ -332,27 +336,32 @@ contract TronicToken is ITronicToken, ERC1155, Initializable {
 
     /// @notice Returns the URI for a specific token ID.
     /// @param tokenId The ID of the token.
-    /// @return The URI of the token.
+    /// @return tokenUri The URI of the token.
     /// @dev Overrides the base implementation to support fungible tokens.
-    function uri(uint256 tokenId) public view override returns (string memory) {
+    function uri(uint256 tokenId) public view override returns (string memory tokenUri) {
         // Check if it's a fungible token type
         if (isFungible(tokenId)) {
-            return _fungibleTokens[tokenId].uri;
+            tokenUri = _fungibleTokens[tokenId].uri;
+            return tokenUri;
         }
 
         // Check if it's a non-fungible token type
+        if (tokenId < nftTypeStartId) {
+            tokenUri = "";
+            return tokenUri;
+        }
+
         for (uint256 typeId = 0; typeId < _tokenTypeCounter; typeId++) {
             if (
                 tokenId >= _nftTypes[typeId].startingTokenId
                     && tokenId < _nftTypes[typeId].startingTokenId + _nftTypes[typeId].maxMintable
             ) {
                 // Construct URI
-                return string(abi.encodePacked(_nftTypes[typeId].baseURI, "/", tokenId.toString()));
+                tokenUri =
+                    string(abi.encodePacked(_nftTypes[typeId].baseURI, "/", tokenId.toString()));
+                return tokenUri;
             }
         }
-
-        // If not found in both, revert to the parent implementation
-        return super.uri(tokenId);
     }
 
     /// @notice Overrides the base implementation to support non-fungible tokens.
