@@ -30,7 +30,10 @@ contract TronicToken is ITronicToken, ERC1155, Initializable {
     mapping(address => bool) private _admins;
 
     /// @notice Constructor initializes ERC1155 with an empty URI.
-    constructor() ERC1155("") {}
+    /// @dev The constructor is used to disbale the initializers.
+    constructor() ERC1155("") {
+        _disableInitializers();
+    }
 
     /// @dev Modifier to ensure only the owner can call certain functions.
     modifier onlyOwner() {
