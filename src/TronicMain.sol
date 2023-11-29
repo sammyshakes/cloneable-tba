@@ -609,61 +609,116 @@ contract TronicMain is Initializable, UUPSUpgradeable {
             _membershipTokenId
         );
 
-        brandLoyaltyTBA.executeCall(brandLoyaltyTbaAddress, 0, membershipTransferCall);
+        brandLoyaltyTBA.executeCall(brandLoyaltyAddress, 0, membershipTransferCall);
     }
 
     /// @notice transfers tokens from a Brand Loyalty TBA to a specified address
-    /// @param _tronicTokenId The ID of the tronic token that owns the Tronic TBA
-    /// @param _brandId The ID of the brand that issued the brand loyalty TBA
-    /// @param _brandLoyaltyTokenId The ID of the brand loyalty TBA
+    /// @param _brandId The ID of the brand
+    /// @param _brandLoyaltyTbaAddress The address of the Brand Loyalty TBA
     /// @param _to The address to transfer the tokens to
     /// @param _transferTokenId The ID of the token to transfer
     /// @param _amount The amount of tokens to transfer
-    /// @dev This contract address must be granted permissions to transfer tokens from the membership TBA
-    /// @dev The membership TBA must be owned by the Tronic tokenId TBA
+    /// @dev This contract address must be granted permissions to transfer tokens from the Brand Loyalty TBA
     /// @dev This function is only callable by the tronic admin or an authorized account
     function transferTokensFromBrandLoyaltyTBA(
-        uint256 _tronicTokenId,
         uint256 _brandId,
-        uint256 _brandLoyaltyTokenId,
+        address _brandLoyaltyTbaAddress,
         address _to,
         uint256 _transferTokenId,
         uint256 _amount
     ) external {
-        // get Tronic TBA address for tronic token id
-        address payable tronicTbaAddress = payable(tronicBrandLoyalty.getTBAccount(_tronicTokenId));
-        IERC6551Account tronicTBA = IERC6551Account(tronicTbaAddress);
+        // get brand loyalty address from brand id
+        address brandLoyaltyAddress = brands[_brandId].brandLoyaltyAddress;
+        require(brandLoyaltyAddress != address(0), "Brand does not exist");
+
+        // get BrandLoaylty TBA
+        IERC6551Account brandLoyaltyTBA = IERC6551Account(payable(_brandLoyaltyTbaAddress));
 
         //ensure caller is tronic admin or authorized to transfer tokens
         require(
-            tronicTBA.isAuthorized(msg.sender) || _admins[msg.sender] || msg.sender == tronicAdmin,
+            brandLoyaltyTBA.isAuthorized(msg.sender) || _admins[msg.sender]
+                || msg.sender == tronicAdmin,
             "Unauthorized caller"
         );
-
-        // get membership info
-        BrandInfo memory brand = brands[_brandId];
-        require(brand.brandLoyaltyAddress != address(0), "Brand does not exist");
-
-        // get Membership TBA address
-        address brandLoyaltyTbaAddress =
-            ITronicBrandLoyalty(brand.brandLoyaltyAddress).getTBAccount(_brandLoyaltyTokenId);
 
         // construct SafeTransferCall for membership ERC1155
         bytes memory tokenTransferCall = abi.encodeWithSignature(
             "safeTransferFrom(address,address,uint256,uint256,bytes)",
-            brandLoyaltyTbaAddress,
+            _brandLoyaltyTbaAddress,
             _to,
             _transferTokenId,
             _amount,
             ""
         );
 
-        // construct execute call for membership tbaAddress to execute tokenTransferCall
-        bytes memory executeCall = abi.encodeWithSignature(
-            "executeCall(address,uint256,bytes)", brand.brandLoyaltyAddress, 0, tokenTransferCall
-        );
+        // // construct execute call for membership tbaAddress to execute tokenTransferCall
+        // bytes memory executeCall = abi.encodeWithSignature(
+        //     "executeCall(address,uint256,bytes)", _brandLoyaltyTbaAddress, 0, tokenTransferCall
+        // );
 
-        tronicTBA.executeCall(brandLoyaltyTbaAddress, 0, executeCall);
+        brandLoyaltyTBA.executeCall(_brandLoyaltyTbaAddress, 0, tokenTransferCall);
+    }
+
+    /// @notice Gets the address of the tokenbound account for a given brand loyalty token.
+    /// @param _brandId The ID of the brand.
+    /// @param _brandLoyaltyTokenId The ID of the brand loyalty token.
+    /// @return brandLoyaltyTbaAddress The address of the tokenbound account.
+    function getBrandLoyaltyTBA(uint256 _brandId, uint256 _brandLoyaltyTokenId)
+        external
+        view
+        returns (address payable brandLoyaltyTbaAddress)
+    {
+        // get brand loyalty address from brand id
+        address brandLoyaltyAddress = brands[_brandId].brandLoyaltyAddress;
+        require(brandLoyaltyAddress != address(0), "Brand does not exist");
+
+        // get brand loyalty TBA address from brand loyalty address
+        brandLoyaltyTbaAddress =
+            payable(ITronicBrandLoyalty(brandLoyaltyAddress).getTBAccount(_brandLoyaltyTokenId));
+    }
+
+    /// @notice Gets the brand ID for a given brand loyalty address.
+    /// @param _brandLoyaltyAddress The address of the brand loyalty contract.
+    /// @return brandId The ID of the brand.
+    function getBrandIdFromBrandLoyaltyAddress(address _brandLoyaltyAddress)
+        external
+        view
+        returns (uint256 brandId)
+    {
+        for (uint256 i = 1; i <= brandCounter; i++) {
+            if (brands[i].brandLoyaltyAddress == _brandLoyaltyAddress) {
+                return i;
+            }
+        }
+    }
+
+    /// @notice Gets the brand ID for a given membership ID.
+    /// @param _membershipId The ID of the membership.
+    /// @return brandId The ID of the brand.
+    function getBrandIdFromMembershipId(uint256 _membershipId)
+        external
+        view
+        returns (uint256 brandId)
+    {
+        return memberships[_membershipId].brandId;
+    }
+
+    /// @notice Gets the brand ID for a given brand loyalty TBA address.
+    /// @param _brandLoyaltyTbaAddress The address of the brand loyalty TBA.
+    /// @return brandId The ID of the brand.
+    function getBrandIdFromBrandLoyaltyTbaAddress(address _brandLoyaltyTbaAddress)
+        external
+        view
+        returns (uint256 brandId)
+    {
+        for (uint256 i = 1; i <= brandCounter; i++) {
+            if (
+                brands[i].brandLoyaltyAddress
+                    == ITronicBrandLoyalty(_brandLoyaltyTbaAddress).getBrandLoyaltyAddress()
+            ) {
+                return i;
+            }
+        }
     }
 
     /// @notice Sets the Tronic Loyalty contract address, callable only by the owner.

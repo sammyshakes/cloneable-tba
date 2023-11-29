@@ -33,12 +33,12 @@ contract DeployBrand is Script {
         vm.startBroadcast(adminPrivateKey);
 
         //deploy brand x
-        (uint256 brandXId, address brandLoyaltyXAddress, address tokenXAddress) =
-            tronicMainContract.deployBrand(brandXName, brandXSymbol, erc721URIX, isBound);
+        // (uint256 brandXId, address brandLoyaltyXAddress, address tokenXAddress) =
+        tronicMainContract.deployBrand(brandXName, brandXSymbol, erc721URIX, isBound);
 
         //deploy brand y
-        (uint256 brandYId, address brandLoyaltyYAddress, address tokenYAddress) =
-            tronicMainContract.deployBrand(brandYName, brandYSymbol, erc721URIY, isBound);
+        // (uint256 brandYId, address brandLoyaltyYAddress, address tokenYAddress) =
+        tronicMainContract.deployBrand(brandYName, brandYSymbol, erc721URIY, isBound);
 
         vm.stopBroadcast();
     }
