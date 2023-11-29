@@ -51,7 +51,6 @@ contract TronicBrandLoyalty is ITronicBrandLoyalty, ERC721, Initializable {
     /// @dev The name and symbol can be set using the initialize function.
     /// @dev The constructor is left empty because of the proxy pattern used.
     constructor() ERC721("", "") {
-        //disable initializers
         _disableInitializers();
     }
 

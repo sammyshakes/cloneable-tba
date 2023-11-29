@@ -57,8 +57,10 @@ contract TronicMembership is ITronicMembership, ERC721, Initializable {
 
     /// @notice Constructor initializes the ERC721 with empty name and symbol.
     /// @dev The name and symbol can be set using the initialize function.
-    /// @dev The constructor is left empty because of the proxy pattern used.
-    constructor() ERC721("", "") {}
+    /// @dev The constructor is used to disable the initializers.
+    constructor() ERC721("", "") {
+        _disableInitializers();
+    }
 
     /// @notice Initializes the contract with given parameters.
     /// @param membershipId The ID of the membership.
