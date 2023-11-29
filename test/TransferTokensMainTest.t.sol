@@ -81,7 +81,7 @@ contract TransferTokensMainTest is TronicTestBase {
         //transfer tokens from brand loyalty tba to user1
         vm.startPrank(user1);
         tronicMainContract.transferTokensFromBrandLoyaltyTBA(
-            payable(brandTBAddress), recipient, fungibleTypeIdX1, amount
+            brandIDX, brandTBAddress, recipient, fungibleTypeIdX1, amount
         );
 
         //get the token balance of the token bound account
@@ -98,18 +98,20 @@ contract TransferTokensMainTest is TronicTestBase {
 
         //attempt to transfer tokens from brand loyalty tba to user1 with invalid brandLoyaltyTokenId
         vm.expectRevert("Token does not exist");
-        tronicMainContract.transferTokensFromBrandLoyaltyTBA(brandTBAddress, recipient, 100, amount);
+        tronicMainContract.transferTokensFromBrandLoyaltyTBA(
+            brandIDX, brandTBAddress, recipient, 100, amount
+        );
 
         //attempt to transfer tokens from brand loyalty tba to user1 with invalid amount
         vm.expectRevert("Insufficient balance");
         tronicMainContract.transferTokensFromBrandLoyaltyTBA(
-            brandTBAddress, recipient, brandLoyaltyTokenId, 101
+            brandIDX, brandTBAddress, recipient, brandLoyaltyTokenId, 101
         );
 
         //attempt to transfer tokens from brand loyalty tba to user1 with invalid brandLoyaltyAddress
         vm.expectRevert("Brand loyalty does not exist");
         tronicMainContract.transferTokensFromBrandLoyaltyTBA(
-            address(0xdeadbeef), recipient, brandLoyaltyTokenId, amount
+            brandIDX, address(0xdeadbeef), recipient, brandLoyaltyTokenId, amount
         );
     }
 }

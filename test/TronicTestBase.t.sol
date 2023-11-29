@@ -174,40 +174,37 @@ contract TronicTestBase is Test {
 
         assertEq(tronicMainContract.maxTiersPerMembership(), 10);
 
-        //initialize Tronic Token by adding tronicMainProxy address as admin
-        tronicToken.initialize(tronicAdmin);
+        // NO LONGER NEED TO INITIALIZE CONTRACTS DIRECTLY AS THE INITIALIZERS ARE DISABLED
 
-        //initialize Tronic Member1155 by adding tronicMainProxy address as admin
-        tronicBrandLoyaltyImplementation.initialize(
-            defaultTBAImplementationAddress,
-            registryAddress,
-            "Brand Tronic",
-            "TRONIC",
-            "http://BrandTronicExample.com/",
-            false, // isBound,
-            tronicAdmin
-        );
+        // //initialize Tronic Token by adding tronicMainProxy address as admin
+        // tronicToken.initialize(tronicAdmin);
 
-        //initialize tronicMembership
-        tronicMembership.initialize(
-            "TronicMembership",
-            "TRONIC",
-            "http://TronicMembership.com/",
-            10_000, // maxMintable,
-            true, // isElastic,
-            10,
-            tronicAdmin
-        ); //10 - max tiers
+        // //initialize Tronic Member1155 by adding tronicMainProxy address as admin
+        // tronicBrandLoyaltyImplementation.initialize(
+        //     defaultTBAImplementationAddress,
+        //     registryAddress,
+        //     "Brand Tronic",
+        //     "TRONIC",
+        //     "http://BrandTronicExample.com/",
+        //     false, // isBound,
+        //     tronicAdmin
+        // );
+
+        // //initialize tronicMembership
+        // tronicMembership.initialize(
+        //     "TronicMembership",
+        //     "TRONIC",
+        //     "http://TronicMembership.com/",
+        //     10_000, // maxMintable,
+        //     true, // isElastic,
+        //     10,
+        //     tronicAdmin
+        // ); //10 - max tiers
 
         vm.stopPrank();
 
         // deploy membership contracts
         vm.startPrank(tronicAdmin);
-
-        //set admin
-        tronicMembership.addAdmin(address(tronicMainProxy));
-        tronicToken.addAdmin(address(tronicMainProxy));
-        tronicBrandLoyaltyImplementation.addAdmin(address(tronicMainProxy));
 
         //deploy brand loyalty contracts
         (brandIDX, brandLoyaltyAddressX, tokenAddressX) =
@@ -232,8 +229,6 @@ contract TronicTestBase is Test {
             isOpen: false,
             tierURI: tier2XURI
         });
-
-        tronicMembership.createMembershipTiers(tiers);
 
         (membershipIDX, membershipAddressX) = tronicMainContract.deployMembership(
             brandIDX,

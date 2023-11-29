@@ -104,6 +104,15 @@ contract TronicMain is Initializable, UUPSUpgradeable {
     /// @param tokenId The ID of the newly created token type.
     event FungibleTokenTypeCreated(uint256 indexed brandId, uint256 indexed tokenId);
 
+    /// @notice The event emitted when a non-fungible token type is created.
+    /// @param brandId The ID of the brand.
+    /// @param tokenId The ID of the newly created token type.
+    /// @param maxMintable The maximum number of tokens that can be minted.
+    /// @param uri The URI of the token type.
+    event NonFungibleTokenTypeCreated(
+        uint256 indexed brandId, uint256 indexed tokenId, uint256 maxMintable, string uri
+    );
+
     address public owner;
     address public tronicAdmin;
     address payable public tbaAccountImplementation;
@@ -329,46 +338,39 @@ contract TronicMain is Initializable, UUPSUpgradeable {
     /// @notice Creates a new ERC1155 fungible token type for a membership.
     /// @param maxSupply The maximum supply of the token type.
     /// @param uri The URI for the token type.
-    /// @param membershipId The ID of the membership to create the token type for.
+    /// @param brandId The ID of the brand to create the token type for.
     /// @return typeId The ID of the newly created token type.
-    //NOTE: This function should use brandId insead of membershipId, this is just for first iteration
-    function createFungibleTokenType(uint256 maxSupply, string memory uri, uint256 membershipId)
+    function createFungibleTokenType(uint256 maxSupply, string memory uri, uint256 brandId)
         external
         onlyAdmin
         returns (uint256 typeId)
     {
-        // get token address from membership
-        MembershipInfo memory membership = memberships[membershipId];
-        require(membership.membershipAddress != address(0), "Membership does not exist");
+        // get token address from brand info
+        address brandTokenAddress = brands[brandId].tokenAddress;
+        require(brandTokenAddress != address(0), "Brand does not exist");
 
-        // get token address from brand
-        BrandInfo memory brand = brands[membership.brandId];
-        require(brand.brandLoyaltyAddress != address(0), "Brand does not exist");
+        typeId = ITronicToken(brandTokenAddress).createFungibleType(uint64(maxSupply), uri);
 
-        typeId = ITronicToken(brand.tokenAddress).createFungibleType(uint64(maxSupply), uri);
-
-        emit FungibleTokenTypeCreated(membership.brandId, typeId);
+        emit FungibleTokenTypeCreated(brandId, typeId);
     }
 
     /// @notice Creates a new ERC1155 non-fungible token type for a membership.
     /// @param baseUri The URI for the token type.
     /// @param maxMintable The maximum number of tokens that can be minted.
-    /// @param membershipId The ID of the membership to create the token type for.
+    /// @param brandId The ID of the brand to create the token type for.
     /// @return nftTypeID The ID of the newly created token type.
-    //NOTE: This function should use brandId insead of membershipId, this is just for first iteration
-    function createNonFungibleTokenType(
-        string memory baseUri,
-        uint64 maxMintable,
-        uint256 membershipId
-    ) external onlyAdmin returns (uint256 nftTypeID) {
-        MembershipInfo memory membership = memberships[membershipId];
-        require(membership.membershipAddress != address(0), "Membership does not exist");
+    function createNonFungibleTokenType(string memory baseUri, uint64 maxMintable, uint256 brandId)
+        external
+        onlyAdmin
+        returns (uint256 nftTypeID)
+    {
+        // get token address from brand info
+        address brandTokenAddress = brands[brandId].tokenAddress;
+        require(brandTokenAddress != address(0), "Brand does not exist");
 
-        // get token address from brand
-        BrandInfo memory brand = brands[membership.brandId];
-        require(brand.brandLoyaltyAddress != address(0), "Brand does not exist");
+        nftTypeID = ITronicToken(brandTokenAddress).createNFTType(baseUri, maxMintable);
 
-        nftTypeID = ITronicToken(brand.tokenAddress).createNFTType(baseUri, maxMintable);
+        emit NonFungibleTokenTypeCreated(brandId, nftTypeID, maxMintable, baseUri);
     }
 
     /// @notice Mints a new Brand Loyalty token.
@@ -641,8 +643,8 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         uint256 _amount
     ) external {
         // get brand loyalty address from brand id
-        address brandLoyaltyAddress = brands[_brandId].brandLoyaltyAddress;
-        require(brandLoyaltyAddress != address(0), "Brand does not exist");
+        address brandTokenAddress = brands[_brandId].tokenAddress;
+        require(brandTokenAddress != address(0), "Brand does not exist");
 
         // get BrandLoaylty TBA
         IERC6551Account brandLoyaltyTBA = IERC6551Account(payable(_brandLoyaltyTbaAddress));
@@ -669,7 +671,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         //     "executeCall(address,uint256,bytes)", _brandLoyaltyTbaAddress, 0, tokenTransferCall
         // );
 
-        brandLoyaltyTBA.executeCall(brandLoyaltyAddress, 0, tokenTransferCall);
+        brandLoyaltyTBA.executeCall(brandTokenAddress, 0, tokenTransferCall);
     }
 
     /// @notice Gets the address of the tokenbound account for a given brand loyalty token.
