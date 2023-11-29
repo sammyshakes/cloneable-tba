@@ -208,7 +208,12 @@ contract TronicMain is Initializable, UUPSUpgradeable {
 
         // Deploy the membership's contracts
         membershipAddress = _deployMembership(
-            membershipName, membershipSymbol, membershipBaseURI, maxMintable, isElastic
+            membershipId,
+            membershipName,
+            membershipSymbol,
+            membershipBaseURI,
+            maxMintable,
+            isElastic
         );
 
         // Assign membership id and associate the deployed contracts with the membership
@@ -288,6 +293,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
     /// @notice Clones the Tronic Membership (ERC721) implementation and initializes it.
     /// @return membershipAddress The address of the newly cloned Membership contract.
     function _deployMembership(
+        uint256 membershipId,
         string calldata name,
         string calldata symbol,
         string calldata baseURI,
@@ -296,7 +302,14 @@ contract TronicMain is Initializable, UUPSUpgradeable {
     ) private returns (address membershipAddress) {
         membershipAddress = Clones.clone(address(tronicMembership));
         ITronicMembership(membershipAddress).initialize(
-            name, symbol, baseURI, maxMintable, isElastic, maxTiersPerMembership, tronicAdmin
+            membershipId,
+            name,
+            symbol,
+            baseURI,
+            maxMintable,
+            isElastic,
+            maxTiersPerMembership,
+            tronicAdmin
         );
     }
 
@@ -656,7 +669,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         //     "executeCall(address,uint256,bytes)", _brandLoyaltyTbaAddress, 0, tokenTransferCall
         // );
 
-        brandLoyaltyTBA.executeCall(_brandLoyaltyTbaAddress, 0, tokenTransferCall);
+        brandLoyaltyTBA.executeCall(brandLoyaltyAddress, 0, tokenTransferCall);
     }
 
     /// @notice Gets the address of the tokenbound account for a given brand loyalty token.
@@ -701,24 +714,6 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         returns (uint256 brandId)
     {
         return memberships[_membershipId].brandId;
-    }
-
-    /// @notice Gets the brand ID for a given brand loyalty TBA address.
-    /// @param _brandLoyaltyTbaAddress The address of the brand loyalty TBA.
-    /// @return brandId The ID of the brand.
-    function getBrandIdFromBrandLoyaltyTbaAddress(address _brandLoyaltyTbaAddress)
-        external
-        view
-        returns (uint256 brandId)
-    {
-        for (uint256 i = 1; i <= brandCounter; i++) {
-            if (
-                brands[i].brandLoyaltyAddress
-                    == ITronicBrandLoyalty(_brandLoyaltyTbaAddress).getBrandLoyaltyAddress()
-            ) {
-                return i;
-            }
-        }
     }
 
     /// @notice Sets the Tronic Loyalty contract address, callable only by the owner.

@@ -9,6 +9,8 @@ import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 /// @title TronicMembership
 /// @notice This contract represents the membership token for the Tronic ecosystem.
 contract TronicMembership is ITronicMembership, ERC721, Initializable {
+    uint256 public MEMBERSHIP_ID;
+
     string private _name;
     string private _symbol;
     string private _baseURI_;
@@ -59,6 +61,7 @@ contract TronicMembership is ITronicMembership, ERC721, Initializable {
     constructor() ERC721("", "") {}
 
     /// @notice Initializes the contract with given parameters.
+    /// @param membershipId The ID of the membership.
     /// @param name_ Name of the token.
     /// @param symbol_ Symbol of the token.
     /// @param uri Base URI of the token.
@@ -68,6 +71,7 @@ contract TronicMembership is ITronicMembership, ERC721, Initializable {
     /// @param tronicAdmin Address of the initial admin.
     /// @dev This function is called by the tronicMain contract.
     function initialize(
+        uint256 membershipId,
         string memory name_,
         string memory symbol_,
         string memory uri,
@@ -85,6 +89,7 @@ contract TronicMembership is ITronicMembership, ERC721, Initializable {
         _maxTiers = _maxMembershipTiers;
         maxMintable = _maxMintable;
         isElastic = _isElastic;
+        MEMBERSHIP_ID = membershipId;
     }
 
     /// @notice Mints a new token.

@@ -23,6 +23,7 @@ interface ITronicMembership {
     }
 
     function initialize(
+        uint256 membershipId,
         string memory name_,
         string memory symbol_,
         string memory uri,
@@ -56,4 +57,5 @@ interface ITronicMembership {
     function setMembershipToken(uint256 tokenId, uint8 tierIndex) external;
     function getMembershipToken(uint256 tokenId) external view returns (MembershipToken memory);
     function getTierIndexByTierId(string memory tierId) external view returns (uint8);
+    function MEMBERSHIP_ID() external view returns (uint256);
 }
