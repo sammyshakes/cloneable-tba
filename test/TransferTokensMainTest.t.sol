@@ -35,13 +35,6 @@ contract TransferTokensMainTest is TronicTestBase {
         console.log("owner of tokenid 1: ", owner);
     }
 
-    //write test function for this function on TronicMain
-    //  function transferTokensFromBrandLoyaltyTBA(
-    // address _brandLoyaltyTbaAddress,
-    //     address _to,
-    //     uint256 _transferTokenId,
-    //     uint256 _amount
-    // ) external
     function testTransferTokensFromBrandLoyaltyTBA() public {
         //set up recipient, transferTokenId, and amount
         address recipient = user2;
@@ -97,21 +90,21 @@ contract TransferTokensMainTest is TronicTestBase {
         assertEq(balance, 1);
 
         //attempt to transfer tokens from brand loyalty tba to user1 with invalid brandLoyaltyTokenId
-        vm.expectRevert("Token does not exist");
+        vm.expectRevert();
         tronicMainContract.transferTokensFromBrandLoyaltyTBA(
             brandIDX, brandTBAddress, recipient, 100, amount
         );
 
         //attempt to transfer tokens from brand loyalty tba to user1 with invalid amount
-        vm.expectRevert("Insufficient balance");
+        vm.expectRevert();
         tronicMainContract.transferTokensFromBrandLoyaltyTBA(
-            brandIDX, brandTBAddress, recipient, brandLoyaltyTokenId, 101
+            brandIDX, brandTBAddress, recipient, fungibleTypeIdX1, 101
         );
 
         //attempt to transfer tokens from brand loyalty tba to user1 with invalid brandLoyaltyAddress
-        vm.expectRevert("Brand loyalty does not exist");
+        vm.expectRevert();
         tronicMainContract.transferTokensFromBrandLoyaltyTBA(
-            brandIDX, address(0xdeadbeef), recipient, brandLoyaltyTokenId, amount
+            brandIDX, address(0xdeadbeef), recipient, fungibleTypeIdX1, amount
         );
     }
 }

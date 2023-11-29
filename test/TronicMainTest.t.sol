@@ -44,11 +44,11 @@ contract TronicMainTest is TronicTestBase {
         // Admin creates a fungible token type for membershipX and membershipY
         vm.startPrank(tronicAdmin);
         uint256 fungibleIDX =
-            tronicMainContract.createFungibleTokenType(initialMaxSupply, initialUriX, membershipIDX);
+            tronicMainContract.createFungibleTokenType(brandIDX, initialMaxSupply, initialUriX);
 
         //create a new fungible token type for membershipY
         uint256 fungibleIDY =
-            tronicMainContract.createFungibleTokenType(initialMaxSupply, initialUriY, membershipIDY);
+            tronicMainContract.createFungibleTokenType(brandIDY, initialMaxSupply, initialUriY);
 
         vm.stopPrank();
 
@@ -94,11 +94,11 @@ contract TronicMainTest is TronicTestBase {
         // Admin creates a non-fungible token type for membershipX and membershipY
         vm.startPrank(tronicAdmin);
         uint256 nonFungibleIDX =
-            tronicMainContract.createNonFungibleTokenType(initialUriX, maxMintable, membershipIDX);
+            tronicMainContract.createNonFungibleTokenType(brandIDX, initialUriX, maxMintable);
 
         //create a new non-fungible token type for membershipY
         uint256 nonFungibleIDY =
-            tronicMainContract.createNonFungibleTokenType(initialUriY, maxMintable, membershipIDY);
+            tronicMainContract.createNonFungibleTokenType(brandIDY, initialUriY, maxMintable);
 
         vm.stopPrank();
 
@@ -236,16 +236,16 @@ contract TronicMainTest is TronicTestBase {
 
         // create a fungible token type
         vm.startPrank(tronicAdmin);
-        vm.expectRevert("Membership does not exist");
-        tronicMainContract.createFungibleTokenType(initialMaxSupply, initialUriX, 100);
+        vm.expectRevert("Brand does not exist");
+        tronicMainContract.createFungibleTokenType(100, initialMaxSupply, initialUriX);
 
         //now test nonfungible
         string memory initialUriY = "http://exampleY.com/token/";
         uint64 maxMintable = 1000;
 
         // create a non-fungible token type
-        vm.expectRevert("Membership does not exist");
-        tronicMainContract.createNonFungibleTokenType(initialUriY, maxMintable, 100);
+        vm.expectRevert("Brand does not exist");
+        tronicMainContract.createNonFungibleTokenType(100, initialUriY, maxMintable);
     }
 
     //test mintMembership function from tronic main contract

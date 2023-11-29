@@ -336,11 +336,11 @@ contract TronicMain is Initializable, UUPSUpgradeable {
     }
 
     /// @notice Creates a new ERC1155 fungible token type for a membership.
+    /// @param brandId The ID of the brand to create the token type for.
     /// @param maxSupply The maximum supply of the token type.
     /// @param uri The URI for the token type.
-    /// @param brandId The ID of the brand to create the token type for.
     /// @return typeId The ID of the newly created token type.
-    function createFungibleTokenType(uint256 maxSupply, string memory uri, uint256 brandId)
+    function createFungibleTokenType(uint256 brandId, uint256 maxSupply, string memory uri)
         external
         onlyAdmin
         returns (uint256 typeId)
@@ -355,11 +355,11 @@ contract TronicMain is Initializable, UUPSUpgradeable {
     }
 
     /// @notice Creates a new ERC1155 non-fungible token type for a membership.
+    /// @param brandId The ID of the brand to create the token type for.
     /// @param baseUri The URI for the token type.
     /// @param maxMintable The maximum number of tokens that can be minted.
-    /// @param brandId The ID of the brand to create the token type for.
     /// @return nftTypeID The ID of the newly created token type.
-    function createNonFungibleTokenType(string memory baseUri, uint64 maxMintable, uint256 brandId)
+    function createNonFungibleTokenType(uint256 brandId, string memory baseUri, uint64 maxMintable)
         external
         onlyAdmin
         returns (uint256 nftTypeID)

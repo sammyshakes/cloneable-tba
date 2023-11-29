@@ -254,16 +254,16 @@ contract TronicTestBase is Test {
         uint64 initialMaxSupply = 100_000;
 
         fungibleTypeIdX1 =
-            tronicMainContract.createFungibleTokenType(initialMaxSupply, initialUriX, membershipIDX);
+            tronicMainContract.createFungibleTokenType(brandIDX, initialMaxSupply, initialUriX);
 
         fungibleTypeIdY1 =
-            tronicMainContract.createFungibleTokenType(initialMaxSupply, initialUriY, membershipIDY);
+            tronicMainContract.createFungibleTokenType(brandIDY, initialMaxSupply, initialUriY);
 
         nonFungibleTypeIdX1 =
-            tronicMainContract.createNonFungibleTokenType(initialUriX, 1_000_000, membershipIDX);
+            tronicMainContract.createNonFungibleTokenType(brandIDX, initialUriX, 1_000_000);
 
         nonFungibleTypeIdY1 =
-            tronicMainContract.createNonFungibleTokenType(initialUriY, 25_000, membershipIDY);
+            tronicMainContract.createNonFungibleTokenType(brandIDY, initialUriY, 25_000);
 
         ///mint brand loyalty nfts
 
