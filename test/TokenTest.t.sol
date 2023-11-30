@@ -41,7 +41,9 @@ contract TokenTest is TronicTestBase {
         brandXToken.mintNFT(typeId2, user1);
 
         //get tokeninfo to ensure starting tokenid is correct
-        assertEq(brandXToken.getNFTokenInfo(typeId2).startingTokenId, 1_000_000 + maxMintable);
+        assertEq(
+            brandXToken.getNFTokenInfo(typeId2).startingTokenId, 1_000_000 + 100_000 + maxMintable
+        );
 
         //create another type and verify starting tokenid
         uint256 typeId3 = brandXToken.createNFTType(baseURI, 100_000 + 10_000 + maxMintable);

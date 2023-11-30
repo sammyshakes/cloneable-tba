@@ -175,9 +175,6 @@ contract MembershipTest is TronicTestBase {
 
     //test admin functionality of tronicMembership
     function testAdmin() public {
-        //check admin of tronicMembership
-        assertTrue(tronicMembership.isAdmin(tronicAdmin));
-
         //check admin of membershipX
         assertTrue(brandXMembership.isAdmin(tronicAdmin));
 
@@ -186,27 +183,27 @@ contract MembershipTest is TronicTestBase {
 
         // set admin of tronicMembership to user1
         vm.prank(tronicAdmin);
-        tronicMembership.addAdmin(user1);
+        brandXMembership.addAdmin(user1);
 
         //check admin of tronicMembership
-        assertTrue(tronicMembership.isAdmin(user1));
+        assertTrue(brandXMembership.isAdmin(user1));
 
         // remove admin of tronicMembership
         vm.prank(tronicAdmin);
-        tronicMembership.removeAdmin(user1);
+        brandXMembership.removeAdmin(user1);
 
         //check admin of tronicMembership
-        assertTrue(!tronicMembership.isAdmin(user1));
+        assertTrue(!brandXMembership.isAdmin(user1));
     }
 
     //test updateImplementation on tronicMembership
     function testUpdateImplementation() public {
         //update implementation address
         vm.prank(tronicAdmin);
-        tronicBrandLoyaltyImplementation.updateImplementation(payable(address(0xdeadbeef)));
+        brandLoyaltyX.updateImplementation(payable(address(0xdeadbeef)));
 
         //get new implementation address
-        address newImplementation = tronicBrandLoyaltyImplementation.accountImplementation();
+        address newImplementation = brandLoyaltyX.accountImplementation();
 
         //verify that implementation address has changed
         assertEq(newImplementation, address(0xdeadbeef));
@@ -215,39 +212,39 @@ contract MembershipTest is TronicTestBase {
     //test if maxsupply is elastic
     function testMaxSupply() public {
         //get maxSupply
-        uint256 maxSupply = tronicMembership.maxSupply();
+        uint256 maxSupply = brandXMembership.maxSupply();
         //get totalSupply
-        uint256 totalSupply = tronicMembership.totalSupply();
+        uint256 totalSupply = brandXMembership.totalSupply();
 
-        //mint token to user1
+        //mint token to user3
         vm.prank(tronicAdmin);
-        tronicMembership.mint(user1, 0);
+        brandXMembership.mint(user3, 0);
 
         //verify that only totalSupply has increased
-        assertEq(tronicMembership.maxSupply(), maxSupply);
-        assertEq(tronicMembership.totalSupply(), totalSupply + 1);
+        assertEq(brandXMembership.maxSupply(), maxSupply);
+        assertEq(brandXMembership.totalSupply(), totalSupply + 1);
     }
 
     //test minting more than maxSupply
     function testMintingMoreThanMaxSupply() public {
         //get totalSupply
-        uint256 totalSupply = tronicMembership.totalSupply();
+        uint256 totalSupply = brandXMembership.totalSupply();
 
         //try to set max supply to totalSupply
         vm.startPrank(tronicAdmin);
         vm.expectRevert();
-        tronicMembership.setMaxMintable(totalSupply);
+        brandXMembership.setMaxMintable(totalSupply);
 
         // set maxsupply to totalSupply + 1
         vm.startPrank(tronicAdmin);
-        tronicMembership.setMaxMintable(totalSupply + 1);
+        brandXMembership.setMaxMintable(totalSupply + 1);
 
-        // mint token to user1
-        tronicMembership.mint(user1, 1);
+        // mint token to user3
+        brandXMembership.mint(user3, 1);
 
-        // try mint token to user2
+        // try mint token to user4
         vm.expectRevert("Max supply reached");
-        tronicMembership.mint(user2, 1);
+        brandXMembership.mint(user4, 1);
 
         vm.stopPrank();
     }
