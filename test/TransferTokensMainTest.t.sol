@@ -74,7 +74,7 @@ contract TransferTokensMainTest is TronicTestBase {
         //transfer tokens from brand loyalty tba to user1
         vm.startPrank(user1);
         tronicMainContract.transferTokensFromBrandLoyaltyTBA(
-            brandIDX, brandTBAddress, recipient, fungibleTypeIdX1, amount
+            brandIDX, brandTBAddress, fungibleTypeIdX1, recipient, amount
         );
 
         //get the token balance of the token bound account
@@ -92,19 +92,28 @@ contract TransferTokensMainTest is TronicTestBase {
         //attempt to transfer tokens from brand loyalty tba to user1 with invalid brandLoyaltyTokenId
         vm.expectRevert();
         tronicMainContract.transferTokensFromBrandLoyaltyTBA(
-            brandIDX, brandTBAddress, recipient, 100, amount
+            brandIDX, brandTBAddress, 100, recipient, amount
         );
 
         //attempt to transfer tokens from brand loyalty tba to user1 with invalid amount
         vm.expectRevert();
         tronicMainContract.transferTokensFromBrandLoyaltyTBA(
-            brandIDX, brandTBAddress, recipient, fungibleTypeIdX1, 101
+            brandIDX, brandTBAddress, fungibleTypeIdX1, recipient, 101
         );
 
         //attempt to transfer tokens from brand loyalty tba to user1 with invalid brandLoyaltyAddress
         vm.expectRevert();
         tronicMainContract.transferTokensFromBrandLoyaltyTBA(
-            brandIDX, address(0xdeadbeef), recipient, fungibleTypeIdX1, amount
+            brandIDX, address(0xdeadbeef), fungibleTypeIdX1, recipient, amount
         );
     }
+
+    //test function for
+    // function transferMembershipFromBrandLoyaltyTBA(
+    //     uint256 _loyaltyTokenId,
+    //     uint256 _membershipId,
+    //     uint256 _membershipTokenId,
+    //     address _to
+    // ) external
+    function testTransferMembershipFromBrandLoyaltyTBA() public {}
 }
