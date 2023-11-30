@@ -1,5 +1,5 @@
 # TronicMain
-[Git Source](https://github.com/sammyshakes/cloneable-tba/blob/69000936679381ac7b4b9436ba05974e252ee19a/src/TronicMain.sol)
+[Git Source](https://github.com/sammyshakes/cloneable-tba/blob/41cffe407c00f76a272c977491475b582628fb23/src/TronicMain.sol)
 
 **Inherits:**
 Initializable, UUPSUpgradeable
@@ -37,6 +37,13 @@ address payable public tbaAccountImplementation;
 
 ```solidity
 uint8 public maxTiersPerMembership;
+```
+
+
+### nftTypeStartId
+
+```solidity
+uint64 public nftTypeStartId;
 ```
 
 
@@ -104,6 +111,13 @@ ITronicToken public tronicToken;
 
 
 ## Functions
+### constructor
+
+
+```solidity
+constructor();
+```
+
 ### initialize
 
 Initializes the TronicMain contract.
@@ -117,7 +131,8 @@ function initialize(
     address _tronicToken,
     address _registry,
     address _tbaImplementation,
-    uint8 _maxTiersPerMembership
+    uint8 _maxTiersPerMembership,
+    uint64 _nftTypeStartId
 ) public initializer;
 ```
 **Parameters**
@@ -131,6 +146,7 @@ function initialize(
 |`_registry`|`address`|The address of the registry contract.|
 |`_tbaImplementation`|`address`|The address of the tokenbound account implementation.|
 |`_maxTiersPerMembership`|`uint8`|The maximum number of tiers per membership.|
+|`_nftTypeStartId`|`uint64`|The starting ID for non-fungible token types.|
 
 
 ### onlyOwner
@@ -295,6 +311,7 @@ Clones the Tronic Membership (ERC721) implementation and initializes it.
 
 ```solidity
 function _deployMembership(
+    uint256 membershipId,
     string calldata name,
     string calldata symbol,
     string calldata baseURI,
@@ -345,7 +362,7 @@ Creates a new ERC1155 fungible token type for a membership.
 
 
 ```solidity
-function createFungibleTokenType(uint256 maxSupply, string memory uri, uint256 membershipId)
+function createFungibleTokenType(uint256 brandId, uint256 maxSupply, string memory uri)
     external
     onlyAdmin
     returns (uint256 typeId);
@@ -354,9 +371,9 @@ function createFungibleTokenType(uint256 maxSupply, string memory uri, uint256 m
 
 |Name|Type|Description|
 |----|----|-----------|
+|`brandId`|`uint256`|The ID of the brand to create the token type for.|
 |`maxSupply`|`uint256`|The maximum supply of the token type.|
 |`uri`|`string`|The URI for the token type.|
-|`membershipId`|`uint256`|The ID of the membership to create the token type for.|
 
 **Returns**
 
@@ -371,7 +388,7 @@ Creates a new ERC1155 non-fungible token type for a membership.
 
 
 ```solidity
-function createNonFungibleTokenType(string memory baseUri, uint64 maxMintable, uint256 membershipId)
+function createNonFungibleTokenType(uint256 brandId, string memory baseUri, uint64 maxMintable)
     external
     onlyAdmin
     returns (uint256 nftTypeID);
@@ -380,9 +397,9 @@ function createNonFungibleTokenType(string memory baseUri, uint64 maxMintable, u
 
 |Name|Type|Description|
 |----|----|-----------|
+|`brandId`|`uint256`|The ID of the brand to create the token type for.|
 |`baseUri`|`string`|The URI for the token type.|
 |`maxMintable`|`uint64`|The maximum number of tokens that can be minted.|
-|`membershipId`|`uint256`|The ID of the membership to create the token type for.|
 
 **Returns**
 
@@ -634,11 +651,11 @@ function mintNonFungibleToken(
 |`_amount`|`uint256`|The amount of NFTs to mint.|
 
 
-### transferTokensFromMembershipTBA
+### transferMembershipFromBrandLoyaltyTBA
 
 Processes multiple minting operations for both ERC1155 and ERC721 tokens on behalf of memberships.
 
-transfers tokens from a membership TBA to a specified address
+transfers Membership token from a brand loyalty TBA to a specified address
 
 *Requires that all input arrays have matching lengths.
 For ERC721 minting, the inner arrays of _tokenTypes and _amounts should have a length of 1.*
@@ -647,18 +664,42 @@ For ERC721 minting, the inner arrays of _tokenTypes and _amounts should have a l
 
 *array indexes: _amounts[membershipId][recipient][contractType][amounts]*
 
-*This contract address must be granted permissions to transfer tokens from the membership TBA*
+*This contract address must be granted permissions to transfer tokens from the Brand Loyalty token TBA*
 
-*The membership TBA must be owned by the Tronic tokenId TBA*
+*The membership token must be owned by the Brand Loyalty token TBA*
+
+
+```solidity
+function transferMembershipFromBrandLoyaltyTBA(
+    uint256 _loyaltyTokenId,
+    uint256 _membershipId,
+    uint256 _membershipTokenId,
+    address _to
+) external;
+```
+**Parameters**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`_loyaltyTokenId`|`uint256`|The ID of the brand loyalty token that owns the TBA|
+|`_membershipId`|`uint256`|The membership ID of the membership token to be transferred|
+|`_membershipTokenId`|`uint256`|The tokenID of the membership token to be transferred|
+|`_to`|`address`|The address to transfer the membership to|
+
+
+### transferTokensFromBrandLoyaltyTBA
+
+transfers tokens from a Brand Loyalty TBA to a specified address
+
+*This contract address must be granted permissions to transfer tokens from the Brand Loyalty TBA*
 
 *This function is only callable by the tronic admin or an authorized account*
 
 
 ```solidity
-function transferTokensFromMembershipTBA(
-    uint256 _tronicTokenId,
+function transferTokensFromBrandLoyaltyTBA(
     uint256 _brandId,
-    uint256 _brandLoyaltyTokenId,
+    address _brandLoyaltyTbaAddress,
     address _to,
     uint256 _transferTokenId,
     uint256 _amount
@@ -668,68 +709,84 @@ function transferTokensFromMembershipTBA(
 
 |Name|Type|Description|
 |----|----|-----------|
-|`_tronicTokenId`|`uint256`|The ID of the tronic token that owns the Tronic TBA|
-|`_brandId`|`uint256`|The ID of the brand that issued the membership TBA|
-|`_brandLoyaltyTokenId`|`uint256`|The ID of the membership TBA|
+|`_brandId`|`uint256`|The ID of the brand|
+|`_brandLoyaltyTbaAddress`|`address`|The address of the Brand Loyalty TBA|
 |`_to`|`address`|The address to transfer the tokens to|
 |`_transferTokenId`|`uint256`|The ID of the token to transfer|
 |`_amount`|`uint256`|The amount of tokens to transfer|
 
 
-### transferTokensFromTronicTBA
+### getBrandLoyaltyTBA
 
-transfers tokens from a tronic TBA to a specified address
-
-*This contract address must be granted permissions to transfer tokens from the Tronic token TBA*
-
-*The tronic TBA must be owned by the Tronic tokenId TBA*
-
-*This function is only callable by the tronic admin or an authorized account*
+Gets the address of the tokenbound account for a given brand loyalty token.
 
 
 ```solidity
-function transferTokensFromTronicTBA(
-    uint256 _tronicTokenId,
-    uint256 _transferTokenId,
-    uint256 _amount,
-    address _to
-) external;
+function getBrandLoyaltyTBA(uint256 _brandId, uint256 _brandLoyaltyTokenId)
+    external
+    view
+    returns (address payable brandLoyaltyTbaAddress);
 ```
 **Parameters**
 
 |Name|Type|Description|
 |----|----|-----------|
-|`_tronicTokenId`|`uint256`|The ID of the tronic token that owns the Tronic TBA|
-|`_transferTokenId`|`uint256`|The ID of the achievement token to transfer|
-|`_amount`|`uint256`|The amount of tokens to transfer|
-|`_to`|`address`|The address to transfer the tokens to|
+|`_brandId`|`uint256`|The ID of the brand.|
+|`_brandLoyaltyTokenId`|`uint256`|The ID of the brand loyalty token.|
+
+**Returns**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`brandLoyaltyTbaAddress`|`address payable`|The address of the tokenbound account.|
 
 
-### transferMembershipFromTronicTBA
+### getBrandIdFromBrandLoyaltyAddress
 
-transfers brand loyalty token from a tronic TBA to a specified address
-
-*This contract address must be granted permissions to transfer tokens from the Tronic token TBA*
-
-*The membership token TBA must be owned by the Tronic token TBA*
+Gets the brand ID for a given brand loyalty address.
 
 
 ```solidity
-function transferMembershipFromTronicTBA(
-    uint256 _tronicTokenId,
-    uint256 _brandId,
-    uint256 _loyaltyTokenId,
-    address _to
-) external;
+function getBrandIdFromBrandLoyaltyAddress(address _brandLoyaltyAddress)
+    external
+    view
+    returns (uint256 brandId);
 ```
 **Parameters**
 
 |Name|Type|Description|
 |----|----|-----------|
-|`_tronicTokenId`|`uint256`|The ID of the tronic token that owns the Tronic TBA|
-|`_brandId`|`uint256`|The ID of the membership that issued the membership TBA|
-|`_loyaltyTokenId`|`uint256`|The ID of the membership TBA|
-|`_to`|`address`|The address to transfer the membership to|
+|`_brandLoyaltyAddress`|`address`|The address of the brand loyalty contract.|
+
+**Returns**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`brandId`|`uint256`|The ID of the brand.|
+
+
+### getBrandIdFromMembershipId
+
+Gets the brand ID for a given membership ID.
+
+
+```solidity
+function getBrandIdFromMembershipId(uint256 _membershipId)
+    external
+    view
+    returns (uint256 brandId);
+```
+**Parameters**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`_membershipId`|`uint256`|The ID of the membership.|
+
+**Returns**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`brandId`|`uint256`|The ID of the brand.|
 
 
 ### setLoyaltyTokenImplementation
@@ -948,6 +1005,16 @@ The event emitted when a fungible token type is created.
 
 ```solidity
 event FungibleTokenTypeCreated(uint256 indexed brandId, uint256 indexed tokenId);
+```
+
+### NonFungibleTokenTypeCreated
+The event emitted when a non-fungible token type is created.
+
+
+```solidity
+event NonFungibleTokenTypeCreated(
+    uint256 indexed brandId, uint256 indexed tokenId, uint256 maxMintable, string uri
+);
 ```
 
 ## Structs

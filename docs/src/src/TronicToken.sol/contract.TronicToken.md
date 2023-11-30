@@ -1,5 +1,5 @@
 # TronicToken
-[Git Source](https://github.com/sammyshakes/cloneable-tba/blob/69000936679381ac7b4b9436ba05974e252ee19a/src/TronicToken.sol)
+[Git Source](https://github.com/sammyshakes/cloneable-tba/blob/41cffe407c00f76a272c977491475b582628fb23/src/TronicToken.sol)
 
 **Inherits:**
 [ITronicToken](/src/interfaces/ITronicToken.sol/interface.ITronicToken.md), ERC1155, Initializable
@@ -19,10 +19,17 @@ uint32 private _tokenTypeCounter;
 ```
 
 
+### nftTypeStartId
+
+```solidity
+uint64 public nftTypeStartId;
+```
+
+
 ### _nextNFTTypeStartId
 
 ```solidity
-uint64 private _nextNFTTypeStartId = 100_000;
+uint64 private _nextNFTTypeStartId;
 ```
 
 
@@ -94,6 +101,8 @@ mapping(address => bool) private _admins;
 
 Constructor initializes ERC1155 with an empty URI.
 
+*The constructor is used to disbale the initializers.*
+
 
 ```solidity
 constructor() ERC1155("");
@@ -125,13 +134,14 @@ Initializes the contract with tronic Admin address.
 
 
 ```solidity
-function initialize(address _tronicAdmin) external initializer;
+function initialize(address _tronicAdmin, uint64 _nftTypeStartId) external initializer;
 ```
 **Parameters**
 
 |Name|Type|Description|
 |----|----|-----------|
 |`_tronicAdmin`|`address`|Address of the Tronic admin.|
+|`_nftTypeStartId`|`uint64`|The starting ID for non-fungible tokens (NFTs).|
 
 
 ### getFungibleTokenInfo
@@ -490,7 +500,7 @@ Returns the URI for a specific token ID.
 
 
 ```solidity
-function uri(uint256 tokenId) public view override returns (string memory);
+function uri(uint256 tokenId) public view override returns (string memory tokenUri);
 ```
 **Parameters**
 
@@ -502,7 +512,7 @@ function uri(uint256 tokenId) public view override returns (string memory);
 
 |Name|Type|Description|
 |----|----|-----------|
-|`<none>`|`string`|The URI of the token.|
+|`tokenUri`|`string`|The URI of the token.|
 
 
 ### safeTransferFrom

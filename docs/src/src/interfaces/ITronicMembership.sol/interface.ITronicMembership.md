@@ -1,5 +1,5 @@
 # ITronicMembership
-[Git Source](https://github.com/sammyshakes/cloneable-tba/blob/69000936679381ac7b4b9436ba05974e252ee19a/src/interfaces/ITronicMembership.sol)
+[Git Source](https://github.com/sammyshakes/cloneable-tba/blob/41cffe407c00f76a272c977491475b582628fb23/src/interfaces/ITronicMembership.sol)
 
 
 ## Functions
@@ -8,6 +8,7 @@
 
 ```solidity
 function initialize(
+    uint256 membershipId,
     string memory name_,
     string memory symbol_,
     string memory uri,
@@ -90,6 +91,13 @@ function getMembershipToken(uint256 tokenId) external view returns (MembershipTo
 
 ```solidity
 function getTierIndexByTierId(string memory tierId) external view returns (uint8);
+```
+
+### MEMBERSHIP_ID
+
+
+```solidity
+function MEMBERSHIP_ID() external view returns (uint256);
 ```
 
 ## Structs
