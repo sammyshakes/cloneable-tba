@@ -108,19 +108,10 @@ contract TransferTokensMainTest is TronicTestBase {
         );
     }
 
-    // //test function for
-    //  function transferMembershipFromBrandLoyaltyTBA(
-    //     uint256 _brandId,
-    //     uint256 _loyaltyTokenId,
-    //     uint256 _membershipId,
-    //     uint256 _membershipTokenId,
-    //     address _to
-    // ) external
     function testTransferMembershipFromBrandLoyaltyTBA() public {
         //set up recipient, transferTokenId, and amount
-        address recipient = user2;
+        address recipient = address(0x555);
         uint256 brandLoyaltyTokenId = 1;
-        uint256 membershipTokenId = 1;
         uint256 membershipId = 1;
 
         //check owner of brand loyalty token is user1
@@ -131,20 +122,18 @@ contract TransferTokensMainTest is TronicTestBase {
         assertEq(brandTBAddress, brandLoyaltyXTokenId1TBA);
 
         //get the token bound account (from address) and verify that owner is the owner of the loyalty token (user1)
-        IERC6551Account brandTBA = IERC6551Account(payable(address(brandTBAddress)));
+        IERC6551Account brandTBA = IERC6551Account(payable(brandTBAddress));
         assertEq(brandTBA.owner(), user1);
 
-        //mint tokens to brand loyalty tba from tronicMainContract
+        //mint a membership token to brand loyalty tba from tronicMainContract
         vm.prank(tronicAdmin);
-        tronicMainContract.mintMembership(recipient, membershipIDX, 1);
+        uint256 membershipTokenId =
+            tronicMainContract.mintMembership(brandTBAddress, membershipId, 1);
 
-        //get the token balance of the token bound account
-        uint256 balance = brandXToken.balanceOf(brandTBAddress, fungibleTypeIdX1);
+        //ensure brandTBAddress owns the membership token
+        assertEq(brandXMembership.ownerOf(membershipTokenId), brandTBAddress);
 
-        //check that the balance is correct
-        assertEq(balance, 100);
-
-        //set permission for brand loyalty tba to transfer tokens
+        //set permission for brand loyalty tba to transfer membership
         bool[] memory approved = new bool[](1);
         approved[0] = true;
         address[] memory approvedAddresses = new address[](1);
@@ -155,14 +144,11 @@ contract TransferTokensMainTest is TronicTestBase {
 
         //transfer tokens from brand loyalty tba to user1
         vm.startPrank(user1);
-        tronicMainContract.transferTokensFromBrandLoyaltyTBA(
-            brandIDX, brandTBAddress, fungibleTypeIdX1, recipient, 1
+        tronicMainContract.transferMembershipFromBrandLoyaltyTBA(
+            brandTBAddress, membershipId, membershipTokenId, recipient
         );
 
-        //get the token balance of the token bound account
-        balance = brandXToken.balanceOf(brandLoyaltyXTokenId1TBA, fungibleTypeIdX1);
-
-        //check that the balance is correct
-        assertEq(balance, 99);
+        //ensure recipient owns the membership token
+        assertEq(brandXMembership.ownerOf(membershipTokenId), recipient);
     }
 }

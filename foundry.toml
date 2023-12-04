@@ -1,13 +1,14 @@
 [profile.default]
 libs = ["lib"]
 out = "out"
-src = "src"
 solc_version = "0.8.21"
+src = "src"
 
 [rpc_endpoints]
 goerli = "${GOERLI_RPC_URL}"
 mainnet = "${MAINNET_RPC_URL}"
 mumbai = "${MUMBAI_RPC_URL}"
+polygon = "${POLYGON_RPC_URL}"
 sepolia = "${SEPOLIA_RPC_URL}"
 
 [etherscan]

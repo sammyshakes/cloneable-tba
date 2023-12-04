@@ -590,32 +590,24 @@ contract TronicMain is Initializable, UUPSUpgradeable {
     // }
 
     /// @notice transfers Membership token from a brand loyalty TBA to a specified address
-    /// @param _brandId The ID of the brand of the loyalty token that owns the TBA
-    /// @param _loyaltyTokenId The token ID of the brand loyalty token that owns the TBA
+    /// @param _brandLoyaltyTbaAddress The address of the Brand Loyalty TBA
     /// @param _membershipId The membership ID of the membership token to be transferred
     /// @param _membershipTokenId The tokenID of the membership token to be transferred
     /// @param _to The address to transfer the membership to
     /// @dev This contract address must be granted permissions to transfer tokens from the Brand Loyalty token TBA
     /// @dev The membership token must be owned by the Brand Loyalty token TBA
     function transferMembershipFromBrandLoyaltyTBA(
-        uint256 _brandId,
-        uint256 _loyaltyTokenId,
+        address _brandLoyaltyTbaAddress,
         uint256 _membershipId,
         uint256 _membershipTokenId,
         address _to
     ) external {
-        // get brand loyalty address from brand id
-        address brandLoyaltyAddress = brands[_brandId].brandLoyaltyAddress;
-        require(brandLoyaltyAddress != address(0), "Brand does not exist");
-
         // get membership address from membership id
         address membershipAddress = memberships[_membershipId].membershipAddress;
         require(membershipAddress != address(0), "Membership does not exist");
 
-        // get brand loyalty TBA address from brand loyalty address
-        address payable brandLoyaltyTbaAddress =
-            payable(ITronicBrandLoyalty(brandLoyaltyAddress).getTBAccount(_loyaltyTokenId));
-        IERC6551Account brandLoyaltyTBA = IERC6551Account(brandLoyaltyTbaAddress);
+        // get BrandLoaylty TBA
+        IERC6551Account brandLoyaltyTBA = IERC6551Account(payable(_brandLoyaltyTbaAddress));
 
         //ensure caller is either admin or authorized to transfer tokens
         require(
@@ -627,15 +619,16 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         // construct SafeTransferCall for membership ERC721
         bytes memory membershipTransferCall = abi.encodeWithSignature(
             "safeTransferFrom(address,address,uint256)",
-            brandLoyaltyTbaAddress,
+            _brandLoyaltyTbaAddress,
             _to,
             _membershipTokenId
         );
 
+        // execute transfer via Brand Loyalty TBA
         brandLoyaltyTBA.executeCall(membershipAddress, 0, membershipTransferCall);
     }
 
-    /// @notice transfers tokens from a Brand Loyalty TBA to a specified address
+    /// @notice transfers Brand Loyalty tokens from a Brand Loyalty TBA to a specified address
     /// @param _brandId The ID of the brand
     /// @param _brandLoyaltyTbaAddress The address of the Brand Loyalty TBA
     /// @param _transferTokenId The ID of the token to transfer
