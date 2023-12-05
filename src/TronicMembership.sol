@@ -295,7 +295,7 @@ contract TronicMembership is ITronicMembership, ERC721, Initializable {
     /// @notice Overrides the supportsInterface function to include support for IERC721.
     /// @param interfaceId The interface ID to check for.
     /// @return True if the interface is supported, false otherwise.
-    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view override returns (bool) {
         return interfaceId == type(IERC721).interfaceId || super.supportsInterface(interfaceId);
     }
 

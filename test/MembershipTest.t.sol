@@ -71,6 +71,9 @@ contract MembershipTest is TronicTestBase {
         //test supports interface
         assertEq(membershipZERC721.supportsInterface(0x80ac58cd), true);
 
+        //test supports interface for false value
+        assertEq(membershipZERC721.supportsInterface(0x80ac58ce), false);
+
         vm.stopPrank();
 
         //use safeTransferFrom to transfer token to user2
