@@ -271,6 +271,11 @@ contract MembershipTest is TronicTestBase {
 
         //verify that user1 is now owner
         assertEq(brandXMembership.owner(), user1);
+
+        //attempt to transfer ownership to zero address
+        vm.expectRevert("New owner address cannot be zero");
+        vm.prank(user1);
+        brandXMembership.transferOwnership(address(0));
     }
 
     //test getMembershipTierId
@@ -309,5 +314,63 @@ contract MembershipTest is TronicTestBase {
 
         //verify that membership token has been set
         assertEq(membershipTier, tier);
+    }
+
+    //test create membership tier after max tiers are reached
+    function testCreateMembershipTierAfterMaxTiers() public {
+        //deploy brand z and create membership with 10 tiers
+        vm.startPrank(tronicAdmin);
+        (, address membershipZ) = tronicMainContract.deployMembership(
+            brandIDX,
+            "membershipZ",
+            "MEMZ",
+            "http://example.com/token/",
+            10_000,
+            false,
+            membershipTiers
+        );
+
+        //instance of membershipZERC721
+        TronicMembership membershipZERC721 = TronicMembership(membershipZ);
+
+        //create max number of membership tiers
+        uint8 maxTiers = 10;
+        vm.startPrank(tronicAdmin);
+        for (uint8 i = 0; i < maxTiers; i++) {
+            membershipZERC721.createMembershipTier("tier", 1000, false, "tierURI");
+        }
+
+        //now try to create an additional membership tier
+        vm.expectRevert("Max Tier limit reached");
+        membershipZERC721.createMembershipTier("tier", 1000, false, "tierURI");
+
+        // now try to create multiple tiers using createMembershipTiers
+        //create 2 tiers for input
+        ITronicMembership.MembershipTier[] memory membershipTiers =
+            new ITronicMembership.MembershipTier[](2);
+
+        //create membership tier 1
+        membershipTiers[0].tierId = "tier1";
+        membershipTiers[0].duration = 1000;
+        membershipTiers[0].isOpen = false;
+        membershipTiers[0].tierURI = "tier1URI";
+
+        //create membership tier 2
+        membershipTiers[1].tierId = "tier2";
+        membershipTiers[1].duration = 1000;
+        membershipTiers[1].isOpen = false;
+        membershipTiers[1].tierURI = "tier2URI";
+
+        vm.expectRevert("Max Tier limit reached");
+        membershipZERC721.createMembershipTiers(membershipTiers);
+
+        vm.stopPrank();
+    }
+
+    //test get token uri when token is not valid
+    function testGetTokenURIWhenTokenIsNotValid() public {
+        //get token uri
+        vm.expectRevert();
+        string memory tokenURI = brandXMembership.tokenURI(1000);
     }
 }
