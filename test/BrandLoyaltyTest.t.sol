@@ -15,8 +15,7 @@ contract BrandLoyaltyTest is TronicTestBase {
         // Mint test token
         vm.prank(tronicAdmin);
 
-        (address brandXTBA, uint256 brandXTokenId) =
-            tronicMainContract.mintBrandLoyaltyToken(user4, brandIDX);
+        (, uint256 brandXTokenId) = tronicMainContract.mintBrandLoyaltyToken(user4, brandIDX);
 
         //  brandIDX, brandLoyaltyAddressX, tokenAddressX
         // check that user4 owns token
@@ -77,10 +76,110 @@ contract BrandLoyaltyTest is TronicTestBase {
 
         assertEq(brandInfo.tokenAddress, tokenAddressX);
         assertEq(brandInfo.brandLoyaltyAddress, brandLoyaltyAddressX);
-
-        //get membership ids for this brand
-        uint256[] memory membershipIds = brandInfo.membershipIds;
     }
 
     function testMembershipTiers() public {}
+
+    //teset setBaseURI
+    function testSetBaseURI() public {
+        //set base uri
+        vm.startPrank(tronicAdmin);
+        brandLoyaltyX.setBaseURI("https://www.tronic.com/");
+        vm.stopPrank();
+
+        //get uri of token id 1
+        string memory uri = brandLoyaltyX.tokenURI(1);
+        console.log("uri: ", uri);
+    }
+
+    //test supports interface
+    function testSupportsInterface() public {
+        //check that supports interface returns true for erc721
+        assertEq(brandLoyaltyX.supportsInterface(type(IERC721).interfaceId), true);
+    }
+
+    //test safe transfer brand loyalty token between users
+    function testSafeTransferBrandLoyaltyToken() public {
+        //check owner of brand loyalty token is user1
+        assertEq(brandLoyaltyX.ownerOf(1), user1);
+
+        //transfer token from user1 to user2
+        vm.startPrank(user1);
+        brandLoyaltyX.safeTransferFrom(user1, user2, 1);
+        vm.stopPrank();
+
+        //check owner of brand loyalty token is user2
+        assertEq(brandLoyaltyX.ownerOf(1), user2);
+    }
+
+    //test safe transfer brand loyalty token from bound account
+    function testSafeTransferBrandLoyaltyTokenFromBoundAccount() public {
+        //deploy new brand z with bound loyalty token
+        vm.startPrank(tronicAdmin);
+        //deploy brnda from tronicmain
+        (uint256 brandZDX, address brandLoyaltyZAddress,) =
+            tronicMainContract.deployBrand("brandZ", "BRNDZ", "https://www.brandz.com/", true);
+
+        // mint brand loyalty token
+        (address brandZTBA, uint256 brandZTokenId) =
+            tronicMainContract.mintBrandLoyaltyToken(user4, brandZDX);
+
+        console.log("brandZTBA: ", brandZTBA);
+
+        // get brand loyalty contract
+        TronicBrandLoyalty brandLoyaltyZ = TronicBrandLoyalty(brandLoyaltyZAddress);
+
+        // assert that user4 owns token
+        assertEq(brandLoyaltyZ.ownerOf(brandZTokenId), user4);
+
+        //attempt to transfer token from user4 to user3
+        vm.startPrank(user4);
+        vm.expectRevert();
+        brandLoyaltyZ.safeTransferFrom(user4, user3, brandZTokenId);
+
+        // //also try transferFrom
+        // vm.expectRevert();
+        // brandLoyaltyZ.transferFrom(user4, user3, brandZTokenId);
+        // vm.stopPrank();
+
+        //check that user4 still owns token
+        assertEq(brandLoyaltyZ.ownerOf(brandZTokenId), user4);
+
+        //attempt to make the transfer from admin
+        //approve admin to transfer token
+        vm.startPrank(user4);
+        brandLoyaltyZ.approve(tronicAdmin, brandZTokenId);
+        vm.stopPrank();
+
+        vm.startPrank(tronicAdmin);
+        brandLoyaltyZ.safeTransferFrom(user4, user3, brandZTokenId);
+        vm.stopPrank();
+
+        //check that user3 now owns token
+        assertEq(brandLoyaltyZ.ownerOf(brandZTokenId), user3);
+
+        //ueser3 can now attempt transfer back to user4
+        vm.startPrank(user3);
+        vm.expectRevert();
+        brandLoyaltyZ.transferFrom(user3, user4, brandZTokenId);
+        vm.stopPrank();
+
+        //approve admin to transfer token
+        vm.startPrank(user3);
+        brandLoyaltyZ.approve(tronicAdmin, brandZTokenId);
+        vm.stopPrank();
+
+        //try to transfer back to user4 from admin
+        vm.startPrank(tronicAdmin);
+        brandLoyaltyZ.transferFrom(user3, user4, brandZTokenId);
+        vm.stopPrank();
+
+        //check that user4 now owns token
+        assertEq(brandLoyaltyZ.ownerOf(brandZTokenId), user4);
+    }
+
+    function testSymbol() public {
+        //check that symbol is correct
+        assertEq(brandLoyaltyX.symbol(), "XXX");
+    }
 }

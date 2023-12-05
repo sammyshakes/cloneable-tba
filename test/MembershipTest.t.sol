@@ -24,6 +24,9 @@ contract MembershipTest is TronicTestBase {
         //instance of membershipZERC721
         TronicMembership membershipZERC721 = TronicMembership(membershipZ);
 
+        //verify symbol
+        assertEq(membershipZERC721.symbol(), "MEMZ");
+
         // mint token to user1, tier index 1
         membershipZERC721.mint(user1, 1);
 
@@ -258,5 +261,53 @@ contract MembershipTest is TronicTestBase {
         vm.startPrank(tronicAdmin);
         vm.expectRevert();
         brandYMembership.setMaxMintable(maxSupply + 1);
+    }
+
+    //test transfer ownership
+    function testTransferOwnership() public {
+        //transfer ownership to user1
+        vm.prank(tronicAdmin);
+        brandXMembership.transferOwnership(user1);
+
+        //verify that user1 is now owner
+        assertEq(brandXMembership.owner(), user1);
+    }
+
+    //test getMembershipTierId
+    function testGetMembershipTierId() public {
+        //get membership tier id
+        string memory membershipTierId = brandXMembership.getMembershipTierId(1);
+        console.log("membershipTierId: ", membershipTierId);
+        //verify that membershipTierId is correct
+        assertEq(membershipTierId, "tier1");
+    }
+
+    //test set membership tier
+    function testSetMembershipTier() public {
+        //set membership tier
+        uint8 tier = 1;
+
+        vm.prank(tronicAdmin);
+        brandXMembership.setMembershipTier(tier, "tier1", 1000, false, "tier1URI");
+
+        //verify that membership tier has been set
+        assertEq(brandXMembership.getMembershipTierDetails(tier).isOpen, false);
+        assertEq(brandXMembership.getMembershipTierDetails(tier).duration, 1000);
+    }
+
+    //test setMembershipToken
+    function testSetMembershipToken() public {
+        //set membership token
+        uint256 tokenId = 1;
+        uint8 tier = 1;
+
+        vm.prank(tronicAdmin);
+        brandXMembership.setMembershipToken(tokenId, tier);
+
+        //get membership token
+        uint8 membershipTier = brandXMembership.getMembershipToken(tokenId).tierIndex;
+
+        //verify that membership token has been set
+        assertEq(membershipTier, tier);
     }
 }

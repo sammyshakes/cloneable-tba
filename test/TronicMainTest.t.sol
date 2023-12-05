@@ -35,6 +35,13 @@ contract TronicMainTest is TronicTestBase {
         console.log("owner of tokenid 1: ", owner);
     }
 
+    //test getBrandLoyaltyTBA from tronicmain
+    function testGetBrandLoyaltyTBA() public {
+        //get the token bound account address (from tokenId) and verify that it is correct
+        address brandTBAddress = tronicMainContract.getBrandLoyaltyTBA(brandIDX, 1);
+        console.log("brandTBAddress: ", brandTBAddress);
+    }
+
     function testCreateFungibleType() public {
         // Set up initial state
         uint64 initialMaxSupply = 1000;
@@ -401,6 +408,19 @@ contract TronicMainTest is TronicTestBase {
         assertEq(newImplementation, address(0xdeadbeef));
     }
 
+    //test update brand loyalty implementation
+    function testUpdateBrandLoyaltyImplementation() public {
+        //update implementation address
+        vm.prank(tronicOwner);
+        tronicMainContract.setLoyaltyTokenImplementation(payable(address(0xdeadbeef)));
+
+        //get new implementation address
+        address newImplementation = address(tronicMainContract.tronicBrandLoyalty());
+
+        //verify that implementation address has changed
+        assertEq(newImplementation, address(0xdeadbeef));
+    }
+
     //test setAccountImplementation
     function testUpdateAccountImplementation() public {
         //update implementation address
@@ -451,5 +471,34 @@ contract TronicMainTest is TronicTestBase {
 
         //check admin of tronicMain
         assertTrue(!tronicMainContract.isAdmin(user1));
+    }
+
+    //test remove membership
+    function testRemoveMembership() public {
+        //remove membership
+        vm.prank(tronicAdmin);
+        tronicMainContract.removeMembership(membershipIDX);
+
+        //attempt to remove membership by non admin
+        vm.expectRevert("Only admin");
+        tronicMainContract.removeMembership(100);
+    }
+
+    //test getBrandIdFromBrandLoyaltyAddress
+    function testGetBrandIdFromBrandLoyaltyAddress() public {
+        //get brand id from brand loyalty address
+        uint256 brandId = tronicMainContract.getBrandIdFromBrandLoyaltyAddress(brandLoyaltyAddressX);
+
+        //verify that brand id is correct
+        assertEq(brandId, brandIDX);
+    }
+
+    //test getBrandIdFromMembershipId
+    function testGetBrandIdFromMembershipId() public {
+        //get brand id from membership id
+        uint256 brandId = tronicMainContract.getBrandIdFromMembershipId(membershipIDX);
+
+        //verify that brand id is correct
+        assertEq(brandId, brandIDX);
     }
 }
