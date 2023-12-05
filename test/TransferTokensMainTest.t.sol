@@ -147,8 +147,22 @@ contract TransferTokensMainTest is TronicTestBase {
         tronicMainContract.transferMembershipFromBrandLoyaltyTBA(
             brandTBAddress, membershipId, membershipTokenId, recipient
         );
+        vm.stopPrank();
 
         //ensure recipient owns the membership token
         assertEq(brandXMembership.ownerOf(membershipTokenId), recipient);
+
+        //attempt to transfer membership from brand loyalty tba to user1 with invalid membershipId
+        vm.expectRevert();
+        tronicMainContract.transferMembershipFromBrandLoyaltyTBA(
+            brandTBAddress, 100, membershipTokenId, recipient
+        );
+
+        //attempt to transfer membership from brand loyalty tba from unauthorized address
+        vm.expectRevert();
+        // vm.prank(address(0x666));
+        tronicMainContract.transferMembershipFromBrandLoyaltyTBA(
+            brandTBAddress, membershipId, membershipTokenId, recipient
+        );
     }
 }
