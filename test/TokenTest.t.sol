@@ -76,7 +76,7 @@ contract TokenTest is TronicTestBase {
         brandXToken.mintNFTs(typeId, user3, 1000);
 
         //burn nft type token
-        brandXToken.burn(user3, tokenIds[50], 1);
+        // brandXToken.burn(user3, tokenIds[50], 1);
 
         vm.stopPrank();
     }

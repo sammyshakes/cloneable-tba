@@ -415,20 +415,6 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         emit MembershipMinted(_membershipId, tokenId, _recipient);
     }
 
-    /// @notice Assigns a membership tier details of a specific token.
-    /// @param _tokenId The ID of the token whose membership details are to be set.
-    /// @param _tierIndex The index of the membership tier to associate with the token.
-    /// @dev This function can only be called by an admin.
-    /// @dev The tier must exist.
-    /// @dev The token must exist.
-    function _assignMembershipTier(address _membershipAddress, uint8 _tierIndex, uint256 _tokenId)
-        private
-    {
-        ITronicMembership(_membershipAddress).setMembershipToken(_tokenId, _tierIndex);
-
-        emit TierAssigned(_membershipAddress, _tokenId, _tierIndex);
-    }
-
     /// @notice Creates a new membership tier.
     /// @param _membershipId The ID of the membership to create the tier for.
     /// @param _tierId The ID of the tier.

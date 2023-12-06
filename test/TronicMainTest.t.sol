@@ -37,6 +37,10 @@ contract TronicMainTest is TronicTestBase {
 
     //test getBrandLoyaltyTBA from tronicmain
     function testGetBrandLoyaltyTBA() public {
+        //attempt to get brand loyalty tba from invalid brand id
+        vm.expectRevert("Brand does not exist");
+        tronicMainContract.getBrandLoyaltyTBA(100, 1);
+
         //get the token bound account address (from tokenId) and verify that it is correct
         address brandTBAddress = tronicMainContract.getBrandLoyaltyTBA(brandIDX, 1);
         console.log("brandTBAddress: ", brandTBAddress);
@@ -491,6 +495,12 @@ contract TronicMainTest is TronicTestBase {
 
         //verify that brand id is correct
         assertEq(brandId, brandIDX);
+
+        //get brand id from brand loyalty Y address
+        brandId = tronicMainContract.getBrandIdFromBrandLoyaltyAddress(brandLoyaltyAddressY);
+
+        //verify that brand id is correct
+        assertEq(brandId, brandIDY);
     }
 
     //test getBrandIdFromMembershipId

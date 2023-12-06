@@ -68,11 +68,23 @@ contract TransferTokensMainTest is TronicTestBase {
         address[] memory approvedAddresses = new address[](1);
         approvedAddresses[0] = address(tronicMainContract);
 
-        vm.prank(user1);
+        //attempt to transfer using unauthorized address
+        vm.expectRevert();
+        vm.prank(address(0x666));
+        tronicMainContract.transferTokensFromBrandLoyaltyTBA(
+            brandIDX, brandTBAddress, fungibleTypeIdX1, recipient, amount
+        );
+
+        vm.startPrank(user1);
         brandTBA.setPermissions(approvedAddresses, approved);
 
+        //attempt to transfer using invalid brand id
+        vm.expectRevert();
+        tronicMainContract.transferTokensFromBrandLoyaltyTBA(
+            100, brandTBAddress, fungibleTypeIdX1, recipient, amount
+        );
+
         //transfer tokens from brand loyalty tba to user1
-        vm.startPrank(user1);
         tronicMainContract.transferTokensFromBrandLoyaltyTBA(
             brandIDX, brandTBAddress, fungibleTypeIdX1, recipient, amount
         );
@@ -106,6 +118,8 @@ contract TransferTokensMainTest is TronicTestBase {
         tronicMainContract.transferTokensFromBrandLoyaltyTBA(
             brandIDX, address(0xdeadbeef), fungibleTypeIdX1, recipient, amount
         );
+
+        vm.stopPrank();
     }
 
     function testTransferMembershipFromBrandLoyaltyTBA() public {
