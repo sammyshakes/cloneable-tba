@@ -13,9 +13,14 @@ contract BrandLoyaltyTest is TronicTestBase {
         console.log("SETUP - registry address: ", registryAddress);
 
         // Mint test token
-        vm.prank(tronicAdmin);
+        vm.startPrank(tronicAdmin);
+        //attempt to first mint a brand loyalty token from an unregistered brand
+        vm.expectRevert();
+        tronicMainContract.mintBrandLoyaltyToken(user1, 100);
 
         (, uint256 brandXTokenId) = tronicMainContract.mintBrandLoyaltyToken(user4, brandIDX);
+
+        vm.stopPrank();
 
         //  brandIDX, brandLoyaltyAddressX, tokenAddressX
         // check that user4 owns token

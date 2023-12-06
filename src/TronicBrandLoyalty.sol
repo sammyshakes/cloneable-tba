@@ -101,14 +101,14 @@ contract TronicBrandLoyalty is ITronicBrandLoyalty, ERC721, Initializable {
                 accountImplementation,
                 block.chainid,
                 address(this),
-                _totalMinted,
+                tokenId,
                 0, // salt
                 abi.encodeWithSignature("initialize()") // init data
             )
         );
 
         // Mint token
-        _mint(to, _totalMinted);
+        _mint(to, tokenId);
 
         return (tbaAccount, tokenId);
     }
