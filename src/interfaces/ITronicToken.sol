@@ -26,7 +26,7 @@ interface ITronicToken {
         string baseURI;
     }
 
-    function initialize(address _tronicAdmin) external;
+    function initialize(address _tronicAdmin, uint64 _nftTypeStartId) external;
     function getFungibleTokenInfo(uint256 typeId)
         external
         view

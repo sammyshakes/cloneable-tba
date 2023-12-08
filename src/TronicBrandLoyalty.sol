@@ -50,7 +50,9 @@ contract TronicBrandLoyalty is ITronicBrandLoyalty, ERC721, Initializable {
     /// @notice Constructor initializes the ERC721 with empty name and symbol.
     /// @dev The name and symbol can be set using the initialize function.
     /// @dev The constructor is left empty because of the proxy pattern used.
-    constructor() ERC721("", "") {}
+    constructor() ERC721("", "") {
+        _disableInitializers();
+    }
 
     /// @notice Initializes the contract with given parameters.
     /// @param _accountImplementation Implementation of the account.
@@ -99,14 +101,14 @@ contract TronicBrandLoyalty is ITronicBrandLoyalty, ERC721, Initializable {
                 accountImplementation,
                 block.chainid,
                 address(this),
-                _totalMinted,
+                tokenId,
                 0, // salt
                 abi.encodeWithSignature("initialize()") // init data
             )
         );
 
         // Mint token
-        _mint(to, _totalMinted);
+        _mint(to, tokenId);
 
         return (tbaAccount, tokenId);
     }

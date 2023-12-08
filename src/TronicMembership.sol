@@ -9,6 +9,8 @@ import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 /// @title TronicMembership
 /// @notice This contract represents the membership token for the Tronic ecosystem.
 contract TronicMembership is ITronicMembership, ERC721, Initializable {
+    uint256 public MEMBERSHIP_ID;
+
     string private _name;
     string private _symbol;
     string private _baseURI_;
@@ -55,10 +57,13 @@ contract TronicMembership is ITronicMembership, ERC721, Initializable {
 
     /// @notice Constructor initializes the ERC721 with empty name and symbol.
     /// @dev The name and symbol can be set using the initialize function.
-    /// @dev The constructor is left empty because of the proxy pattern used.
-    constructor() ERC721("", "") {}
+    /// @dev The constructor is used to disable the initializers.
+    constructor() ERC721("", "") {
+        _disableInitializers();
+    }
 
     /// @notice Initializes the contract with given parameters.
+    /// @param membershipId The ID of the membership.
     /// @param name_ Name of the token.
     /// @param symbol_ Symbol of the token.
     /// @param uri Base URI of the token.
@@ -68,6 +73,7 @@ contract TronicMembership is ITronicMembership, ERC721, Initializable {
     /// @param tronicAdmin Address of the initial admin.
     /// @dev This function is called by the tronicMain contract.
     function initialize(
+        uint256 membershipId,
         string memory name_,
         string memory symbol_,
         string memory uri,
@@ -85,6 +91,7 @@ contract TronicMembership is ITronicMembership, ERC721, Initializable {
         _maxTiers = _maxMembershipTiers;
         maxMintable = _maxMintable;
         isElastic = _isElastic;
+        MEMBERSHIP_ID = membershipId;
     }
 
     /// @notice Mints a new token.
@@ -217,6 +224,17 @@ contract TronicMembership is ITronicMembership, ERC721, Initializable {
         return membership.timestamp + tier.duration > block.timestamp;
     }
 
+    // write tokenURI function that returns the membership tier URI
+    function tokenURI(uint256 tokenID) public view override returns (string memory) {
+        require(tokenID <= totalSupply(), "This token does not exist");
+        //get tier index from token id
+        uint8 tierIndex = _membershipTokens[tokenID].tierIndex;
+        //get tier uri from tier index
+        string memory tierURI = _membershipTiers[tierIndex].tierURI;
+        //return baseURI + tierURI
+        return bytes(tierURI).length > 0 ? string(abi.encodePacked(_baseURI(), tierURI)) : "";
+    }
+
     /// @notice Sets the max supply of the token.
     /// @param _maxMintable The new max supply.
     /// @dev Only callable by admin.
@@ -277,8 +295,8 @@ contract TronicMembership is ITronicMembership, ERC721, Initializable {
     /// @notice Overrides the supportsInterface function to include support for IERC721.
     /// @param interfaceId The interface ID to check for.
     /// @return True if the interface is supported, false otherwise.
-    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
-        return interfaceId == type(ERC721).interfaceId || super.supportsInterface(interfaceId);
+    function supportsInterface(bytes4 interfaceId) public view override returns (bool) {
+        return interfaceId == type(IERC721).interfaceId || super.supportsInterface(interfaceId);
     }
 
     /// @notice Transfers ownership of the contract to a new owner.
@@ -291,7 +309,7 @@ contract TronicMembership is ITronicMembership, ERC721, Initializable {
 
     /// @notice Returns the total supply of the token.
     /// @return The total supply of the token.
-    function totalSupply() external view returns (uint256) {
+    function totalSupply() public view returns (uint256) {
         return _totalMinted - _totalBurned;
     }
 

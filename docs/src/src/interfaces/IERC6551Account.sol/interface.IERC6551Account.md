@@ -1,5 +1,5 @@
 # IERC6551Account
-[Git Source](https://github.com/sammyshakes/cloneable-tba/blob/69000936679381ac7b4b9436ba05974e252ee19a/src/interfaces/IERC6551Account.sol)
+[Git Source](https://github.com/sammyshakes/cloneable-tba/blob/41cffe407c00f76a272c977491475b582628fb23/src/interfaces/IERC6551Account.sol)
 
 *the ERC-165 identifier for this interface is `0x6faff5f1`*
 

@@ -21,6 +21,7 @@ contract DeployTronic is Script {
     TronicMain public tronicMain;
 
     uint8 public maxTiersPerMembership = 10;
+    uint64 public nftTypeStartId = 100_000;
 
     address public tronicAdminAddress = vm.envAddress("TRONIC_ADMIN_ADDRESS");
     address public registryAddress = vm.envAddress("ERC6551_REGISTRY_ADDRESS");
@@ -54,7 +55,8 @@ contract DeployTronic is Script {
             address(tronicTokenImpl),
             registryAddress,
             tbaAddress,
-            maxTiersPerMembership
+            maxTiersPerMembership,
+            nftTypeStartId
         );
 
         vm.stopBroadcast();

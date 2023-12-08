@@ -1,5 +1,5 @@
 # TronicMembership
-[Git Source](https://github.com/sammyshakes/cloneable-tba/blob/69000936679381ac7b4b9436ba05974e252ee19a/src/TronicMembership.sol)
+[Git Source](https://github.com/sammyshakes/cloneable-tba/blob/41cffe407c00f76a272c977491475b582628fb23/src/TronicMembership.sol)
 
 **Inherits:**
 [ITronicMembership](/src/interfaces/ITronicMembership.sol/interface.ITronicMembership.md), ERC721, Initializable
@@ -8,6 +8,13 @@ This contract represents the membership token for the Tronic ecosystem.
 
 
 ## State Variables
+### MEMBERSHIP_ID
+
+```solidity
+uint256 public MEMBERSHIP_ID;
+```
+
+
 ### _name
 
 ```solidity
@@ -161,7 +168,7 @@ Constructor initializes the ERC721 with empty name and symbol.
 
 *The name and symbol can be set using the initialize function.*
 
-*The constructor is left empty because of the proxy pattern used.*
+*The constructor is used to disable the initializers.*
 
 
 ```solidity
@@ -177,6 +184,7 @@ Initializes the contract with given parameters.
 
 ```solidity
 function initialize(
+    uint256 membershipId,
     string memory name_,
     string memory symbol_,
     string memory uri,
@@ -190,6 +198,7 @@ function initialize(
 
 |Name|Type|Description|
 |----|----|-----------|
+|`membershipId`|`uint256`|The ID of the membership.|
 |`name_`|`string`|Name of the token.|
 |`symbol_`|`string`|Symbol of the token.|
 |`uri`|`string`|Base URI of the token.|
@@ -426,6 +435,13 @@ function isValid(uint256 tokenId) external view returns (bool);
 |`<none>`|`bool`|True if the token has a valid membership, false otherwise.|
 
 
+### tokenURI
+
+
+```solidity
+function tokenURI(uint256 tokenID) public view override returns (string memory);
+```
+
 ### setMaxMintable
 
 Sets the max supply of the token.
@@ -606,7 +622,7 @@ Returns the total supply of the token.
 
 
 ```solidity
-function totalSupply() external view returns (uint256);
+function totalSupply() public view returns (uint256);
 ```
 **Returns**
 

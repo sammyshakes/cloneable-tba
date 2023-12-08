@@ -1,5 +1,5 @@
 # TronicBrandLoyalty
-[Git Source](https://github.com/sammyshakes/cloneable-tba/blob/69000936679381ac7b4b9436ba05974e252ee19a/src/TronicBrandLoyalty.sol)
+[Git Source](https://github.com/sammyshakes/cloneable-tba/blob/41cffe407c00f76a272c977491475b582628fb23/src/TronicBrandLoyalty.sol)
 
 **Inherits:**
 [ITronicBrandLoyalty](/src/interfaces/ITronicBrandLoyalty.sol/interface.ITronicBrandLoyalty.md), ERC721, Initializable

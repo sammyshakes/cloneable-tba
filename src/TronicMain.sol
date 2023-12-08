@@ -104,10 +104,21 @@ contract TronicMain is Initializable, UUPSUpgradeable {
     /// @param tokenId The ID of the newly created token type.
     event FungibleTokenTypeCreated(uint256 indexed brandId, uint256 indexed tokenId);
 
+    /// @notice The event emitted when a non-fungible token type is created.
+    /// @param brandId The ID of the brand.
+    /// @param tokenId The ID of the newly created token type.
+    /// @param maxMintable The maximum number of tokens that can be minted.
+    /// @param uri The URI of the token type.
+    event NonFungibleTokenTypeCreated(
+        uint256 indexed brandId, uint256 indexed tokenId, uint256 maxMintable, string uri
+    );
+
     address public owner;
     address public tronicAdmin;
     address payable public tbaAccountImplementation;
     uint8 public maxTiersPerMembership;
+
+    uint64 public nftTypeStartId;
 
     uint256 public brandCounter;
     mapping(uint256 => BrandInfo) private brands;
@@ -122,6 +133,11 @@ contract TronicMain is Initializable, UUPSUpgradeable {
     ITronicMembership public tronicMembership;
     ITronicToken public tronicToken;
 
+    //disable initializer for upgradeability in the constructor
+    constructor() {
+        _disableInitializers();
+    }
+
     /// @notice Initializes the TronicMain contract.
     /// @param _admin The address of the Tronic admin.
     /// @param _brandLoyalty The address of the Tronic Brand Loyalty contract (ERC721 implementation).
@@ -130,6 +146,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
     /// @param _registry The address of the registry contract.
     /// @param _tbaImplementation The address of the tokenbound account implementation.
     /// @param _maxTiersPerMembership The maximum number of tiers per membership.
+    /// @param _nftTypeStartId The starting ID for non-fungible token types.
     function initialize(
         address _admin,
         address _brandLoyalty,
@@ -137,7 +154,8 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         address _tronicToken,
         address _registry,
         address _tbaImplementation,
-        uint8 _maxTiersPerMembership
+        uint8 _maxTiersPerMembership,
+        uint64 _nftTypeStartId
     ) public initializer {
         owner = msg.sender;
         tronicAdmin = _admin;
@@ -147,6 +165,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         registry = IERC6551Registry(_registry);
         tbaAccountImplementation = payable(_tbaImplementation);
         maxTiersPerMembership = _maxTiersPerMembership;
+        nftTypeStartId = _nftTypeStartId;
     }
 
     /// @notice Checks if the caller is the owner.
@@ -203,7 +222,12 @@ contract TronicMain is Initializable, UUPSUpgradeable {
 
         // Deploy the membership's contracts
         membershipAddress = _deployMembership(
-            membershipName, membershipSymbol, membershipBaseURI, maxMintable, isElastic
+            membershipId,
+            membershipName,
+            membershipSymbol,
+            membershipBaseURI,
+            maxMintable,
+            isElastic
         );
 
         // Assign membership id and associate the deployed contracts with the membership
@@ -283,6 +307,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
     /// @notice Clones the Tronic Membership (ERC721) implementation and initializes it.
     /// @return membershipAddress The address of the newly cloned Membership contract.
     function _deployMembership(
+        uint256 membershipId,
         string calldata name,
         string calldata symbol,
         string calldata baseURI,
@@ -291,7 +316,14 @@ contract TronicMain is Initializable, UUPSUpgradeable {
     ) private returns (address membershipAddress) {
         membershipAddress = Clones.clone(address(tronicMembership));
         ITronicMembership(membershipAddress).initialize(
-            name, symbol, baseURI, maxMintable, isElastic, maxTiersPerMembership, tronicAdmin
+            membershipId,
+            name,
+            symbol,
+            baseURI,
+            maxMintable,
+            isElastic,
+            maxTiersPerMembership,
+            tronicAdmin
         );
     }
 
@@ -299,7 +331,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
     /// @return tokenAddress The address of the newly cloned ERC1155 contract.
     function _deployToken() private returns (address tokenAddress) {
         tokenAddress = Clones.clone(address(tronicToken));
-        ITronicToken(tokenAddress).initialize(tronicAdmin);
+        ITronicToken(tokenAddress).initialize(tronicAdmin, nftTypeStartId);
     }
 
     /// @notice Removes a membership from the contract.
@@ -309,48 +341,41 @@ contract TronicMain is Initializable, UUPSUpgradeable {
     }
 
     /// @notice Creates a new ERC1155 fungible token type for a membership.
+    /// @param brandId The ID of the brand to create the token type for.
     /// @param maxSupply The maximum supply of the token type.
     /// @param uri The URI for the token type.
-    /// @param membershipId The ID of the membership to create the token type for.
     /// @return typeId The ID of the newly created token type.
-    //NOTE: This function should use brandId insead of membershipId, this is just for first iteration
-    function createFungibleTokenType(uint256 maxSupply, string memory uri, uint256 membershipId)
+    function createFungibleTokenType(uint256 brandId, uint256 maxSupply, string memory uri)
         external
         onlyAdmin
         returns (uint256 typeId)
     {
-        // get token address from membership
-        MembershipInfo memory membership = memberships[membershipId];
-        require(membership.membershipAddress != address(0), "Membership does not exist");
+        // get token address from brand info
+        address brandTokenAddress = brands[brandId].tokenAddress;
+        require(brandTokenAddress != address(0), "Brand does not exist");
 
-        // get token address from brand
-        BrandInfo memory brand = brands[membership.brandId];
-        require(brand.brandLoyaltyAddress != address(0), "Brand does not exist");
+        typeId = ITronicToken(brandTokenAddress).createFungibleType(uint64(maxSupply), uri);
 
-        typeId = ITronicToken(brand.tokenAddress).createFungibleType(uint64(maxSupply), uri);
-
-        emit FungibleTokenTypeCreated(membership.brandId, typeId);
+        emit FungibleTokenTypeCreated(brandId, typeId);
     }
 
     /// @notice Creates a new ERC1155 non-fungible token type for a membership.
+    /// @param brandId The ID of the brand to create the token type for.
     /// @param baseUri The URI for the token type.
     /// @param maxMintable The maximum number of tokens that can be minted.
-    /// @param membershipId The ID of the membership to create the token type for.
     /// @return nftTypeID The ID of the newly created token type.
-    //NOTE: This function should use brandId insead of membershipId, this is just for first iteration
-    function createNonFungibleTokenType(
-        string memory baseUri,
-        uint64 maxMintable,
-        uint256 membershipId
-    ) external onlyAdmin returns (uint256 nftTypeID) {
-        MembershipInfo memory membership = memberships[membershipId];
-        require(membership.membershipAddress != address(0), "Membership does not exist");
+    function createNonFungibleTokenType(uint256 brandId, string memory baseUri, uint64 maxMintable)
+        external
+        onlyAdmin
+        returns (uint256 nftTypeID)
+    {
+        // get token address from brand info
+        address brandTokenAddress = brands[brandId].tokenAddress;
+        require(brandTokenAddress != address(0), "Brand does not exist");
 
-        // get token address from brand
-        BrandInfo memory brand = brands[membership.brandId];
-        require(brand.brandLoyaltyAddress != address(0), "Brand does not exist");
+        nftTypeID = ITronicToken(brandTokenAddress).createNFTType(baseUri, maxMintable);
 
-        nftTypeID = ITronicToken(brand.tokenAddress).createNFTType(baseUri, maxMintable);
+        emit NonFungibleTokenTypeCreated(brandId, nftTypeID, maxMintable, baseUri);
     }
 
     /// @notice Mints a new Brand Loyalty token.
@@ -388,20 +413,6 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         //mint membership token to recipient
         tokenId = ITronicMembership(membership.membershipAddress).mint(_recipient, _tierIndex);
         emit MembershipMinted(_membershipId, tokenId, _recipient);
-    }
-
-    /// @notice Assigns a membership tier details of a specific token.
-    /// @param _tokenId The ID of the token whose membership details are to be set.
-    /// @param _tierIndex The index of the membership tier to associate with the token.
-    /// @dev This function can only be called by an admin.
-    /// @dev The tier must exist.
-    /// @dev The token must exist.
-    function _assignMembershipTier(address _membershipAddress, uint8 _tierIndex, uint256 _tokenId)
-        private
-    {
-        ITronicMembership(_membershipAddress).setMembershipToken(_tokenId, _tierIndex);
-
-        emit TierAssigned(_membershipAddress, _tokenId, _tierIndex);
     }
 
     /// @notice Creates a new membership tier.
@@ -564,129 +575,134 @@ contract TronicMain is Initializable, UUPSUpgradeable {
     //     }
     // }
 
-    /// @notice transfers tokens from a membership TBA to a specified address
-    /// @param _tronicTokenId The ID of the tronic token that owns the Tronic TBA
-    /// @param _brandId The ID of the brand that issued the membership TBA
-    /// @param _brandLoyaltyTokenId The ID of the membership TBA
-    /// @param _to The address to transfer the tokens to
-    /// @param _transferTokenId The ID of the token to transfer
-    /// @param _amount The amount of tokens to transfer
-    /// @dev This contract address must be granted permissions to transfer tokens from the membership TBA
-    /// @dev The membership TBA must be owned by the Tronic tokenId TBA
-    /// @dev This function is only callable by the tronic admin or an authorized account
-    function transferTokensFromMembershipTBA(
-        uint256 _tronicTokenId,
-        uint256 _brandId,
-        uint256 _brandLoyaltyTokenId,
-        address _to,
-        uint256 _transferTokenId,
-        uint256 _amount
+    /// @notice transfers Membership token from a brand loyalty TBA to a specified address
+    /// @param _brandLoyaltyTbaAddress The address of the Brand Loyalty TBA
+    /// @param _membershipId The membership ID of the membership token to be transferred
+    /// @param _membershipTokenId The tokenID of the membership token to be transferred
+    /// @param _to The address to transfer the membership to
+    /// @dev This contract address must be granted permissions to transfer tokens from the Brand Loyalty token TBA
+    /// @dev The membership token must be owned by the Brand Loyalty token TBA
+    function transferMembershipFromBrandLoyaltyTBA(
+        address _brandLoyaltyTbaAddress,
+        uint256 _membershipId,
+        uint256 _membershipTokenId,
+        address _to
     ) external {
-        // get Tronic TBA address for tronic token id
-        address payable tronicTbaAddress = payable(tronicBrandLoyalty.getTBAccount(_tronicTokenId));
-        IERC6551Account tronicTBA = IERC6551Account(tronicTbaAddress);
+        // get membership address from membership id
+        address membershipAddress = memberships[_membershipId].membershipAddress;
+        require(membershipAddress != address(0), "Membership does not exist");
 
-        //ensure caller is tronic admin or authorized to transfer tokens
+        // get BrandLoaylty TBA
+        IERC6551Account brandLoyaltyTBA = IERC6551Account(payable(_brandLoyaltyTbaAddress));
+
+        //ensure caller is either admin or authorized to transfer tokens
         require(
-            tronicTBA.isAuthorized(msg.sender) || _admins[msg.sender] || msg.sender == tronicAdmin,
+            brandLoyaltyTBA.isAuthorized(msg.sender) || _admins[msg.sender]
+                || msg.sender == tronicAdmin,
             "Unauthorized caller"
         );
 
-        // get membership info
-        BrandInfo memory brand = brands[_brandId];
-        require(brand.brandLoyaltyAddress != address(0), "Brand does not exist");
+        // construct SafeTransferCall for membership ERC721
+        bytes memory membershipTransferCall = abi.encodeWithSignature(
+            "safeTransferFrom(address,address,uint256)",
+            _brandLoyaltyTbaAddress,
+            _to,
+            _membershipTokenId
+        );
 
-        // get Membership TBA address
-        address brandLoyaltyTbaAddress =
-            ITronicBrandLoyalty(brand.brandLoyaltyAddress).getTBAccount(_brandLoyaltyTokenId);
+        // execute transfer via Brand Loyalty TBA
+        brandLoyaltyTBA.executeCall(membershipAddress, 0, membershipTransferCall);
+    }
+
+    /// @notice transfers Brand Loyalty tokens from a Brand Loyalty TBA to a specified address
+    /// @param _brandId The ID of the brand
+    /// @param _brandLoyaltyTbaAddress The address of the Brand Loyalty TBA
+    /// @param _transferTokenId The ID of the token to transfer
+    /// @param _to The address to transfer the tokens to
+    /// @param _amount The amount of tokens to transfer
+    /// @dev This contract address must be granted permissions to transfer tokens from the Brand Loyalty TBA
+    /// @dev This function is only callable by the tronic admin or an authorized account
+    function transferTokensFromBrandLoyaltyTBA(
+        uint256 _brandId,
+        address _brandLoyaltyTbaAddress,
+        uint256 _transferTokenId,
+        address _to,
+        uint256 _amount
+    ) external {
+        // get brand loyalty address from brand id
+        address brandTokenAddress = brands[_brandId].tokenAddress;
+        require(brandTokenAddress != address(0), "Brand does not exist");
+
+        // get BrandLoaylty TBA
+        IERC6551Account brandLoyaltyTBA = IERC6551Account(payable(_brandLoyaltyTbaAddress));
+
+        //ensure caller is tronic admin or authorized to transfer tokens
+        require(
+            brandLoyaltyTBA.isAuthorized(msg.sender) || _admins[msg.sender]
+                || msg.sender == tronicAdmin,
+            "Unauthorized caller"
+        );
 
         // construct SafeTransferCall for membership ERC1155
         bytes memory tokenTransferCall = abi.encodeWithSignature(
             "safeTransferFrom(address,address,uint256,uint256,bytes)",
-            brandLoyaltyTbaAddress,
+            _brandLoyaltyTbaAddress,
             _to,
             _transferTokenId,
             _amount,
             ""
         );
 
-        // construct execute call for membership tbaAddress to execute tokenTransferCall
-        bytes memory executeCall = abi.encodeWithSignature(
-            "executeCall(address,uint256,bytes)", brand.brandLoyaltyAddress, 0, tokenTransferCall
-        );
+        // // construct execute call for membership tbaAddress to execute tokenTransferCall
+        // bytes memory executeCall = abi.encodeWithSignature(
+        //     "executeCall(address,uint256,bytes)", _brandLoyaltyTbaAddress, 0, tokenTransferCall
+        // );
 
-        tronicTBA.executeCall(brandLoyaltyTbaAddress, 0, executeCall);
+        brandLoyaltyTBA.executeCall(brandTokenAddress, 0, tokenTransferCall);
     }
 
-    /// @notice transfers tokens from a tronic TBA to a specified address
-    /// @param _tronicTokenId The ID of the tronic token that owns the Tronic TBA
-    /// @param _transferTokenId The ID of the achievement token to transfer
-    /// @param _amount The amount of tokens to transfer
-    /// @param _to The address to transfer the tokens to
-    /// @dev This contract address must be granted permissions to transfer tokens from the Tronic token TBA
-    /// @dev The tronic TBA must be owned by the Tronic tokenId TBA
-    /// @dev This function is only callable by the tronic admin or an authorized account
-    function transferTokensFromTronicTBA(
-        uint256 _tronicTokenId,
-        uint256 _transferTokenId,
-        uint256 _amount,
-        address _to
-    ) external {
-        // get Tronic TBA address for tronic token id
-        address payable tronicTbaAddress = payable(tronicBrandLoyalty.getTBAccount(_tronicTokenId));
-        IERC6551Account tronicTBA = IERC6551Account(tronicTbaAddress);
-
-        //ensure caller is tronic admin or authorized to transfer tokens
-        require(
-            tronicTBA.isAuthorized(msg.sender) || _admins[msg.sender] || msg.sender == tronicAdmin,
-            "Unauthorized caller"
-        );
-
-        // construct SafeTransferCall for tronic ERC1155
-        bytes memory tokenTransferCall = abi.encodeWithSignature(
-            "safeTransferFrom(address,address,uint256,uint256,bytes)",
-            tronicTbaAddress,
-            _to,
-            _transferTokenId,
-            _amount,
-            ""
-        );
-
-        tronicTBA.executeCall(address(tronicToken), 0, tokenTransferCall);
-    }
-
-    /// @notice transfers brand loyalty token from a tronic TBA to a specified address
-    /// @param _tronicTokenId The ID of the tronic token that owns the Tronic TBA
-    /// @param _brandId The ID of the membership that issued the membership TBA
-    /// @param _loyaltyTokenId The ID of the membership TBA
-    /// @param _to The address to transfer the membership to
-    /// @dev This contract address must be granted permissions to transfer tokens from the Tronic token TBA
-    /// @dev The membership token TBA must be owned by the Tronic token TBA
-    function transferMembershipFromTronicTBA(
-        uint256 _tronicTokenId,
-        uint256 _brandId,
-        uint256 _loyaltyTokenId,
-        address _to
-    ) external {
-        // get Tronic TBA address for tronic token id
-        address payable tronicTbaAddress = payable(tronicBrandLoyalty.getTBAccount(_tronicTokenId));
-        IERC6551Account tronicTBA = IERC6551Account(tronicTbaAddress);
-        //ensure caller is either admin or authorized to transfer tokens
-        require(
-            tronicTBA.isAuthorized(msg.sender) || _admins[msg.sender] || msg.sender == tronicAdmin,
-            "Unauthorized caller"
-        );
-
-        // get membership contract address
+    /// @notice Gets the address of the tokenbound account for a given brand loyalty token.
+    /// @param _brandId The ID of the brand.
+    /// @param _brandLoyaltyTokenId The ID of the brand loyalty token.
+    /// @return brandLoyaltyTbaAddress The address of the tokenbound account.
+    function getBrandLoyaltyTBA(uint256 _brandId, uint256 _brandLoyaltyTokenId)
+        external
+        view
+        returns (address payable brandLoyaltyTbaAddress)
+    {
+        // get brand loyalty address from brand id
         address brandLoyaltyAddress = brands[_brandId].brandLoyaltyAddress;
         require(brandLoyaltyAddress != address(0), "Brand does not exist");
 
-        // construct and execute SafeTransferCall for brandLoyalty ERC721
-        bytes memory brandLoyaltyTransferCall = abi.encodeWithSignature(
-            "safeTransferFrom(address,address,uint256)", tronicTbaAddress, _to, _loyaltyTokenId
-        );
+        // get brand loyalty TBA address from brand loyalty address
+        brandLoyaltyTbaAddress =
+            payable(ITronicBrandLoyalty(brandLoyaltyAddress).getTBAccount(_brandLoyaltyTokenId));
+    }
 
-        tronicTBA.executeCall(brandLoyaltyAddress, 0, brandLoyaltyTransferCall);
+    /// @notice Gets the brand ID for a given brand loyalty address.
+    /// @param _brandLoyaltyAddress The address of the brand loyalty contract.
+    /// @return brandId The ID of the brand.
+    function getBrandIdFromBrandLoyaltyAddress(address _brandLoyaltyAddress)
+        external
+        view
+        returns (uint256 brandId)
+    {
+        for (uint256 i = 1; i <= brandCounter; i++) {
+            if (brands[i].brandLoyaltyAddress == _brandLoyaltyAddress) {
+                return i;
+            }
+        }
+    }
+
+    /// @notice Gets the brand ID for a given membership ID.
+    /// @param _membershipId The ID of the membership.
+    /// @return brandId The ID of the brand.
+    function getBrandIdFromMembershipId(uint256 _membershipId)
+        external
+        view
+        returns (uint256 brandId)
+    {
+        return memberships[_membershipId].brandId;
     }
 
     /// @notice Sets the Tronic Loyalty contract address, callable only by the owner.

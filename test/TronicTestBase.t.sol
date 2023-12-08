@@ -64,22 +64,24 @@ contract TronicTestBase is Test {
 
     ERC1967Proxy public tronicMainProxy;
 
-    TronicMain tronicMainContract;
-
+    // Implementation Deployments
     TronicMain tronicMainContractImplementation;
     TronicMembership tronicMembership;
     TronicToken tronicToken;
     TronicBrandLoyalty tronicBrandLoyaltyImplementation;
 
+    // this variable represents TronicMain via proxy
+    TronicMain tronicMainContract;
+
     //brand membership X
+    TronicBrandLoyalty brandLoyaltyX;
     TronicMembership brandXMembership;
     TronicToken brandXToken;
-    TronicBrandLoyalty brandLoyaltyX;
 
     //brand membership Y
+    TronicBrandLoyalty brandLoyaltyY;
     TronicMembership brandYMembership;
     TronicToken brandYToken;
-    TronicBrandLoyalty brandLoyaltyY;
 
     TronicMain.MembershipInfo membershipX;
     TronicMain.MembershipInfo membershipY;
@@ -124,6 +126,12 @@ contract TronicTestBase is Test {
     address public tronicTokenId3TBA;
     address public tronicTokenId4TBA;
 
+    //brandloyalty token tbas
+    address public brandLoyaltyXTokenId1TBA;
+    address public brandLoyaltyXTokenId2TBA;
+    address public brandLoyaltyYTokenId1TBA;
+    address public brandLoyaltyYTokenId2TBA;
+
     uint256 fungibleTypeIdX1;
     uint256 fungibleTypeIdY1;
     uint256 nonFungibleTypeIdX1;
@@ -133,6 +141,14 @@ contract TronicTestBase is Test {
 
     string initialUriX = "http://setup-exampleX.com/token/";
     string initialUriY = "http://setup-exampleY.com/token/";
+
+    //create tier uris
+    string public tier1XURI = "tier1XURI";
+    string public tier2XURI = "tier2XURI";
+    string public tier1YURI = "tier1YURI";
+    string public tier2YURI = "tier2YURI";
+
+    uint64 public nftStartId = 100_000;
 
     function setUp() public {
         //deploy tronic contracts
@@ -146,54 +162,25 @@ contract TronicTestBase is Test {
         //tronicMainContract is a proxy contract
         tronicMainProxy =
         new ERC1967Proxy(address(tronicMainContractImplementation), abi.encodeWithSignature(
-            "initialize(address,address,address,address,address,address,uint8)",
+            "initialize(address,address,address,address,address,address,uint8,uint64)",
             tronicAdmin,
             address(tronicBrandLoyaltyImplementation),
             address(tronicMembership),
             address(tronicToken),
             registryAddress,
             defaultTBAImplementationAddress,
-            10 //maxtiers
+            10 ,//maxtiers
+            nftStartId
         ));
 
         tronicMainContract = TronicMain(address(tronicMainProxy));
 
         assertEq(tronicMainContract.maxTiersPerMembership(), 10);
 
-        //initialize Tronic Token by adding tronicMainProxy address as admin
-        tronicToken.initialize(tronicAdmin);
-
-        //initialize Tronic Member1155 by adding tronicMainProxy address as admin
-        tronicBrandLoyaltyImplementation.initialize(
-            defaultTBAImplementationAddress,
-            registryAddress,
-            "Brand Tronic",
-            "TRONIC",
-            "http://BrandTronicExample.com/",
-            false, // isBound,
-            tronicAdmin
-        );
-
-        //initialize tronicMembership
-        tronicMembership.initialize(
-            "TronicMembership",
-            "TRONIC",
-            "http://TronicMembership.com/",
-            10_000, // maxMintable,
-            true, // isElastic,
-            10,
-            tronicAdmin
-        ); //10 - max tiers
-
         vm.stopPrank();
 
         // deploy membership contracts
         vm.startPrank(tronicAdmin);
-
-        //set admin
-        tronicMembership.addAdmin(address(tronicMainProxy));
-        tronicToken.addAdmin(address(tronicMainProxy));
-        tronicBrandLoyaltyImplementation.addAdmin(address(tronicMainProxy));
 
         //deploy brand loyalty contracts
         (brandIDX, brandLoyaltyAddressX, tokenAddressX) =
@@ -206,20 +193,18 @@ contract TronicTestBase is Test {
         //create membership tiers for tronicMembership
         TronicMembership.MembershipTier[] memory tiers = new TronicMembership.MembershipTier[](2);
         tiers[0] = ITronicMembership.MembershipTier({
-            tierId: "tierX",
+            tierId: "tier1",
             duration: 30 days,
             isOpen: true,
-            tierURI: "http://tierX.com/"
+            tierURI: tier1XURI
         });
 
         tiers[1] = ITronicMembership.MembershipTier({
-            tierId: "tierY",
+            tierId: "tier2",
             duration: 120 days,
             isOpen: false,
-            tierURI: "http://tierY.com/"
+            tierURI: tier2XURI
         });
-
-        tronicMembership.createMembershipTiers(tiers);
 
         (membershipIDX, membershipAddressX) = tronicMainContract.deployMembership(
             brandIDX,
@@ -237,7 +222,7 @@ contract TronicTestBase is Test {
             "Y1",
             "http://MembershipY.com/",
             10_000,
-            true, //iselastic
+            false, //iselastic
             tiers
         );
 
@@ -245,23 +230,23 @@ contract TronicTestBase is Test {
         uint64 initialMaxSupply = 100_000;
 
         fungibleTypeIdX1 =
-            tronicMainContract.createFungibleTokenType(initialMaxSupply, initialUriX, membershipIDX);
+            tronicMainContract.createFungibleTokenType(brandIDX, initialMaxSupply, initialUriX);
 
         fungibleTypeIdY1 =
-            tronicMainContract.createFungibleTokenType(initialMaxSupply, initialUriY, membershipIDY);
+            tronicMainContract.createFungibleTokenType(brandIDY, initialMaxSupply, initialUriY);
 
         nonFungibleTypeIdX1 =
-            tronicMainContract.createNonFungibleTokenType(initialUriX, 1_000_000, membershipIDX);
+            tronicMainContract.createNonFungibleTokenType(brandIDX, initialUriX, 1_000_000);
 
         nonFungibleTypeIdY1 =
-            tronicMainContract.createNonFungibleTokenType(initialUriY, 25_000, membershipIDY);
+            tronicMainContract.createNonFungibleTokenType(brandIDY, initialUriY, 25_000);
 
         ///mint brand loyalty nfts
 
-        (tronicTokenId1TBA,) = tronicMainContract.mintBrandLoyaltyToken(user1, brandIDX);
-        (tronicTokenId2TBA,) = tronicMainContract.mintBrandLoyaltyToken(user2, brandIDX);
-        (tronicTokenId3TBA,) = tronicMainContract.mintBrandLoyaltyToken(user3, brandIDY);
-        (tronicTokenId4TBA,) = tronicMainContract.mintBrandLoyaltyToken(user4, brandIDY);
+        (brandLoyaltyXTokenId1TBA,) = tronicMainContract.mintBrandLoyaltyToken(user1, brandIDX);
+        (brandLoyaltyXTokenId2TBA,) = tronicMainContract.mintBrandLoyaltyToken(user2, brandIDX);
+        (brandLoyaltyYTokenId1TBA,) = tronicMainContract.mintBrandLoyaltyToken(user3, brandIDY);
+        (brandLoyaltyYTokenId2TBA,) = tronicMainContract.mintBrandLoyaltyToken(user4, brandIDY);
 
         //mint Tronic Brand Loyalty nfts from TronicMain to users 1-4 and return their tbas
         tronicMainContract.mintMembership(user1, membershipIDX, 1);
@@ -269,10 +254,6 @@ contract TronicTestBase is Test {
         tronicMainContract.mintMembership(user3, membershipIDY, 1);
         tronicMainContract.mintMembership(user4, membershipIDY, 1);
 
-        // tronicMembership.setMembershipToken(tokenId1, TronicTier1Index);
-        // tronicMembership.setMembershipToken(tokenId2, TronicTier1Index);
-        // tronicMembership.setMembershipToken(tokenId3, TronicTier2Index);
-        // tronicMembership.setMembershipToken(tokenId4, TronicTier2Index);
         vm.stopPrank();
 
         // get membership x and y details, membership ids: x=0 and y=1

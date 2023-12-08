@@ -1,5 +1,5 @@
 # ITronicBrandLoyalty
-[Git Source](https://github.com/sammyshakes/cloneable-tba/blob/69000936679381ac7b4b9436ba05974e252ee19a/src/interfaces/ITronicBrandLoyalty.sol)
+[Git Source](https://github.com/sammyshakes/cloneable-tba/blob/41cffe407c00f76a272c977491475b582628fb23/src/interfaces/ITronicBrandLoyalty.sol)
 
 
 ## Functions
@@ -30,5 +30,12 @@ function mint(address to) external returns (address payable tbaAccount, uint256)
 
 ```solidity
 function getTBAccount(uint256 tokenId) external view returns (address);
+```
+
+### burn
+
+
+```solidity
+function burn(uint256 tokenId) external;
 ```
 
