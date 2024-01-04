@@ -25,8 +25,9 @@ contract DeployTronic is Script {
 
     address public tronicAdminAddress = vm.envAddress("TRONIC_ADMIN_ADDRESS");
     address public registryAddress = vm.envAddress("ERC6551_REGISTRY_ADDRESS");
-    address payable public tbaAddress =
-        payable(vm.envAddress("TOKENBOUND_ACCOUNT_DEFAULT_IMPLEMENTATION_ADDRESS"));
+    address public tbaAddress = vm.envAddress("TOKENBOUND_ACCOUNT_DEFAULT_IMPLEMENTATION_ADDRESS");
+    address payable public tbaProxyAddress =
+        payable(vm.envAddress("TOKENBOUND_ACCOUNT_PROXY_IMPLEMENTATION_ADDRESS"));
 
     function run() external {
         uint256 deployerPrivateKey = uint256(vm.envBytes32("TRONIC_DEPLOYER_PRIVATE_KEY"));
@@ -55,6 +56,7 @@ contract DeployTronic is Script {
             address(tronicTokenImpl),
             registryAddress,
             tbaAddress,
+            tbaProxyAddress,
             maxTiersPerMembership,
             nftTypeStartId
         );

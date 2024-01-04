@@ -108,8 +108,11 @@ contract TronicTestBase is Test {
 
     address public membershipAdmin = address(0x8);
 
-    address payable public defaultTBAImplementationAddress =
-        payable(vm.envAddress("TOKENBOUND_ACCOUNT_DEFAULT_IMPLEMENTATION_ADDRESS"));
+    address public defaultTBAImplementationAddress =
+        vm.envAddress("TOKENBOUND_ACCOUNT_DEFAULT_IMPLEMENTATION_ADDRESS");
+
+    address payable public tbaProxyImplementationAddress =
+        payable(vm.envAddress("TOKENBOUND_ACCOUNT_PROXY_IMPLEMENTATION_ADDRESS"));
 
     address public registryAddress = vm.envAddress("ERC6551_REGISTRY_ADDRESS");
 
@@ -160,18 +163,21 @@ contract TronicTestBase is Test {
         tronicMainContractImplementation = new TronicMain();
 
         //tronicMainContract is a proxy contract
-        tronicMainProxy =
-        new ERC1967Proxy(address(tronicMainContractImplementation), abi.encodeWithSignature(
-            "initialize(address,address,address,address,address,address,uint8,uint64)",
-            tronicAdmin,
-            address(tronicBrandLoyaltyImplementation),
-            address(tronicMembership),
-            address(tronicToken),
-            registryAddress,
-            defaultTBAImplementationAddress,
-            10 ,//maxtiers
-            nftStartId
-        ));
+        tronicMainProxy = new ERC1967Proxy(
+            address(tronicMainContractImplementation),
+            abi.encodeWithSignature(
+                "initialize(address,address,address,address,address,address,address,uint8,uint64)",
+                tronicAdmin,
+                address(tronicBrandLoyaltyImplementation),
+                address(tronicMembership),
+                address(tronicToken),
+                registryAddress,
+                defaultTBAImplementationAddress,
+                tbaProxyImplementationAddress,
+                10, //maxtiers
+                nftStartId
+            )
+        );
 
         tronicMainContract = TronicMain(address(tronicMainProxy));
 

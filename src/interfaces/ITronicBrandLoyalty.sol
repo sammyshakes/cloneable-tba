@@ -3,7 +3,8 @@ pragma solidity ^0.8.19;
 
 interface ITronicBrandLoyalty {
     function initialize(
-        address payable _accountImplementation,
+        address _accountImplementation,
+        address _tbaProxyImplementation,
         address _registry,
         string memory name_,
         string memory symbol_,

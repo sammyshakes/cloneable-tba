@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import "./interfaces/IERC6551Registry.sol";
-import "./interfaces/ITronicMembership.sol";
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import {IERC6551Registry} from "./interfaces/IERC6551Registry.sol";
+import {ITronicMembership} from "./interfaces/ITronicMembership.sol";
+import {ERC721, IERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import {Initializable} from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 
 /// @title TronicMembership
 /// @notice This contract represents the membership token for the Tronic ecosystem.

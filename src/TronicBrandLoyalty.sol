@@ -1,10 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import "./interfaces/IERC6551Registry.sol";
-import "./interfaces/ITronicBrandLoyalty.sol";
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import {IERC6551Registry} from "./interfaces/IERC6551Registry.sol";
+import {ITronicBrandLoyalty} from "./interfaces/ITronicBrandLoyalty.sol";
+import {Initializable} from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+
+interface AccountProxy {
+    function initialize(address _implementation) external;
+}
 
 /// @title TronicBrandLoyalty
 /// @notice This contract represents the membership token for the Tronic ecosystem.
@@ -17,6 +21,7 @@ contract TronicBrandLoyalty is ITronicBrandLoyalty, ERC721, Initializable {
 
     address public owner;
     address public accountImplementation;
+    address public tbaProxyImplementation;
 
     uint256 private _totalBurned;
     uint256 private _totalMinted;
@@ -64,7 +69,8 @@ contract TronicBrandLoyalty is ITronicBrandLoyalty, ERC721, Initializable {
     /// @param tronicAdmin Address of the initial admin.
     /// @dev This function is called by the tronicMain contract.
     function initialize(
-        address payable _accountImplementation,
+        address _accountImplementation,
+        address _tbaProxyImplementation,
         address _registry,
         string memory name_,
         string memory symbol_,
@@ -73,6 +79,7 @@ contract TronicBrandLoyalty is ITronicBrandLoyalty, ERC721, Initializable {
         address tronicAdmin
     ) external initializer {
         accountImplementation = _accountImplementation;
+        tbaProxyImplementation = _tbaProxyImplementation;
         registry = IERC6551Registry(_registry);
         owner = tronicAdmin;
         _admins[tronicAdmin] = true;
@@ -98,14 +105,15 @@ contract TronicBrandLoyalty is ITronicBrandLoyalty, ERC721, Initializable {
         // Deploy token account
         tbaAccount = payable(
             registry.createAccount(
-                accountImplementation,
+                tbaProxyImplementation,
+                0, // salt
                 block.chainid,
                 address(this),
-                tokenId,
-                0, // salt
-                abi.encodeWithSignature("initialize()") // init data
+                tokenId
             )
         );
+
+        AccountProxy(payable(tbaAccount)).initialize(accountImplementation);
 
         // Mint token
         _mint(to, tokenId);
@@ -117,7 +125,7 @@ contract TronicBrandLoyalty is ITronicBrandLoyalty, ERC721, Initializable {
     /// @param tokenId The ID of the token.
     /// @return The address of the tokenbound account.
     function getTBAccount(uint256 tokenId) external view returns (address) {
-        return registry.account(accountImplementation, block.chainid, address(this), tokenId, 0);
+        return registry.account(tbaProxyImplementation, 0, block.chainid, address(this), tokenId);
     }
 
     /// @notice Burns a token with the given ID.

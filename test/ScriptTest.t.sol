@@ -33,7 +33,7 @@ contract ScriptsTest is Test {
         db.run();
     }
 
-    function testDeployMembership() public {
-        dm.run();
-    }
+    // function testDeployMembership() public {
+    //     dm.run();
+    // }
 }

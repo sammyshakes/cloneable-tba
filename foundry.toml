@@ -1,11 +1,12 @@
 [profile.default]
 libs = ["lib"]
 out = "out"
-solc_version = "0.8.21"
+solc_version = "0.8.23"
 src = "src"
 
 [rpc_endpoints]
 goerli = "${GOERLI_RPC_URL}"
+hardhat = "${HARDHAT_RPC_URL}"
 mainnet = "${MAINNET_RPC_URL}"
 mumbai = "${MUMBAI_RPC_URL}"
 polygon = "${POLYGON_RPC_URL}"

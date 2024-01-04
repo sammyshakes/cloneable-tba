@@ -2,9 +2,9 @@
 
 pragma solidity ^0.8.13;
 
-import "./interfaces/ITronicToken.sol";
-import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import {ITronicToken} from "./interfaces/ITronicToken.sol";
+import {ERC1155, IERC1155, IERC165} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+import {Initializable} from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
 /// @title TronicToken

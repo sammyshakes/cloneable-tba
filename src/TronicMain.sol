@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import "./interfaces/IERC6551Account.sol";
-import "./interfaces/IERC6551Registry.sol";
-import "./interfaces/ITronicMembership.sol";
-import "./interfaces/ITronicBrandLoyalty.sol";
-import "./interfaces/ITronicToken.sol";
-import "@openzeppelin/contracts/proxy/Clones.sol";
-import "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
-import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import {IERC6551Account} from "./interfaces/IERC6551Account.sol";
+import {IERC6551Registry} from "./interfaces/IERC6551Registry.sol";
+import {ITronicMembership} from "./interfaces/ITronicMembership.sol";
+import {ITronicBrandLoyalty} from "./interfaces/ITronicBrandLoyalty.sol";
+import {ITronicToken} from "./interfaces/ITronicToken.sol";
+import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
+import {UUPSUpgradeable} from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
+import {Initializable} from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 
 /// @title TronicMain
 /// @notice This contract is the main contract for the Tronic ecosystem.
@@ -115,7 +115,8 @@ contract TronicMain is Initializable, UUPSUpgradeable {
 
     address public owner;
     address public tronicAdmin;
-    address payable public tbaAccountImplementation;
+    address public tbaAccountImplementation;
+    address public tbaProxyImplementation;
     uint8 public maxTiersPerMembership;
 
     uint64 public nftTypeStartId;
@@ -154,6 +155,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         address _tronicToken,
         address _registry,
         address _tbaImplementation,
+        address _tbaProxyImplementation,
         uint8 _maxTiersPerMembership,
         uint64 _nftTypeStartId
     ) public initializer {
@@ -163,7 +165,8 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         tronicToken = ITronicToken(_tronicToken);
         tronicMembership = ITronicMembership(_tronicMembership);
         registry = IERC6551Registry(_registry);
-        tbaAccountImplementation = payable(_tbaImplementation);
+        tbaAccountImplementation = _tbaImplementation;
+        tbaProxyImplementation = _tbaProxyImplementation;
         maxTiersPerMembership = _maxTiersPerMembership;
         nftTypeStartId = _nftTypeStartId;
     }
@@ -295,6 +298,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         brandLoyaltyAddress = Clones.clone(address(tronicBrandLoyalty));
         ITronicBrandLoyalty(brandLoyaltyAddress).initialize(
             tbaAccountImplementation,
+            tbaProxyImplementation,
             address(registry),
             brandName,
             brandSymbol,
@@ -595,10 +599,12 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         // get BrandLoaylty TBA
         IERC6551Account brandLoyaltyTBA = IERC6551Account(payable(_brandLoyaltyTbaAddress));
 
+        bytes4 isValidSigner = brandLoyaltyTBA.isValidSigner(msg.sender, "");
+
         //ensure caller is either admin or authorized to transfer tokens
         require(
-            brandLoyaltyTBA.isAuthorized(msg.sender) || _admins[msg.sender]
-                || msg.sender == tronicAdmin,
+            isValidSigner == bytes4(keccak256("isValidSigner(address,bytes)"))
+                || _admins[msg.sender] || msg.sender == tronicAdmin,
             "Unauthorized caller"
         );
 
@@ -611,7 +617,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         );
 
         // execute transfer via Brand Loyalty TBA
-        brandLoyaltyTBA.executeCall(membershipAddress, 0, membershipTransferCall);
+        brandLoyaltyTBA.execute(membershipAddress, 0, membershipTransferCall, 0);
     }
 
     /// @notice transfers Brand Loyalty tokens from a Brand Loyalty TBA to a specified address
@@ -636,10 +642,12 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         // get BrandLoaylty TBA
         IERC6551Account brandLoyaltyTBA = IERC6551Account(payable(_brandLoyaltyTbaAddress));
 
+        bytes4 isValidSigner = brandLoyaltyTBA.isValidSigner(msg.sender, "");
+
         //ensure caller is tronic admin or authorized to transfer tokens
         require(
-            brandLoyaltyTBA.isAuthorized(msg.sender) || _admins[msg.sender]
-                || msg.sender == tronicAdmin,
+            isValidSigner == bytes4(keccak256("isValidSigner(address,bytes)"))
+                || _admins[msg.sender] || msg.sender == tronicAdmin,
             "Unauthorized caller"
         );
 
@@ -655,10 +663,10 @@ contract TronicMain is Initializable, UUPSUpgradeable {
 
         // // construct execute call for membership tbaAddress to execute tokenTransferCall
         // bytes memory executeCall = abi.encodeWithSignature(
-        //     "executeCall(address,uint256,bytes)", _brandLoyaltyTbaAddress, 0, tokenTransferCall
+        //     "execute(address,uint256,bytes,uint8)", _brandLoyaltyTbaAddress, 0, tokenTransferCall, 0
         // );
 
-        brandLoyaltyTBA.executeCall(brandTokenAddress, 0, tokenTransferCall);
+        brandLoyaltyTBA.execute(brandTokenAddress, 0, tokenTransferCall, 0);
     }
 
     /// @notice Gets the address of the tokenbound account for a given brand loyalty token.
