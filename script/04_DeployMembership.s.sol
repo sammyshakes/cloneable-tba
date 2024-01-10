@@ -30,7 +30,7 @@ contract DeployMembership is Script {
 
     // this script deploys membership x and membership y
     // from Tronic Main contract with tronic admin pkey
-    function run() external {
+    function run() external returns (uint256, address, uint256, address) {
         //tiers
         ITronicMembership.MembershipTier[] memory tiersArray =
             new ITronicMembership.MembershipTier[](2);
@@ -52,7 +52,7 @@ contract DeployMembership is Script {
         vm.startBroadcast(adminPrivateKey);
 
         //deploy membership x
-        tronicMainContract.deployMembership(
+        (uint256 membershipXId, address membershipXAddress) = tronicMainContract.deployMembership(
             brandIdX,
             membershipXName,
             membershipXSymbol,
@@ -63,7 +63,7 @@ contract DeployMembership is Script {
         );
 
         //deploy membership y
-        tronicMainContract.deployMembership(
+        (uint256 membershipYId, address membershipYAddress) = tronicMainContract.deployMembership(
             brandIdY,
             membershipYName,
             membershipYSymbol,
@@ -74,5 +74,7 @@ contract DeployMembership is Script {
         );
 
         vm.stopBroadcast();
+
+        return (membershipXId, membershipXAddress, membershipYId, membershipYAddress);
     }
 }
