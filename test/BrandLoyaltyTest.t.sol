@@ -139,13 +139,18 @@ contract BrandLoyaltyTest is TronicTestBase {
 
         //attempt to transfer token from user4 to user3
         vm.startPrank(user4);
-        vm.expectRevert();
+        vm.expectRevert("Token is bound");
         brandLoyaltyZ.safeTransferFrom(user4, user3, brandZTokenId);
 
-        // //also try transferFrom
-        // vm.expectRevert();
-        // brandLoyaltyZ.transferFrom(user4, user3, brandZTokenId);
-        // vm.stopPrank();
+        // call overloaded safeTransferFrom
+        vm.startPrank(user4);
+        vm.expectRevert("Token is bound");
+        brandLoyaltyZ.safeTransferFrom(user4, user3, brandZTokenId, "");
+
+        //also try transferFrom
+        vm.expectRevert("Token is bound");
+        brandLoyaltyZ.transferFrom(user4, user3, brandZTokenId);
+        vm.stopPrank();
 
         //check that user4 still owns token
         assertEq(brandLoyaltyZ.ownerOf(brandZTokenId), user4);
@@ -165,7 +170,7 @@ contract BrandLoyaltyTest is TronicTestBase {
 
         //ueser3 can now attempt transfer back to user4
         vm.startPrank(user3);
-        vm.expectRevert();
+        vm.expectRevert("Token is bound");
         brandLoyaltyZ.transferFrom(user3, user4, brandZTokenId);
         vm.stopPrank();
 

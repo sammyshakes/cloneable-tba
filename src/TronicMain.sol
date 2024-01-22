@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.23;
 
 import {IERC6551Account} from "./interfaces/IERC6551Account.sol";
 import {IERC6551Registry} from "./interfaces/IERC6551Registry.sol";
@@ -146,6 +146,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
     /// @param _tronicToken The address of the Tronic Token contract (ERC1155 implementation).
     /// @param _registry The address of the registry contract.
     /// @param _tbaImplementation The address of the tokenbound account implementation.
+    /// @param _tbaProxyImplementation The address of the tokenbound account proxy implementation.
     /// @param _maxTiersPerMembership The maximum number of tiers per membership.
     /// @param _nftTypeStartId The starting ID for non-fungible token types.
     function initialize(

@@ -144,6 +144,10 @@ contract DeployMembership is TronicTestBase {
             false
         );
 
+        console.log("brand id: ", brandid);
+        console.log("brandLoyaltyAddress: ", brandXLoyaltyAddress);
+        console.log("brandXTokenAddress: ", brandXTokenAddress);
+
         //instance of brandLoyalty contract
         TronicBrandLoyalty brandLoyalty = TronicBrandLoyalty(brandXLoyaltyAddress);
 
@@ -164,8 +168,7 @@ contract DeployMembership is TronicTestBase {
         //first deploy brand
         // deploy brandX
         vm.prank(tronicAdmin);
-        (uint256 brandId, address brandXLoyaltyAddress, address brandXTokenAddress) =
-        tronicMainContract.deployBrand(
+        (uint256 brandId, address brandXLoyaltyAddress,) = tronicMainContract.deployBrand(
             "Brand X", // brand name
             "BRDX",
             "http://example.com/token/",
@@ -243,8 +246,7 @@ contract DeployMembership is TronicTestBase {
         //first deploy brand
         // deploy brandX
         vm.prank(tronicAdmin);
-        (uint256 brandId, address brandXLoyaltyAddress, address brandXTokenAddress) =
-        tronicMainContract.deployBrand(
+        (uint256 brandId, address brandXLoyaltyAddress,) = tronicMainContract.deployBrand(
             "Brand ZZZ", // brand name
             "BRDZZZ",
             "http://example.com/token/",
@@ -278,7 +280,7 @@ contract DeployMembership is TronicTestBase {
         // deploy membership
         vm.startPrank(tronicAdmin);
         vm.expectRevert();
-        (uint256 membershipID, address membershipZAddress) = tronicMainContract.deployMembership(
+        tronicMainContract.deployMembership(
             brandId,
             "membershipZ",
             "MEMZ",

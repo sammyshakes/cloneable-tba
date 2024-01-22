@@ -375,5 +375,8 @@ contract MembershipTest is TronicTestBase {
         //get token uri
         vm.expectRevert();
         string memory tokenURI = brandXMembership.tokenURI(1000);
+
+        //verify that tokenURI is correct
+        assertEq(tokenURI, "");
     }
 }
