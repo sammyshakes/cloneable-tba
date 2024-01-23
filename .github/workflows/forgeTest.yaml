@@ -26,8 +26,8 @@ jobs:
 
       - name: Install Doppler CLI
         uses: dopplerhq/cli-action@v2
-      
+
       - name: Fetch Environment Variables from Doppler and Run Forge tests
-        run: doppler run -- forge test --rpc-url mumbai
+        run: doppler run -- forge test --rpc-url hardhat
         env:
           DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
