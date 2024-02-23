@@ -108,24 +108,31 @@ contract TransferFromTBA is TronicTestBase {
         vm.prank(user1);
         tokenId1BrandXTBA.setPermissions(approved, approvedValues);
 
+        bool isReward = false;
+
         // expect revert for unauthorized user
         vm.prank(unauthorizedUser);
         vm.expectRevert("Unauthorized caller");
         tronicMainContract.transferTokensFromBrandLoyaltyTBA(
-            brandIDX, brandLoyaltyXTokenId1TBA, fungibleTypeIdX1, user2, amount
+            brandIDX, brandLoyaltyXTokenId1TBA, fungibleTypeIdX1, user2, amount, isReward
         );
 
         //expect revert for invalid brand id
         vm.prank(user1);
         vm.expectRevert("Brand does not exist");
         tronicMainContract.transferTokensFromBrandLoyaltyTBA(
-            10, brandLoyaltyXTokenId1TBA, fungibleTypeIdX1, user2, amount
+            10, brandLoyaltyXTokenId1TBA, fungibleTypeIdX1, user2, amount, isReward
         );
 
         vm.prank(user1);
         // transfer loyalty tokens from user1's brand loyalty tba to user2's brand loyalty tba
         tronicMainContract.transferTokensFromBrandLoyaltyTBA(
-            brandIDX, brandLoyaltyXTokenId1TBA, fungibleTypeIdX1, brandLoyaltyXTokenId2TBA, amount
+            brandIDX,
+            brandLoyaltyXTokenId1TBA,
+            fungibleTypeIdX1,
+            brandLoyaltyXTokenId2TBA,
+            amount,
+            isReward
         );
 
         assertEq(
@@ -143,7 +150,12 @@ contract TransferFromTBA is TronicTestBase {
         //perform same transfer but from an approved caller other than user1
         vm.prank(tronicAdmin);
         tronicMainContract.transferTokensFromBrandLoyaltyTBA(
-            brandIDX, brandLoyaltyXTokenId1TBA, fungibleTypeIdX1, brandLoyaltyXTokenId2TBA, amount
+            brandIDX,
+            brandLoyaltyXTokenId1TBA,
+            fungibleTypeIdX1,
+            brandLoyaltyXTokenId2TBA,
+            amount,
+            isReward
         );
 
         assertEq(

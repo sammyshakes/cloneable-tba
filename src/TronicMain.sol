@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.23;
+pragma solidity 0.8.24;
 
 import {IERC6551Account} from "./interfaces/IERC6551Account.sol";
 import {IERC6551Registry} from "./interfaces/IERC6551Registry.sol";
@@ -18,13 +18,15 @@ contract TronicMain is Initializable, UUPSUpgradeable {
     /// @notice The struct for membership information.
     /// @param brandName The name of the brand.
     /// @param brandLoyaltyAddress The address of the brand loyalty ERC721 contract.
-    /// @param tokenAddress The address of the token ERC1155 contract.
+    /// @param achievementAddress The address of the achievement token ERC1155 contract.
+    /// @param rewardsAddress The address of the rewards ERC1155 contract.
     /// @param memberships The list of memberships for the brand.
     /// @dev The membership ID is the index of the membership in the memberships mapping.
     struct BrandInfo {
         string brandName;
         address brandLoyaltyAddress;
-        address tokenAddress;
+        address achievementAddress;
+        address rewardsAddress;
         uint256[] membershipIds;
     }
 
@@ -67,6 +69,14 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         address tbaAccount
     );
 
+    /// @notice The event emitted when a reward token is minted.
+    /// @param brandId The ID of the brand.
+    /// @param tokenId The ID of the minted token.
+    /// @param recipientAddress The address of the recipient of the minted token.
+    event RewardTokenMinted(
+        uint256 indexed brandId, uint256 indexed tokenId, address indexed recipientAddress
+    );
+
     /// @notice The event emitted when a membership tier is assigned to a token.
     /// @param membershipAddress The address of the membership ERC721 contract that token belongs to.
     /// @param tokenId The ID of the token that tier will be assigned to.
@@ -87,12 +97,13 @@ contract TronicMain is Initializable, UUPSUpgradeable {
     /// @param brandId The ID of the brand.
     /// @param brandName The name of the brand.
     /// @param brandLoyaltyAddress The address of the brand ERC721 contract.
-    /// @param tokenAddress The address of the token ERC1155 contract.
+    /// @param achievementAddress The address of the token ERC1155 contract.
     event BrandAdded(
         uint256 indexed brandId,
         string brandName,
         address indexed brandLoyaltyAddress,
-        address indexed tokenAddress
+        address indexed achievementAddress,
+        address rewardsAddress
     );
 
     /// @notice The event emitted when a membership is removed.
@@ -102,15 +113,21 @@ contract TronicMain is Initializable, UUPSUpgradeable {
     /// @notice The event emitted when a fungible token type is created.
     /// @param brandId The ID of the brand.
     /// @param tokenId The ID of the newly created token type.
-    event FungibleTokenTypeCreated(uint256 indexed brandId, uint256 indexed tokenId);
+    /// @param isReward Whether or not the token type is a reward, false = achievement.
+    event FungibleTokenTypeCreated(uint256 indexed brandId, uint256 indexed tokenId, bool isReward);
 
-    /// @notice The event emitted when a non-fungible token type is created.
+    /// @notice The event emitted when a non-fungible  token type is created.
     /// @param brandId The ID of the brand.
     /// @param tokenId The ID of the newly created token type.
     /// @param maxMintable The maximum number of tokens that can be minted.
     /// @param uri The URI of the token type.
+    /// @param isReward Whether or not the token type is a reward, false = achievement.
     event NonFungibleTokenTypeCreated(
-        uint256 indexed brandId, uint256 indexed tokenId, uint256 maxMintable, string uri
+        uint256 indexed brandId,
+        uint256 indexed tokenId,
+        uint256 maxMintable,
+        string uri,
+        bool isReward
     );
 
     address public owner;
@@ -119,7 +136,15 @@ contract TronicMain is Initializable, UUPSUpgradeable {
     address public tbaProxyImplementation;
     uint8 public maxTiersPerMembership;
 
-    uint64 public nftTypeStartId;
+    /// @notice The starting ID for non-fungible token types of the Achievements and Rewards.
+    /// @dev These are the starting IDs for non-fungible token types on newly deployed reward/token contracts.
+    /// @dev It is provided as a parameter to the TronicMain contract when deploying the token contract.
+    /// @dev This value should be set to a high enough value to allow for the creation of a large number of fungible token types.
+    /// @dev EX: If achievementNFTTypeStartId is 1000, the first non-fungible token type will have an ID of 1000.
+    /// @dev This will give the brand the ability to create 999 fungible token types.
+    /// @dev Future NFT types will start at previous type's starting id + maxMintable.
+    uint64 public achievementNFTTypeStartId;
+    uint64 public rewardsNFTTypeStartId;
 
     uint256 public brandCounter;
     mapping(uint256 => BrandInfo) private brands;
@@ -132,7 +157,8 @@ contract TronicMain is Initializable, UUPSUpgradeable {
     IERC6551Registry public registry;
     ITronicBrandLoyalty public tronicBrandLoyalty;
     ITronicMembership public tronicMembership;
-    ITronicToken public tronicToken;
+    ITronicToken public tronicAchievement;
+    ITronicToken public tronicRewards;
 
     //disable initializer for upgradeability in the constructor
     constructor() {
@@ -143,33 +169,39 @@ contract TronicMain is Initializable, UUPSUpgradeable {
     /// @param _admin The address of the Tronic admin.
     /// @param _brandLoyalty The address of the Tronic Brand Loyalty contract (ERC721 implementation).
     /// @param _tronicMembership The address of the Tronic Membership contract (ERC1155 implementation).
-    /// @param _tronicToken The address of the Tronic Token contract (ERC1155 implementation).
+    /// @param _tronicAchievement The address of the Tronic Achievement contract (ERC1155 implementation).
+    /// @param _tronicRewards The address of the Tronic Rewards contract (ERC1155 implementation).
     /// @param _registry The address of the registry contract.
     /// @param _tbaImplementation The address of the tokenbound account implementation.
     /// @param _tbaProxyImplementation The address of the tokenbound account proxy implementation.
     /// @param _maxTiersPerMembership The maximum number of tiers per membership.
-    /// @param _nftTypeStartId The starting ID for non-fungible token types.
+    /// @param _achievementNftTypeStartId The starting ID for non-fungible token types.
+    /// @param _rewardsNftTypeStartId The starting ID for non-fungible token types.
     function initialize(
         address _admin,
         address _brandLoyalty,
         address _tronicMembership,
-        address _tronicToken,
+        address _tronicAchievement,
+        address _tronicRewards,
         address _registry,
         address _tbaImplementation,
         address _tbaProxyImplementation,
         uint8 _maxTiersPerMembership,
-        uint64 _nftTypeStartId
+        uint64 _achievementNftTypeStartId,
+        uint64 _rewardsNftTypeStartId
     ) public initializer {
         owner = msg.sender;
         tronicAdmin = _admin;
         tronicBrandLoyalty = ITronicBrandLoyalty(_brandLoyalty);
-        tronicToken = ITronicToken(_tronicToken);
+        tronicAchievement = ITronicToken(_tronicAchievement);
+        tronicRewards = ITronicToken(_tronicRewards);
         tronicMembership = ITronicMembership(_tronicMembership);
         registry = IERC6551Registry(_registry);
         tbaAccountImplementation = _tbaImplementation;
         tbaProxyImplementation = _tbaProxyImplementation;
         maxTiersPerMembership = _maxTiersPerMembership;
-        nftTypeStartId = _nftTypeStartId;
+        achievementNFTTypeStartId = _achievementNftTypeStartId;
+        rewardsNFTTypeStartId = _rewardsNftTypeStartId;
     }
 
     /// @notice Checks if the caller is the owner.
@@ -251,14 +283,15 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         emit MembershipAdded(brandId, membershipId, membershipAddress);
     }
 
-    /// @notice Deploys a new Brand's Loyalty and Achievement Token contracts.
+    /// @notice Deploys a new Brand's Loyalty, Achievement and Rewards Token contracts.
     /// @param brandName The name for the Brand Loyalty token.
     /// @param brandSymbol The symbol for the Brand Loyalty token.
     /// @param brandBaseURI The base URI for the Brand Loyalty token.
     /// @param isBound Whether or not the brand loyalty token is bound.
     /// @return brandId The ID of the newly created brand.
     /// @return brandLoyaltyAddress The address of the deployed brand loyalty Brand Loyalty contract.
-    /// @return tokenAddress The address of the deployed token ERC1155 contract.
+    /// @return achievementAddress The address of the deployed achievement ERC1155 contract.
+    /// @return rewardsAddress The address of the deployed rewards ERC1155 contract.
     /// @dev The brand ID is the index of the brand in the brands mapping.
     function deployBrand(
         string calldata brandName,
@@ -268,24 +301,33 @@ contract TronicMain is Initializable, UUPSUpgradeable {
     )
         external
         onlyAdmin
-        returns (uint256 brandId, address brandLoyaltyAddress, address tokenAddress)
+        returns (
+            uint256 brandId,
+            address brandLoyaltyAddress,
+            address achievementAddress,
+            address rewardsAddress
+        )
     {
         brandId = ++brandCounter;
         // Deploy the Brand loyalty contract
         brandLoyaltyAddress = _deployBrandLoyalty(brandName, brandSymbol, brandBaseURI, isBound);
 
         //deploy Achievement Token contract
-        tokenAddress = _deployToken();
+        achievementAddress = _deployAchievement();
+
+        // deploy Rewards Token contract
+        rewardsAddress = _deployRewards();
 
         // Assign brand id and associate the loyalty contracts with the brand
         brands[brandId] = BrandInfo({
             brandLoyaltyAddress: brandLoyaltyAddress,
             brandName: brandName,
-            tokenAddress: tokenAddress,
+            achievementAddress: achievementAddress,
+            rewardsAddress: rewardsAddress,
             membershipIds: new uint256[](0)
         });
 
-        emit BrandAdded(brandId, brandName, brandLoyaltyAddress, tokenAddress);
+        emit BrandAdded(brandId, brandName, brandLoyaltyAddress, achievementAddress, rewardsAddress);
     }
 
     /// @notice Clones the Tronic Brand Loyalty (ERC721) implementation and initializes it.
@@ -333,10 +375,17 @@ contract TronicMain is Initializable, UUPSUpgradeable {
     }
 
     /// @notice Clones the ERC1155 implementation and initializes it.
-    /// @return tokenAddress The address of the newly cloned ERC1155 contract.
-    function _deployToken() private returns (address tokenAddress) {
-        tokenAddress = Clones.clone(address(tronicToken));
-        ITronicToken(tokenAddress).initialize(tronicAdmin, nftTypeStartId);
+    /// @return achievementAddress The address of the newly cloned ERC1155 contract.
+    function _deployAchievement() private returns (address achievementAddress) {
+        achievementAddress = Clones.clone(address(tronicAchievement));
+        ITronicToken(achievementAddress).initialize(tronicAdmin, achievementNFTTypeStartId);
+    }
+
+    /// @notice Clones the ERC1155 implementation and initializes it.
+    /// @return rewardsAddress The address of the newly cloned ERC1155 contract.
+    function _deployRewards() private returns (address rewardsAddress) {
+        rewardsAddress = Clones.clone(address(tronicRewards));
+        ITronicToken(rewardsAddress).initialize(tronicAdmin, rewardsNFTTypeStartId);
     }
 
     /// @notice Removes a membership from the contract.
@@ -345,42 +394,48 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         delete memberships[_membershipId];
     }
 
-    /// @notice Creates a new ERC1155 fungible token type for a membership.
+    /// @notice Creates a new ERC1155 fungible token type for a brand.
     /// @param brandId The ID of the brand to create the token type for.
     /// @param maxSupply The maximum supply of the token type.
     /// @param uri The URI for the token type.
+    /// @param isReward Whether or not the token type is a reward, false = achievement.
     /// @return typeId The ID of the newly created token type.
-    function createFungibleTokenType(uint256 brandId, uint256 maxSupply, string memory uri)
-        external
-        onlyAdmin
-        returns (uint256 typeId)
-    {
-        // get token address from brand info
-        address brandTokenAddress = brands[brandId].tokenAddress;
+    /// @dev This function can only be called by an admin.
+    /// @dev The brand must exist.
+    function createFungibleTokenType(
+        uint256 brandId,
+        uint64 maxSupply,
+        string memory uri,
+        bool isReward
+    ) external onlyAdmin returns (uint256 typeId) {
+        address brandTokenAddress =
+            isReward ? brands[brandId].rewardsAddress : brands[brandId].achievementAddress;
         require(brandTokenAddress != address(0), "Brand does not exist");
 
-        typeId = ITronicToken(brandTokenAddress).createFungibleType(uint64(maxSupply), uri);
+        typeId = ITronicToken(brandTokenAddress).createFungibleType(maxSupply, uri);
 
-        emit FungibleTokenTypeCreated(brandId, typeId);
+        emit FungibleTokenTypeCreated(brandId, typeId, isReward);
     }
 
-    /// @notice Creates a new ERC1155 non-fungible token type for a membership.
+    /// @notice Creates a new ERC1155 non-fungible token type for a brand.
     /// @param brandId The ID of the brand to create the token type for.
     /// @param baseUri The URI for the token type.
     /// @param maxMintable The maximum number of tokens that can be minted.
+    /// @param isReward Whether or not the token type is a reward, false = achievement.
     /// @return nftTypeID The ID of the newly created token type.
-    function createNonFungibleTokenType(uint256 brandId, string memory baseUri, uint64 maxMintable)
-        external
-        onlyAdmin
-        returns (uint256 nftTypeID)
-    {
-        // get token address from brand info
-        address brandTokenAddress = brands[brandId].tokenAddress;
+    function createNonFungibleTokenType(
+        uint256 brandId,
+        string memory baseUri,
+        uint64 maxMintable,
+        bool isReward
+    ) external onlyAdmin returns (uint256 nftTypeID) {
+        address brandTokenAddress =
+            isReward ? brands[brandId].rewardsAddress : brands[brandId].achievementAddress;
         require(brandTokenAddress != address(0), "Brand does not exist");
 
         nftTypeID = ITronicToken(brandTokenAddress).createNFTType(baseUri, maxMintable);
 
-        emit NonFungibleTokenTypeCreated(brandId, nftTypeID, maxMintable, baseUri);
+        emit NonFungibleTokenTypeCreated(brandId, nftTypeID, maxMintable, baseUri, isReward);
     }
 
     /// @notice Mints a new Brand Loyalty token.
@@ -507,15 +562,19 @@ contract TronicMain is Initializable, UUPSUpgradeable {
     /// @param _recipient The address to mint the token to.
     /// @param _tokenId The tokenID (same as typeID for fungibles) of the token to mint.
     /// @param _amount The amount of the token to mint.
+    /// @param _isReward Whether or not the token is a reward, false = achievement.
     function mintFungibleToken(
         uint256 _brandId,
         address _recipient,
         uint256 _tokenId,
-        uint64 _amount
+        uint64 _amount,
+        bool _isReward
     ) external onlyAdmin {
-        BrandInfo memory brand = brands[_brandId];
-        require(brand.tokenAddress != address(0), "Brand does not exist");
-        ITronicToken(brand.tokenAddress).mintFungible(_recipient, _tokenId, _amount);
+        address brandTokenAddress =
+            _isReward ? brands[_brandId].rewardsAddress : brands[_brandId].achievementAddress;
+        require(brandTokenAddress != address(0), "Brand does not exist");
+
+        ITronicToken(brandTokenAddress).mintFungible(_recipient, _tokenId, _amount);
     }
 
     /// @notice Mints a new nonfungible ERC1155 token.
@@ -523,64 +582,22 @@ contract TronicMain is Initializable, UUPSUpgradeable {
     /// @param _recipient The address to mint the token to.
     /// @param _typeId The typeID of the NFT to mint.
     /// @param _amount The amount of NFTs to mint.
+    /// @param _isReward Whether or not the token is a reward, false = achievement.
     function mintNonFungibleToken(
         uint256 _brandId,
         address _recipient,
         uint256 _typeId,
-        uint256 _amount
+        uint256 _amount,
+        bool _isReward
     ) external onlyAdmin {
-        BrandInfo memory brand = brands[_brandId];
-        require(brand.tokenAddress != address(0), "Brand does not exist");
-        ITronicToken(brand.tokenAddress).mintNFTs(_typeId, _recipient, _amount);
+        address brandTokenAddress =
+            _isReward ? brands[_brandId].rewardsAddress : brands[_brandId].achievementAddress;
+        require(brandTokenAddress != address(0), "Brand does not exist");
+
+        ITronicToken(brandTokenAddress).mintNFTs(_typeId, _recipient, _amount);
     }
 
-    /// @notice Processes multiple minting operations for both ERC1155 and ERC721 tokens on behalf of memberships.
-    /// @param _membershipIds   Array of membership IDs corresponding to each minting operation.
-    /// @param _recipients   2D array of recipient addresses for each minting operation.
-    /// @param _tokenTypeIDs     4D array of token TypeIDs to mint for each membership.
-    ///                      For ERC1155, it could be multiple IDs, and for ERC721, it should contain a single ID.
-    /// @param _amounts      4D array of token amounts to mint for each membership.
-    ///                      For ERC1155, it represents the quantities of each token ID, and for ERC721, it should be either [1] (to mint) or [0] (to skip).
-    /// @param _contractTypes   3D array specifying the type of each token contract (either ERC1155 or ERC721) to determine the minting logic.
-    /// @dev Requires that all input arrays have matching lengths.
-    ///      For ERC721 minting, the inner arrays of _tokenTypes and _amounts should have a length of 1.
-    /// @dev array indexes: _tokenTypeIDs[membershipId][recipient][contractType][tokenTypeIDs]
-    /// @dev array indexes: _amounts[membershipId][recipient][contractType][amounts]
-    // function batchProcess(
-    //     uint256[] memory _membershipIds,
-    //     address[][] memory _recipients,
-    //     uint256[][][][] memory _tokenTypeIDs,
-    //     uint256[][][][] memory _amounts,
-    //     TokenType[][][] memory _contractTypes
-    // ) external onlyAdmin {
-    //     require(
-    //         _membershipIds.length == _tokenTypeIDs.length && _tokenTypeIDs.length == _amounts.length
-    //             && _amounts.length == _recipients.length && _recipients.length == _contractTypes.length,
-    //         "Outer arrays must have the same length"
-    //     );
-
-    //     // i = membershipId, j = recipient, k = contracttype
-    //     // Loop through each membership
-    //     for (uint256 i = 0; i < _membershipIds.length; i++) {
-    //         MembershipInfo memory membership = memberships[_membershipIds[i]];
-
-    //         for (uint256 j = 0; j < _recipients[i].length; j++) {
-    //             address recipient = _recipients[i][j];
-
-    //             for (uint256 k = 0; k < _contractTypes[i][j].length; k++) {
-    //                 if (_contractTypes[i][j][k] == TokenType.ERC1155) {
-    //                     ITronicToken(membership.tokenAddress).mintBatch(
-    //                         recipient, _tokenTypeIDs[i][j][k], _amounts[i][j][k], ""
-    //                     );
-    //                 } else {
-    //                     ITronicMembership(membership.membershipAddress).mint(recipient, 0);
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
-
-    /// @notice transfers Membership token from a brand loyalty TBA to a specified address
+    /// @notice Transfers Membership token from a brand loyalty TBA to a specified address
     /// @param _brandLoyaltyTbaAddress The address of the Brand Loyalty TBA
     /// @param _membershipId The membership ID of the membership token to be transferred
     /// @param _membershipTokenId The tokenID of the membership token to be transferred
@@ -621,12 +638,13 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         brandLoyaltyTBA.execute(membershipAddress, 0, membershipTransferCall, 0);
     }
 
-    /// @notice transfers Brand Loyalty tokens from a Brand Loyalty TBA to a specified address
+    /// @notice transfers tokens from a Brand Loyalty TBA to a specified address
     /// @param _brandId The ID of the brand
     /// @param _brandLoyaltyTbaAddress The address of the Brand Loyalty TBA
     /// @param _transferTokenId The ID of the token to transfer
     /// @param _to The address to transfer the tokens to
     /// @param _amount The amount of tokens to transfer
+    /// @param _isReward Whether or not the token is a reward, false = achievement.
     /// @dev This contract address must be granted permissions to transfer tokens from the Brand Loyalty TBA
     /// @dev This function is only callable by the tronic admin or an authorized account
     function transferTokensFromBrandLoyaltyTBA(
@@ -634,11 +652,12 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         address _brandLoyaltyTbaAddress,
         uint256 _transferTokenId,
         address _to,
-        uint256 _amount
+        uint256 _amount,
+        bool _isReward
     ) external {
-        // get brand loyalty address from brand id
-        address brandTokenAddress = brands[_brandId].tokenAddress;
-        require(brandTokenAddress != address(0), "Brand does not exist");
+        // get brand info from brand id
+        BrandInfo memory brand = brands[_brandId];
+        require(brand.brandLoyaltyAddress != address(0), "Brand does not exist");
 
         // get BrandLoaylty TBA
         IERC6551Account brandLoyaltyTBA = IERC6551Account(payable(_brandLoyaltyTbaAddress));
@@ -662,12 +681,19 @@ contract TronicMain is Initializable, UUPSUpgradeable {
             ""
         );
 
-        // // construct execute call for membership tbaAddress to execute tokenTransferCall
+        // // construct execute call for membership tbaAddress to execute nested tokenTransferCall
         // bytes memory executeCall = abi.encodeWithSignature(
         //     "execute(address,uint256,bytes,uint8)", _brandLoyaltyTbaAddress, 0, tokenTransferCall, 0
         // );
 
-        brandLoyaltyTBA.execute(brandTokenAddress, 0, tokenTransferCall, 0);
+        // if isReward is true, use rewards address, else use achievement address
+        if (_isReward) {
+            require(brand.rewardsAddress != address(0), "Rewards address not set");
+            brandLoyaltyTBA.execute(brand.rewardsAddress, 0, tokenTransferCall, 0);
+        } else {
+            require(brand.achievementAddress != address(0), "Achievement address not set");
+            brandLoyaltyTBA.execute(brand.achievementAddress, 0, tokenTransferCall, 0);
+        }
     }
 
     /// @notice Gets the address of the tokenbound account for a given brand loyalty token.
@@ -728,8 +754,14 @@ contract TronicMain is Initializable, UUPSUpgradeable {
 
     /// @notice Sets the Achievement Token implementation address, callable only by the owner.
     /// @param newImplementation The address of the new Tronic Token implementation.
-    function setTokenImplementation(address newImplementation) external onlyOwner {
-        tronicToken = ITronicToken(newImplementation);
+    function setAchievementImplementation(address newImplementation) external onlyOwner {
+        tronicAchievement = ITronicToken(newImplementation);
+    }
+
+    /// @notice Sets the Rewards Token implementation address, callable only by the owner.
+    /// @param newImplementation The address of the new Tronic Token implementation.
+    function setRewardsImplementation(address newImplementation) external onlyOwner {
+        tronicRewards = ITronicToken(newImplementation);
     }
 
     /// @notice Sets the account implementation address, callable only by the owner.

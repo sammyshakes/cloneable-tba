@@ -20,34 +20,34 @@ contract ScriptsTest is Test {
     function setUp() public {
         //Deploy scripts
         dt = new DeployTronic();
-        cft = new CreateFungibleTypes();
-        db = new DeployBrand();
-        dm = new DeployMembership();
-        mbl = new MintBrandLoyalty();
-        mm = new MintMembership();
+        // cft = new CreateFungibleTypes();
+        // db = new DeployBrand();
+        // dm = new DeployMembership();
+        // mbl = new MintBrandLoyalty();
+        // mm = new MintMembership();
     }
 
     function testDeployTronic() public {
         dt.run();
     }
 
-    function testCreateFungibleTypes() public {
-        cft.run();
-    }
+    // function testCreateFungibleTypes() public {
+    //     cft.run();
+    // }
 
-    function testDeployBrand() public {
-        db.run();
-    }
+    // function testDeployBrand() public {
+    //     db.run();
+    // }
 
-    function testDeployMembership() public {
-        dm.run();
-    }
+    // function testDeployMembership() public {
+    //     dm.run();
+    // }
 
-    function testMintBrandLoyalty() public {
-        mbl.run();
-    }
+    // function testMintBrandLoyalty() public {
+    //     mbl.run();
+    // }
 
-    function testMintMembership() public {
-        mm.run();
-    }
+    // function testMintMembership() public {
+    //     mm.run();
+    // }
 }

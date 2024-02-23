@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.24;
 
 // Imports
 import "forge-std/Script.sol";
@@ -17,7 +17,7 @@ contract CreateFungibleTypes is Script {
     address public tronicMainContractAddress = vm.envAddress("TRONIC_MAIN_PROXY_ADDRESS");
 
     //brand Id to create fungible token types for
-    uint256 brandId = 2;
+    uint256 brandId = vm.envUint("BRAND_X_ID");
 
     // this script clones an erc1155 token for a membership x and membership y
     function run() external {
@@ -26,8 +26,9 @@ contract CreateFungibleTypes is Script {
 
         vm.startBroadcast(adminPrivateKey);
 
-        //create fungible token types for brand id
-        tronicMainContract.createFungibleTokenType(brandId, 1_000_000, FungibleURI1X);
+        //create fungible achievement token types for brand id
+        bool isReward = false;
+        tronicMainContract.createFungibleTokenType(brandId, 1_000_000, FungibleURI1X, isReward);
 
         vm.stopBroadcast();
     }

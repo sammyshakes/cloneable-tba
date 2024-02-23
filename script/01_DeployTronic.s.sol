@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.23;
+pragma solidity ^0.8.24;
 
 // Imports
 import "forge-std/Script.sol";
@@ -7,6 +7,7 @@ import "../src/TronicMain.sol";
 import "../src/TronicMembership.sol";
 import "../src/TronicToken.sol";
 import "../src/TronicBrandLoyalty.sol";
+import "../src/TronicRewards.sol";
 import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
 contract DeployTronic is Script {
@@ -15,6 +16,7 @@ contract DeployTronic is Script {
     TronicToken public tronicTokenImpl;
     TronicMain public tronicMainImpl;
     TronicBrandLoyalty public tronicBrandLoyaltyImpl;
+    TronicRewards public tronicRewardsImpl;
 
     //Proxy Deployments
     ERC1967Proxy public proxyMain;
@@ -29,7 +31,7 @@ contract DeployTronic is Script {
     address payable public tbaProxyAddress =
         payable(vm.envAddress("TOKENBOUND_ACCOUNT_PROXY_IMPLEMENTATION_ADDRESS"));
 
-    function run() external {
+    function run() external returns (address, address, address, address, address) {
         uint256 deployerPrivateKey = uint256(vm.envBytes32("TRONIC_DEPLOYER_PRIVATE_KEY"));
 
         //Deploy Tronic Master Contracts
@@ -38,6 +40,7 @@ contract DeployTronic is Script {
         tronicBrandLoyaltyImpl = new TronicBrandLoyalty();
         tronicMembershipImpl = new TronicMembership();
         tronicTokenImpl = new TronicToken();
+        tronicRewardsImpl = new TronicRewards();
 
         // deploy new Tronic Main Contract implementation
         tronicMainImpl = new TronicMain();
@@ -54,13 +57,24 @@ contract DeployTronic is Script {
             address(tronicBrandLoyaltyImpl),
             address(tronicMembershipImpl),
             address(tronicTokenImpl),
+            address(tronicRewardsImpl),
             registryAddress,
             tbaAddress,
             tbaProxyAddress,
             maxTiersPerMembership,
-            nftTypeStartId
+            nftTypeStartId, // start id for nft type achievements
+            nftTypeStartId // start id for nft type rewards
         );
 
         vm.stopBroadcast();
+
+        // return the address of the deployed contracts
+        return (
+            address(tronicMain),
+            address(tronicBrandLoyaltyImpl),
+            address(tronicMembershipImpl),
+            address(tronicTokenImpl),
+            address(tronicRewardsImpl)
+        );
     }
 }

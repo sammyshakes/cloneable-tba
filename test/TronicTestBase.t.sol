@@ -4,46 +4,16 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
 import "../src/TronicMain.sol";
-import "../src/interfaces/IERC6551Account.sol";
+import "../src/TronicBrandLoyalty.sol";
 import "../src/TronicMembership.sol";
 import "../src/TronicToken.sol";
-import "../src/TronicBrandLoyalty.sol";
-import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
+import "../src/TronicRewards.sol";
+import "../src/interfaces/IERC6551Account.sol";
+import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
 /// @dev Sets up the initial state for testing the TronicMain system
-/// @notice Deploys the core TronicMain, ERC721, and ERC1155 contracts
+/// @notice Deploys the core Tronic contracts
 /// @notice Creates user accounts, default memberships, and initial token types
-/// @notice Should be called automatically by any contract inheriting TronicTestBase
-///
-/// Details:
-///
-/// - Deploys TronicMain and assigns roles
-///   - tronicMainContract: The main TronicMain contract
-///   - tronicOwner: Owner account for TronicMain
-///   - tronicAdmin: Admin account for TronicMain
-///
-/// - Deploys TronicMembership and TronicERC1155 implementations
-///   - tronicMembership: The Tronic ERC721 token contract
-///   - tronicToken: The Tronic ERC1155 token contract
-///
-/// - Initializes Tronic contracts and assigns admin
-///
-/// - Deploys mock TokenBoundAccount implementation
-///   - defaultTBAImplementationAddress: Address of default TBA implementation
-///
-/// - Creates user accounts
-///   - user1, user2, user3: Sample user accounts
-///   - unauthorizedUser: Unauthorized user account
-///
-/// - Deploys 2 sample memberships
-///   - membershipX: Membership 0
-///   - membershipY: Membership 1
-///
-/// - Mints initial sample tokens
-///
-/// This provides a complete base environment for writing tests. Any contract
-/// inheriting this base will have access to the initialized contracts, accounts,
-/// and sample data to test against.
 contract TronicTestBase is Test {
     struct BatchMintOrder {
         uint256 membershipId;
@@ -69,6 +39,7 @@ contract TronicTestBase is Test {
     TronicMembership tronicMembership;
     TronicToken tronicToken;
     TronicBrandLoyalty tronicBrandLoyaltyImplementation;
+    TronicRewards tronicRewardsImplementation;
 
     // this variable represents TronicMain via proxy
     TronicMain tronicMainContract;
@@ -77,11 +48,13 @@ contract TronicTestBase is Test {
     TronicBrandLoyalty brandLoyaltyX;
     TronicMembership brandXMembership;
     TronicToken brandXToken;
+    TronicRewards brandXRewards;
 
     //brand membership Y
     TronicBrandLoyalty brandLoyaltyY;
     TronicMembership brandYMembership;
     TronicToken brandYToken;
+    TronicRewards brandYRewards;
 
     TronicMain.MembershipInfo membershipX;
     TronicMain.MembershipInfo membershipY;
@@ -119,10 +92,12 @@ contract TronicTestBase is Test {
     address public brandLoyaltyAddressX;
     address public membershipAddressX;
     address public tokenAddressX;
+    address public rewardsAddressX;
 
     address public brandLoyaltyAddressY;
     address public membershipAddressY;
     address public tokenAddressY;
+    address public rewardsAddressY;
 
     address public tronicTokenId1TBA;
     address public tronicTokenId2TBA;
@@ -135,6 +110,7 @@ contract TronicTestBase is Test {
     address public brandLoyaltyYTokenId1TBA;
     address public brandLoyaltyYTokenId2TBA;
 
+    // achievement types
     uint256 fungibleTypeIdX1;
     uint256 fungibleTypeIdY1;
     uint256 nonFungibleTypeIdX1;
@@ -161,21 +137,24 @@ contract TronicTestBase is Test {
         tronicToken = new TronicToken();
         tronicBrandLoyaltyImplementation = new TronicBrandLoyalty();
         tronicMainContractImplementation = new TronicMain();
+        tronicRewardsImplementation = new TronicRewards();
 
-        //tronicMainContract is a proxy contract
+        //deploy tronicMainContract via proxy
         tronicMainProxy = new ERC1967Proxy(
             address(tronicMainContractImplementation),
             abi.encodeWithSignature(
-                "initialize(address,address,address,address,address,address,address,uint8,uint64)",
+                "initialize(address,address,address,address,address,address,address,address,uint8,uint64,uint64)",
                 tronicAdmin,
                 address(tronicBrandLoyaltyImplementation),
                 address(tronicMembership),
                 address(tronicToken),
+                address(tronicRewardsImplementation),
                 registryAddress,
                 defaultTBAImplementationAddress,
                 tbaProxyImplementationAddress,
                 10, //maxtiers
-                nftStartId
+                nftStartId, //start nft id for achievements
+                nftStartId //start nft id for rewards
             )
         );
 
@@ -189,10 +168,10 @@ contract TronicTestBase is Test {
         vm.startPrank(tronicAdmin);
 
         //deploy brand loyalty contracts
-        (brandIDX, brandLoyaltyAddressX, tokenAddressX) =
+        (brandIDX, brandLoyaltyAddressX, tokenAddressX, rewardsAddressX) =
             tronicMainContract.deployBrand("Brand X", "XXX", "http://BrandX.com/", false);
 
-        (brandIDY, brandLoyaltyAddressY, tokenAddressY) =
+        (brandIDY, brandLoyaltyAddressY, tokenAddressY, rewardsAddressY) =
             tronicMainContract.deployBrand("Brand Y", "YYY", "http://BrandY.com/", false);
 
         //create membership tiers
@@ -235,17 +214,22 @@ contract TronicTestBase is Test {
         // Set up initial state
         uint64 initialMaxSupply = 100_000;
 
-        fungibleTypeIdX1 =
-            tronicMainContract.createFungibleTokenType(brandIDX, initialMaxSupply, initialUriX);
+        bool isReward = false;
 
-        fungibleTypeIdY1 =
-            tronicMainContract.createFungibleTokenType(brandIDY, initialMaxSupply, initialUriY);
+        fungibleTypeIdX1 = tronicMainContract.createFungibleTokenType(
+            brandIDX, initialMaxSupply, initialUriX, isReward
+        );
 
-        nonFungibleTypeIdX1 =
-            tronicMainContract.createNonFungibleTokenType(brandIDX, initialUriX, 1_000_000);
+        fungibleTypeIdY1 = tronicMainContract.createFungibleTokenType(
+            brandIDY, initialMaxSupply, initialUriY, isReward
+        );
+
+        nonFungibleTypeIdX1 = tronicMainContract.createNonFungibleTokenType(
+            brandIDX, initialUriX, 1_000_000, isReward
+        );
 
         nonFungibleTypeIdY1 =
-            tronicMainContract.createNonFungibleTokenType(brandIDY, initialUriY, 25_000);
+            tronicMainContract.createNonFungibleTokenType(brandIDY, initialUriY, 25_000, isReward);
 
         ///mint brand loyalty nfts
 
@@ -267,14 +251,16 @@ contract TronicTestBase is Test {
         membershipY = tronicMainContract.getMembershipInfo(membershipIDY);
 
         //get brand loyalty contracts
-        address brandXTokenAddress = tronicMainContract.getBrandInfo(brandIDX).tokenAddress;
-        address brandYTokenAddress = tronicMainContract.getBrandInfo(brandIDY).tokenAddress;
+        address brandXTokenAddress = tronicMainContract.getBrandInfo(brandIDX).achievementAddress;
+        address brandYTokenAddress = tronicMainContract.getBrandInfo(brandIDY).achievementAddress;
 
         // get membership contracts
         brandXMembership = TronicMembership(membershipX.membershipAddress);
         brandXToken = TronicToken(brandXTokenAddress);
+        brandXRewards = TronicRewards(rewardsAddressX);
         brandYMembership = TronicMembership(membershipY.membershipAddress);
         brandYToken = TronicToken(brandYTokenAddress);
+        brandYRewards = TronicRewards(rewardsAddressY);
 
         brandLoyaltyX = TronicBrandLoyalty(brandLoyaltyAddressX);
         brandLoyaltyY = TronicBrandLoyalty(brandLoyaltyAddressY);

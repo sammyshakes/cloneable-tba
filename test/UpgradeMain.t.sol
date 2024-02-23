@@ -39,6 +39,6 @@ contract UpgradeMainTest is TronicTestBase {
         //get brand loyalty info
         TronicMainV2.BrandInfo memory brandLoyaltyInfo = tronicV2.getBrandInfo(brandIDX);
 
-        assertEq(brandLoyaltyInfo.tokenAddress, tokenAddressX);
+        assertEq(brandLoyaltyInfo.achievementAddress, tokenAddressX);
     }
 }

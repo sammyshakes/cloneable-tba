@@ -54,7 +54,10 @@ contract TransferTokensMainTest is TronicTestBase {
 
         //mint tokens to brand loyalty tba from tronicMainContract
         vm.prank(tronicAdmin);
-        tronicMainContract.mintFungibleToken(brandIDX, brandTBAddress, fungibleTypeIdX1, 100);
+        bool isReward = false;
+        tronicMainContract.mintFungibleToken(
+            brandIDX, brandTBAddress, fungibleTypeIdX1, 100, isReward
+        );
 
         //get the token balance of the token bound account
         uint256 balance = brandXToken.balanceOf(brandTBAddress, fungibleTypeIdX1);
@@ -72,7 +75,7 @@ contract TransferTokensMainTest is TronicTestBase {
         vm.expectRevert();
         vm.prank(address(0x666));
         tronicMainContract.transferTokensFromBrandLoyaltyTBA(
-            brandIDX, brandTBAddress, fungibleTypeIdX1, recipient, amount
+            brandIDX, brandTBAddress, fungibleTypeIdX1, recipient, amount, isReward
         );
 
         vm.startPrank(user1);
@@ -81,12 +84,12 @@ contract TransferTokensMainTest is TronicTestBase {
         //attempt to transfer using invalid brand id
         vm.expectRevert();
         tronicMainContract.transferTokensFromBrandLoyaltyTBA(
-            100, brandTBAddress, fungibleTypeIdX1, recipient, amount
+            100, brandTBAddress, fungibleTypeIdX1, recipient, amount, isReward
         );
 
         //transfer tokens from brand loyalty tba to user1
         tronicMainContract.transferTokensFromBrandLoyaltyTBA(
-            brandIDX, brandTBAddress, fungibleTypeIdX1, recipient, amount
+            brandIDX, brandTBAddress, fungibleTypeIdX1, recipient, amount, isReward
         );
 
         //get the token balance of the token bound account
@@ -104,19 +107,19 @@ contract TransferTokensMainTest is TronicTestBase {
         //attempt to transfer tokens from brand loyalty tba to user1 with invalid brandLoyaltyTokenId
         vm.expectRevert();
         tronicMainContract.transferTokensFromBrandLoyaltyTBA(
-            brandIDX, brandTBAddress, 100, recipient, amount
+            brandIDX, brandTBAddress, 100, recipient, amount, isReward
         );
 
         //attempt to transfer tokens from brand loyalty tba to user1 with invalid amount
         vm.expectRevert();
         tronicMainContract.transferTokensFromBrandLoyaltyTBA(
-            brandIDX, brandTBAddress, fungibleTypeIdX1, recipient, 101
+            brandIDX, brandTBAddress, fungibleTypeIdX1, recipient, 101, isReward
         );
 
         //attempt to transfer tokens from brand loyalty tba to user1 with invalid brandLoyaltyAddress
         vm.expectRevert();
         tronicMainContract.transferTokensFromBrandLoyaltyTBA(
-            brandIDX, address(0xdeadbeef), fungibleTypeIdX1, recipient, amount
+            brandIDX, address(0xdeadbeef), fungibleTypeIdX1, recipient, amount, isReward
         );
 
         vm.stopPrank();

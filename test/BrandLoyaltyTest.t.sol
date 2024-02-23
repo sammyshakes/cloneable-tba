@@ -79,7 +79,7 @@ contract BrandLoyaltyTest is TronicTestBase {
     function testGetBrandInfo() public {
         TronicMain.BrandInfo memory brandInfo = tronicMainContract.getBrandInfo(brandIDX);
 
-        assertEq(brandInfo.tokenAddress, tokenAddressX);
+        assertEq(brandInfo.achievementAddress, tokenAddressX);
         assertEq(brandInfo.brandLoyaltyAddress, brandLoyaltyAddressX);
     }
 
@@ -122,7 +122,7 @@ contract BrandLoyaltyTest is TronicTestBase {
         //deploy new brand z with bound loyalty token
         vm.startPrank(tronicAdmin);
         //deploy brnda from tronicmain
-        (uint256 brandZDX, address brandLoyaltyZAddress,) =
+        (uint256 brandZDX, address brandLoyaltyZAddress,,) =
             tronicMainContract.deployBrand("brandZ", "BRNDZ", "https://www.brandz.com/", true);
 
         // mint brand loyalty token

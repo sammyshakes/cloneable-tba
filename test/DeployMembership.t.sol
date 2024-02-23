@@ -25,12 +25,12 @@ contract DeployMembership is TronicTestBase {
         TronicMain.BrandInfo memory brandXInfo = tronicMainContract.getBrandInfo(brandIDX);
         assertEq(brandXInfo.brandName, "Brand X");
         assertEq(brandXInfo.brandLoyaltyAddress, brandLoyaltyAddressX);
-        assertEq(brandXInfo.tokenAddress, tokenAddressX);
+        assertEq(brandXInfo.achievementAddress, tokenAddressX);
 
         TronicMain.BrandInfo memory brandYInfo = tronicMainContract.getBrandInfo(brandIDY);
         assertEq(brandYInfo.brandName, "Brand Y");
         assertEq(brandYInfo.brandLoyaltyAddress, brandLoyaltyAddressY);
-        assertEq(brandYInfo.tokenAddress, tokenAddressY);
+        assertEq(brandYInfo.achievementAddress, tokenAddressY);
 
         //get name and symbol
         console.log("brandXMembership name: ", brandXMembership.name());
@@ -80,7 +80,7 @@ contract DeployMembership is TronicTestBase {
 
         //check uri of membershipTokenIdUser1
         string memory uri2 = brandXMembership.tokenURI(membershipTokenIdUser1);
-        console.log("uri2: ", tier1XURI);
+        assertEq(uri2, tier1XURI);
 
         // Mint a brand loyalty nft to user2
         (address user2TBAmembershipY, uint256 BrandYTokenId) =
@@ -135,8 +135,12 @@ contract DeployMembership is TronicTestBase {
     function testDeployBrand() public {
         // deploy brandX
         vm.prank(tronicAdmin);
-        (uint256 brandid, address brandXLoyaltyAddress, address brandXTokenAddress) =
-        tronicMainContract.deployBrand(
+        (
+            uint256 brandid,
+            address brandXLoyaltyAddress,
+            address brandXTokenAddress,
+            address brandXRewardAddress
+        ) = tronicMainContract.deployBrand(
             "Brand X", // brand name
             "BRDX",
             "http://example.com/token/",
@@ -146,6 +150,7 @@ contract DeployMembership is TronicTestBase {
         console.log("brand id: ", brandid);
         console.log("brandLoyaltyAddress: ", brandXLoyaltyAddress);
         console.log("brandXTokenAddress: ", brandXTokenAddress);
+        console.log("brandXRewardAddress: ", brandXRewardAddress);
 
         //instance of brandLoyalty contract
         TronicBrandLoyalty brandLoyalty = TronicBrandLoyalty(brandXLoyaltyAddress);
@@ -167,7 +172,7 @@ contract DeployMembership is TronicTestBase {
         //first deploy brand
         // deploy brandX
         vm.prank(tronicAdmin);
-        (uint256 brandId, address brandXLoyaltyAddress,) = tronicMainContract.deployBrand(
+        (uint256 brandId, address brandXLoyaltyAddress,,) = tronicMainContract.deployBrand(
             "Brand X", // brand name
             "BRDX",
             "http://example.com/token/",
@@ -245,7 +250,7 @@ contract DeployMembership is TronicTestBase {
         //first deploy brand
         // deploy brandX
         vm.prank(tronicAdmin);
-        (uint256 brandId, address brandXLoyaltyAddress,) = tronicMainContract.deployBrand(
+        (uint256 brandId, address brandXLoyaltyAddress,,) = tronicMainContract.deployBrand(
             "Brand ZZZ", // brand name
             "BRDZZZ",
             "http://example.com/token/",

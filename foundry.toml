@@ -1,7 +1,7 @@
 [profile.default]
 libs = ["lib"]
 out = "out"
-solc_version = "0.8.23"
+solc_version = "0.8.24"
 src = "src"
 
 [rpc_endpoints]

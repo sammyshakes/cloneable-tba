@@ -7,15 +7,15 @@ import {ERC1155, IERC1155, IERC165} from "@openzeppelin/contracts/token/ERC1155/
 import {Initializable} from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
-/// @title TronicToken
-/// @notice This contract represents the fungible and non-fungible tokens (NFTs) for the Tronic ecosystem.
+/// @title TronicRewards
+/// @notice This contract represents the fungible and non-fungible reward tokens for the Tronic ecosystem.
 /// @dev This contract is based on the ERC1155 standard.
 /// @dev This contract is cloneable.
-contract TronicToken is ITronicToken, ERC1155, Initializable {
+contract TronicRewards is ITronicToken, ERC1155, Initializable {
     using Strings for uint256;
 
-    event FungibleTokenTypeCreated(uint256 indexed typeId, uint64 maxSupply, string uri);
-    event NFTokenTypeCreated(uint256 indexed typeId, uint64 maxMintable, string baseURI);
+    event FungibleRewardTypeCreated(uint256 indexed typeId, uint64 maxSupply, string uri);
+    event NonFungibleRewardTypeCreated(uint256 indexed typeId, uint64 maxMintable, string baseURI);
 
     uint32 private _tokenTypeCounter;
     uint64 public nftTypeStartId;
@@ -25,7 +25,7 @@ contract TronicToken is ITronicToken, ERC1155, Initializable {
     string public symbol;
     mapping(uint256 => FungibleTokenInfo) private _fungibleTokens;
     mapping(uint256 => NFTokenInfo) private _nftTypes;
-    mapping(uint256 => uint256) public tokenLevels;
+    mapping(uint256 => uint256) public rewardLevels;
     mapping(uint256 => address) public nftOwners;
     mapping(address => uint256[]) public nftIdsForOwner;
     mapping(address => bool) private _admins;
@@ -107,7 +107,7 @@ contract TronicToken is ITronicToken, ERC1155, Initializable {
             maxMintable: maxMintable
         });
 
-        emit NFTokenTypeCreated(nftTypeId, maxMintable, baseURI);
+        emit NonFungibleRewardTypeCreated(nftTypeId, maxMintable, baseURI);
     }
 
     /// @notice Creates a new fungible token type.
@@ -128,14 +128,14 @@ contract TronicToken is ITronicToken, ERC1155, Initializable {
         _fungibleTokens[fungibleTokenId] =
             FungibleTokenInfo({uri: _uri, maxSupply: _maxSupply, totalMinted: 0, totalBurned: 0});
 
-        emit FungibleTokenTypeCreated(fungibleTokenId, _maxSupply, _uri);
+        emit FungibleRewardTypeCreated(fungibleTokenId, _maxSupply, _uri);
     }
 
-    /// @notice Mints fungible tokens to a specific address.
-    /// @param to Address to mint the tokens to.
-    /// @param id ID of the fungible token type.
-    /// @param amount The amount of tokens to mint.
-    /// @dev Requires that the token type exists and minting amount does not exceed max supply.
+    /// @notice Mints fungible rewards to a specific address.
+    /// @param to Address to mint the rewards to.
+    /// @param id ID of the fungible reward type.
+    /// @param amount The amount of rewards to mint.
+    /// @dev Requires that the reward type exists and minting amount does not exceed max supply.
     function mintFungible(address to, uint256 id, uint64 amount) external onlyAdmin {
         FungibleTokenInfo memory token = _fungibleTokens[id];
         require(bytes(token.uri).length > 0, "Token type does not exist");
@@ -228,14 +228,14 @@ contract TronicToken is ITronicToken, ERC1155, Initializable {
     /// @param level The level to set.
     /// @dev Only callable by admin.
     function setLevel(uint256 tokenId, uint256 level) external onlyAdmin {
-        tokenLevels[tokenId] = level;
+        rewardLevels[tokenId] = level;
     }
 
     /// @notice Gets the level of a specific token ID.
     /// @param tokenId The ID of the token.
     /// @return The level of the token.
     function getLevel(uint256 tokenId) external view returns (uint256) {
-        return tokenLevels[tokenId];
+        return rewardLevels[tokenId];
     }
 
     /// @notice Mints multiple tokens to a specific address.

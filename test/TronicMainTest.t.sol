@@ -52,14 +52,18 @@ contract TronicMainTest is TronicTestBase {
         string memory initialUriX = "http://exampleX.com/token/";
         string memory initialUriY = "http://exampleY.com/token/";
 
-        // Admin creates a fungible token type for membershipX and membershipY
+        bool isReward = false;
+
+        // Admin creates a fungible achievement token type for membershipX and membershipY
         vm.startPrank(tronicAdmin);
-        uint256 fungibleIDX =
-            tronicMainContract.createFungibleTokenType(brandIDX, initialMaxSupply, initialUriX);
+        uint256 fungibleIDX = tronicMainContract.createFungibleTokenType(
+            brandIDX, initialMaxSupply, initialUriX, isReward
+        );
 
         //create a new fungible token type for membershipY
-        uint256 fungibleIDY =
-            tronicMainContract.createFungibleTokenType(brandIDY, initialMaxSupply, initialUriY);
+        uint256 fungibleIDY = tronicMainContract.createFungibleTokenType(
+            brandIDY, initialMaxSupply, initialUriY, isReward
+        );
 
         vm.stopPrank();
 
@@ -84,14 +88,16 @@ contract TronicMainTest is TronicTestBase {
         // mint 100 tokens to user1's tba
         vm.startPrank(tronicAdmin);
         tronicMainContract.mintFungibleToken(
-            membershipIDX, brandLoyaltyXTokenId1TBA, fungibleIDX, 100
+            membershipIDX, brandLoyaltyXTokenId1TBA, fungibleIDX, 100, isReward
         );
 
         assertEq(brandXToken.balanceOf(brandLoyaltyXTokenId1TBA, fungibleIDX), 100);
 
         // attempt to mint from invalid membership
         vm.expectRevert("Brand does not exist");
-        tronicMainContract.mintFungibleToken(100, brandLoyaltyXTokenId1TBA, fungibleIDX, 100);
+        tronicMainContract.mintFungibleToken(
+            100, brandLoyaltyXTokenId1TBA, fungibleIDX, 100, isReward
+        );
 
         vm.stopPrank();
     }
@@ -102,14 +108,18 @@ contract TronicMainTest is TronicTestBase {
         string memory initialUriY = "http://exampleNFTY.com/token";
         uint64 maxMintable = 1000;
 
+        bool isReward = false;
+
         // Admin creates a non-fungible token type for membershipX and membershipY
         vm.startPrank(tronicAdmin);
-        uint256 nonFungibleIDX =
-            tronicMainContract.createNonFungibleTokenType(brandIDX, initialUriX, maxMintable);
+        uint256 nonFungibleIDX = tronicMainContract.createNonFungibleTokenType(
+            brandIDX, initialUriX, maxMintable, isReward
+        );
 
         //create a new non-fungible token type for membershipY
-        uint256 nonFungibleIDY =
-            tronicMainContract.createNonFungibleTokenType(brandIDY, initialUriY, maxMintable);
+        uint256 nonFungibleIDY = tronicMainContract.createNonFungibleTokenType(
+            brandIDY, initialUriY, maxMintable, isReward
+        );
 
         vm.stopPrank();
 
@@ -245,10 +255,12 @@ contract TronicMainTest is TronicTestBase {
         uint64 initialMaxSupply = 1000;
         string memory initialUriX = "http://exampleX.com/token/";
 
+        bool isReward = false;
+
         // create a fungible token type
         vm.startPrank(tronicAdmin);
         vm.expectRevert("Brand does not exist");
-        tronicMainContract.createFungibleTokenType(100, initialMaxSupply, initialUriX);
+        tronicMainContract.createFungibleTokenType(100, initialMaxSupply, initialUriX, isReward);
 
         //now test nonfungible
         string memory initialUriY = "http://exampleY.com/token/";
@@ -256,7 +268,7 @@ contract TronicMainTest is TronicTestBase {
 
         // create a non-fungible token type
         vm.expectRevert("Brand does not exist");
-        tronicMainContract.createNonFungibleTokenType(100, initialUriY, maxMintable);
+        tronicMainContract.createNonFungibleTokenType(100, initialUriY, maxMintable, isReward);
     }
 
     //test mintMembership function from tronic main contract
@@ -363,19 +375,24 @@ contract TronicMainTest is TronicTestBase {
         address recipient = user3;
         uint256 invalidInt = 1000;
         uint256 amount = 1;
+        bool isReward = false;
 
         //try to mint with invalid membershipId
         vm.startPrank(tronicAdmin);
         vm.expectRevert("Brand does not exist");
-        tronicMainContract.mintNonFungibleToken(invalidInt, recipient, nonFungibleTypeIdX1, amount);
+        tronicMainContract.mintNonFungibleToken(
+            invalidInt, recipient, nonFungibleTypeIdX1, amount, isReward
+        );
 
         //try to mint with invalid nonFungibleTypeId
         vm.expectRevert("NFT type does not exist");
-        tronicMainContract.mintNonFungibleToken(membershipIDX, recipient, invalidInt, amount);
+        tronicMainContract.mintNonFungibleToken(
+            membershipIDX, recipient, invalidInt, amount, isReward
+        );
 
         //mint valid nonFungibleToken
         tronicMainContract.mintNonFungibleToken(
-            membershipIDX, recipient, nonFungibleTypeIdX1, amount
+            membershipIDX, recipient, nonFungibleTypeIdX1, amount, isReward
         );
 
         //get the tokenid of tokens owned by recipient
@@ -403,10 +420,10 @@ contract TronicMainTest is TronicTestBase {
     function testUpdateERC1155Implementation() public {
         //update implementation address
         vm.prank(tronicOwner);
-        tronicMainContract.setTokenImplementation(payable(address(0xdeadbeef)));
+        tronicMainContract.setAchievementImplementation(payable(address(0xdeadbeef)));
 
         //get new implementation address
-        address newImplementation = address(tronicMainContract.tronicToken());
+        address newImplementation = address(tronicMainContract.tronicAchievement());
 
         //verify that implementation address has changed
         assertEq(newImplementation, address(0xdeadbeef));
