@@ -50,4 +50,5 @@ interface ITronicToken {
         uint256[] memory amounts,
         bytes memory data
     ) external;
+    function burn(address account, uint256 id, uint256 amount) external;
 }

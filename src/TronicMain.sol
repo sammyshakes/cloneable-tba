@@ -597,6 +597,26 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         ITronicToken(brandTokenAddress).mintNFTs(_typeId, _recipient, _amount);
     }
 
+    /// @notice Burns an achievement or reward token.
+    /// @param _brandId The ID of the brand to burn the token for.
+    /// @param _account The address of the account to burn the token from.
+    /// @param _tokenId The tokenID (same as typeID for fungibles) of the token to burn.
+    /// @param _amount The amount of the token to burn.
+    /// @param _isReward Whether or not the token is a reward, false = achievement.
+    function burnToken(
+        uint256 _brandId,
+        address _account,
+        uint256 _tokenId,
+        uint64 _amount,
+        bool _isReward
+    ) external onlyAdmin {
+        address brandTokenAddress =
+            _isReward ? brands[_brandId].rewardsAddress : brands[_brandId].achievementAddress;
+        require(brandTokenAddress != address(0), "Token does not exist");
+
+        ITronicToken(brandTokenAddress).burn(_account, _tokenId, _amount);
+    }
+
     /// @notice Transfers Membership token from a brand loyalty TBA to a specified address
     /// @param _brandLoyaltyTbaAddress The address of the Brand Loyalty TBA
     /// @param _membershipId The membership ID of the membership token to be transferred
