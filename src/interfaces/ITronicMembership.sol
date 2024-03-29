@@ -54,8 +54,9 @@ interface ITronicMembership {
         view
         returns (MembershipTier memory);
     function getMembershipTierId(uint8 tierIndex) external view returns (string memory);
-    function setMembershipToken(uint256 tokenId, uint8 tierIndex) external;
+    function setMembershipToken(uint256 tokenId, uint8 tierIndex, uint128 timestamp) external;
     function getMembershipToken(uint256 tokenId) external view returns (MembershipToken memory);
     function getTierIndexByTierId(string memory tierId) external view returns (uint8);
     function MEMBERSHIP_ID() external view returns (uint256);
+    function expireMembership(uint256 tokenId) external;
 }

@@ -394,6 +394,36 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         delete memberships[_membershipId];
     }
 
+    /// @notice Expires a membership token.
+    /// @param _membershipId The ID of the membership to expire.
+    /// @param _tokenId The ID of the token to expire.
+    function expireMembership(uint256 _membershipId, uint256 _tokenId) external onlyAdmin {
+        MembershipInfo storage membership = memberships[_membershipId];
+        require(membership.membershipAddress != address(0), "Membership does not exist");
+
+        ITronicMembership(membership.membershipAddress).expireMembership(_tokenId);
+    }
+
+    /// @notice Renews a membership token.
+    /// @param _membershipId The ID of the membership to renew.
+    /// @param _tokenId The ID of the token to renew.
+    /// @param _tierIndex The index of the membership tier to renew the token to.
+    /// @param _startTimestamp The timestamp to start the membership from.
+    function renewMembership(
+        uint256 _membershipId,
+        uint256 _tokenId,
+        uint8 _tierIndex,
+        uint128 _startTimestamp
+    ) external onlyAdmin {
+        require(_startTimestamp > 0, "Invalid start timestamp");
+        MembershipInfo storage membership = memberships[_membershipId];
+        require(membership.membershipAddress != address(0), "Membership does not exist");
+
+        ITronicMembership(membership.membershipAddress).setMembershipToken(
+            _tokenId, _tierIndex, _startTimestamp
+        );
+    }
+
     /// @notice Creates a new ERC1155 fungible token type for a brand.
     /// @param brandId The ID of the brand to create the token type for.
     /// @param maxSupply The maximum supply of the token type.
@@ -448,7 +478,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         onlyAdmin
         returns (address payable tbaAccount, uint256 brandTokenId)
     {
-        BrandInfo memory brand = brands[_brandId];
+        BrandInfo storage brand = brands[_brandId];
         require(brand.brandLoyaltyAddress != address(0), "Brand does not exist");
 
         //mint brand loyalty token to recipient
@@ -467,7 +497,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         onlyAdmin
         returns (uint256 tokenId)
     {
-        MembershipInfo memory membership = memberships[_membershipId];
+        MembershipInfo storage membership = memberships[_membershipId];
         require(membership.membershipAddress != address(0), "Membership does not exist");
 
         //mint membership token to recipient
@@ -491,7 +521,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         bool _isOpen,
         string memory _tierURI
     ) external onlyAdmin returns (uint8 tierIndex) {
-        MembershipInfo memory membership = memberships[_membershipId];
+        MembershipInfo storage membership = memberships[_membershipId];
         require(membership.membershipAddress != address(0), "Membership does not exist");
 
         return ITronicMembership(membership.membershipAddress).createMembershipTier(
@@ -517,7 +547,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         bool _isOpen,
         string memory _tierURI
     ) external onlyAdmin {
-        MembershipInfo memory membership = memberships[_membershipId];
+        MembershipInfo storage membership = memberships[_membershipId];
         require(membership.membershipAddress != address(0), "Membership does not exist");
 
         ITronicMembership(membership.membershipAddress).setMembershipTier(
@@ -536,7 +566,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         view
         returns (ITronicMembership.MembershipTier memory)
     {
-        MembershipInfo memory membership = memberships[_membershipId];
+        MembershipInfo storage membership = memberships[_membershipId];
         require(membership.membershipAddress != address(0), "Membership does not exist");
 
         return ITronicMembership(membership.membershipAddress).getMembershipTierDetails(_tierIndex);
@@ -551,7 +581,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         view
         returns (uint8)
     {
-        MembershipInfo memory membership = memberships[_membershipId];
+        MembershipInfo storage membership = memberships[_membershipId];
         require(membership.membershipAddress != address(0), "Membership does not exist");
 
         return ITronicMembership(membership.membershipAddress).getTierIndexByTierId(tierId);
@@ -676,7 +706,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         bool _isReward
     ) external {
         // get brand info from brand id
-        BrandInfo memory brand = brands[_brandId];
+        BrandInfo storage brand = brands[_brandId];
         require(brand.brandLoyaltyAddress != address(0), "Brand does not exist");
 
         // get BrandLoaylty TBA

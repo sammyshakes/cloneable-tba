@@ -199,12 +199,12 @@ contract TronicMembership is ITronicMembership, ERC721, Initializable {
     /// @param tierIndex The index of the membership tier to associate with the token.
     /// @dev This function can only be called by an admin.
     /// @dev The tier must exist.
-    function setMembershipToken(uint256 tokenId, uint8 tierIndex)
+    function setMembershipToken(uint256 tokenId, uint8 tierIndex, uint128 timestamp)
         external
         onlyAdmin
         tierExists(tierIndex)
     {
-        _membershipTokens[tokenId] = MembershipToken(tierIndex, uint128(block.timestamp));
+        _membershipTokens[tokenId] = MembershipToken(tierIndex, timestamp);
     }
 
     /// @notice Retrieves the membership details of a specific token.
@@ -212,6 +212,13 @@ contract TronicMembership is ITronicMembership, ERC721, Initializable {
     /// @return The membership details of the token, represented by a `TokenMembership` struct.
     function getMembershipToken(uint256 tokenId) external view returns (MembershipToken memory) {
         return _membershipTokens[tokenId];
+    }
+
+    /// @notice Expires the membership of a token.
+    /// @param tokenId The ID of the token whose membership is to be expired.
+    /// @dev This function can only be called by an admin.
+    function expireMembership(uint256 tokenId) external onlyAdmin {
+        _membershipTokens[tokenId].timestamp = 0;
     }
 
     //function to determine if a token has a valid membership

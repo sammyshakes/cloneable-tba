@@ -310,7 +310,7 @@ contract MembershipTest is TronicTestBase {
         uint8 tier = 1;
 
         vm.prank(tronicAdmin);
-        brandXMembership.setMembershipToken(tokenId, tier);
+        brandXMembership.setMembershipToken(tokenId, tier, uint128(block.timestamp));
 
         //get membership token
         uint8 membershipTier = brandXMembership.getMembershipToken(tokenId).tierIndex;
