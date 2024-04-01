@@ -60,4 +60,5 @@ interface ITronicMembership {
     function MEMBERSHIP_ID() external view returns (uint256);
     function expireMembership(uint256 tokenId) external;
     function renewMembership(uint256 tokenId) external;
+    function isValid(uint256 tokenId) external view returns (bool);
 }

@@ -736,6 +736,21 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         }
     }
 
+    /// function that will call membership contract to determine if the token is valid
+    /// @param _membershipId The ID of the membership
+    /// @param _tokenId The ID of the token
+    /// @return isValid Whether or not the token is valid
+    function isMembershipTokenValid(uint256 _membershipId, uint256 _tokenId)
+        external
+        view
+        returns (bool isValid)
+    {
+        MembershipInfo storage membership = memberships[_membershipId];
+        require(membership.membershipAddress != address(0), "Membership does not exist");
+
+        return ITronicMembership(membership.membershipAddress).isValid(_tokenId);
+    }
+
     /// @notice Gets the address of the tokenbound account for a given brand loyalty token.
     /// @param _brandId The ID of the brand.
     /// @param _brandLoyaltyTokenId The ID of the brand loyalty token.
