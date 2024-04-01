@@ -407,21 +407,11 @@ contract TronicMain is Initializable, UUPSUpgradeable {
     /// @notice Renews a membership token.
     /// @param _membershipId The ID of the membership to renew.
     /// @param _tokenId The ID of the token to renew.
-    /// @param _tierIndex The index of the membership tier to renew the token to.
-    /// @param _startTimestamp The timestamp to start the membership from.
-    function renewMembership(
-        uint256 _membershipId,
-        uint256 _tokenId,
-        uint8 _tierIndex,
-        uint128 _startTimestamp
-    ) external onlyAdmin {
-        require(_startTimestamp > 0, "Invalid start timestamp");
+    function renewMembership(uint256 _membershipId, uint256 _tokenId) external onlyAdmin {
         MembershipInfo storage membership = memberships[_membershipId];
         require(membership.membershipAddress != address(0), "Membership does not exist");
 
-        ITronicMembership(membership.membershipAddress).setMembershipToken(
-            _tokenId, _tierIndex, _startTimestamp
-        );
+        ITronicMembership(membership.membershipAddress).renewMembership(_tokenId);
     }
 
     /// @notice Creates a new ERC1155 fungible token type for a brand.
