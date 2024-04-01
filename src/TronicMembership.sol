@@ -221,6 +221,13 @@ contract TronicMembership is ITronicMembership, ERC721, Initializable {
         _membershipTokens[tokenId].timestamp = 0;
     }
 
+    /// @notice Renews the membership of a token.
+    /// @param tokenId The ID of the token whose membership is to be renewed.
+    /// @dev This function can only be called by an admin.
+    function renewMembership(uint256 tokenId) external onlyAdmin {
+        _membershipTokens[tokenId].timestamp = uint128(block.timestamp);
+    }
+
     //function to determine if a token has a valid membership
     /// @notice Checks if a token has a valid membership.
     /// @param tokenId The ID of the token.

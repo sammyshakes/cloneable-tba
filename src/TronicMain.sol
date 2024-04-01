@@ -407,21 +407,11 @@ contract TronicMain is Initializable, UUPSUpgradeable {
     /// @notice Renews a membership token.
     /// @param _membershipId The ID of the membership to renew.
     /// @param _tokenId The ID of the token to renew.
-    /// @param _tierIndex The index of the membership tier to renew the token to.
-    /// @param _startTimestamp The timestamp to start the membership from.
-    function renewMembership(
-        uint256 _membershipId,
-        uint256 _tokenId,
-        uint8 _tierIndex,
-        uint128 _startTimestamp
-    ) external onlyAdmin {
-        require(_startTimestamp > 0, "Invalid start timestamp");
+    function renewMembership(uint256 _membershipId, uint256 _tokenId) external onlyAdmin {
         MembershipInfo storage membership = memberships[_membershipId];
         require(membership.membershipAddress != address(0), "Membership does not exist");
 
-        ITronicMembership(membership.membershipAddress).setMembershipToken(
-            _tokenId, _tierIndex, _startTimestamp
-        );
+        ITronicMembership(membership.membershipAddress).renewMembership(_tokenId);
     }
 
     /// @notice Creates a new ERC1155 fungible token type for a brand.
@@ -744,6 +734,21 @@ contract TronicMain is Initializable, UUPSUpgradeable {
             require(brand.achievementAddress != address(0), "Achievement address not set");
             brandLoyaltyTBA.execute(brand.achievementAddress, 0, tokenTransferCall, 0);
         }
+    }
+
+    /// function that will call membership contract to determine if the token is valid
+    /// @param _membershipId The ID of the membership
+    /// @param _tokenId The ID of the token
+    /// @return isValid Whether or not the token is valid
+    function isMembershipTokenValid(uint256 _membershipId, uint256 _tokenId)
+        external
+        view
+        returns (bool isValid)
+    {
+        MembershipInfo storage membership = memberships[_membershipId];
+        require(membership.membershipAddress != address(0), "Membership does not exist");
+
+        return ITronicMembership(membership.membershipAddress).isValid(_tokenId);
     }
 
     /// @notice Gets the address of the tokenbound account for a given brand loyalty token.

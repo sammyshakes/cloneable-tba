@@ -41,9 +41,7 @@ contract ExpireMembershipTest is TronicTestBase {
         tronicMainContract.expireMembership(membershipIDX, 1);
 
         // Now, try to renew membership for the same user
-        tronicMainContract.renewMembership(
-            membershipIDX, 1, TronicTier1Index, uint128(block.timestamp)
-        );
+        tronicMainContract.renewMembership(membershipIDX, 1);
         vm.stopPrank();
 
         // Verify the new token has valid membership details
