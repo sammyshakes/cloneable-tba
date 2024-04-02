@@ -214,7 +214,7 @@ contract TronicMembership is ITronicMembership, ERC721, Initializable {
         return _membershipTokens[tokenId];
     }
 
-    /// @notice Expires the membership of a token.
+    /// @notice Expires the membership of a token by setting timestamp to 0.
     /// @param tokenId The ID of the token whose membership is to be expired.
     /// @dev This function can only be called by an admin.
     function expireMembership(uint256 tokenId) external onlyAdmin {
@@ -224,8 +224,12 @@ contract TronicMembership is ITronicMembership, ERC721, Initializable {
     /// @notice Renews the membership of a token.
     /// @param tokenId The ID of the token whose membership is to be renewed.
     /// @dev This function can only be called by an admin.
-    function renewMembership(uint256 tokenId) external onlyAdmin {
-        _membershipTokens[tokenId].timestamp = uint128(block.timestamp);
+    function renewMembership(uint256 tokenId) external onlyAdmin tokenExists(tokenId) {
+        MembershipToken storage membership = _membershipTokens[tokenId];
+        MembershipTier storage tier = _membershipTiers[membership.tierIndex];
+
+        uint128 newTimestamp = membership.timestamp + tier.duration;
+        membership.timestamp = newTimestamp;
     }
 
     //function to determine if a token has a valid membership
