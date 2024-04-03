@@ -203,6 +203,7 @@ contract TronicMembership is ITronicMembership, ERC721, Initializable {
         external
         onlyAdmin
         tierExists(tierIndex)
+        tokenExists(tokenId)
     {
         _membershipTokens[tokenId] = MembershipToken(tierIndex, timestamp);
     }
@@ -214,25 +215,6 @@ contract TronicMembership is ITronicMembership, ERC721, Initializable {
         return _membershipTokens[tokenId];
     }
 
-    /// @notice Expires the membership of a token by setting timestamp to 0.
-    /// @param tokenId The ID of the token whose membership is to be expired.
-    /// @dev This function can only be called by an admin.
-    function expireMembership(uint256 tokenId) external onlyAdmin {
-        _membershipTokens[tokenId].timestamp = 0;
-    }
-
-    /// @notice Renews the membership of a token.
-    /// @param tokenId The ID of the token whose membership is to be renewed.
-    /// @dev This function can only be called by an admin.
-    function renewMembership(uint256 tokenId) external onlyAdmin tokenExists(tokenId) {
-        MembershipToken storage membership = _membershipTokens[tokenId];
-        MembershipTier storage tier = _membershipTiers[membership.tierIndex];
-
-        uint128 newTimestamp = membership.timestamp + tier.duration;
-        membership.timestamp = newTimestamp;
-    }
-
-    //function to determine if a token has a valid membership
     /// @notice Checks if a token has a valid membership.
     /// @param tokenId The ID of the token.
     /// @return True if the token has a valid membership, false otherwise.
@@ -242,7 +224,9 @@ contract TronicMembership is ITronicMembership, ERC721, Initializable {
         return membership.timestamp + tier.duration > block.timestamp;
     }
 
-    // write tokenURI function that returns the membership tier URI
+    /// @notice Returns the URI of a token.
+    /// @param tokenID The ID of the token.
+    /// @return The URI of the token.
     function tokenURI(uint256 tokenID) public view override returns (string memory) {
         require(tokenID <= totalSupply(), "This token does not exist");
         //get tier index from token id

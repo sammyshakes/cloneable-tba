@@ -394,24 +394,23 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         delete memberships[_membershipId];
     }
 
-    /// @notice Expires a membership token.
-    /// @param _membershipId The ID of the membership to expire.
-    /// @param _tokenId The ID of the token to expire.
-    function expireMembership(uint256 _membershipId, uint256 _tokenId) external onlyAdmin {
+    /// @notice Updates the membership token.
+    /// @param _membershipId The ID of the membership to update.
+    /// @param _tokenId The ID of the token to update.
+    /// @param _tierIndex The index of the membership tier to associate with the token.
+    /// @param _timestamp The timestamp of the membership.
+    function updateMembershipToken(
+        uint256 _membershipId,
+        uint256 _tokenId,
+        uint8 _tierIndex,
+        uint128 _timestamp
+    ) external onlyAdmin {
         MembershipInfo storage membership = memberships[_membershipId];
         require(membership.membershipAddress != address(0), "Membership does not exist");
 
-        ITronicMembership(membership.membershipAddress).expireMembership(_tokenId);
-    }
-
-    /// @notice Renews a membership token.
-    /// @param _membershipId The ID of the membership to renew.
-    /// @param _tokenId The ID of the token to renew.
-    function renewMembership(uint256 _membershipId, uint256 _tokenId) external onlyAdmin {
-        MembershipInfo storage membership = memberships[_membershipId];
-        require(membership.membershipAddress != address(0), "Membership does not exist");
-
-        ITronicMembership(membership.membershipAddress).renewMembership(_tokenId);
+        ITronicMembership(membership.membershipAddress).setMembershipToken(
+            _tokenId, _tierIndex, _timestamp
+        );
     }
 
     /// @notice Creates a new ERC1155 fungible token type for a brand.
