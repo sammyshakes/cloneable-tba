@@ -33,8 +33,9 @@ interface ITronicMembership {
         address tronicAdmin
     ) external;
 
-    function mint(address to, uint8 tierIndex) external returns (uint256 tokenId);
-
+    function mint(address to, uint8 tierIndex, uint128 startTimestamp)
+        external
+        returns (uint256 tokenId);
     function createMembershipTier(
         string memory tierId,
         uint128 duration,

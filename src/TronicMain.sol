@@ -486,11 +486,40 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         onlyAdmin
         returns (uint256 tokenId)
     {
+        return _mintMembershipWithTimestamp(
+            _recipient, _membershipId, _tierIndex, uint128(block.timestamp)
+        );
+    }
+
+    /// @notice Mints a new Membership token for a specified brand with a start timestamp.
+    /// @param _recipient The address to mint the token to.
+    /// @param _membershipId The ID of the membership to mint the token for.
+    /// @param _tierIndex The index of the membership tier to associate with the token.
+    /// @param startTimestamp The start timestamp of the membership.
+    /// @return tokenId The ID of the newly minted token.
+    function mintMembershipWithTimestamp(
+        address _recipient,
+        uint256 _membershipId,
+        uint8 _tierIndex,
+        uint128 startTimestamp
+    ) external onlyAdmin returns (uint256 tokenId) {
+        return _mintMembershipWithTimestamp(_recipient, _membershipId, _tierIndex, startTimestamp);
+    }
+
+    /// @notice Private function to mint a membership token with a start timestamp.
+    function _mintMembershipWithTimestamp(
+        address _recipient,
+        uint256 _membershipId,
+        uint8 _tierIndex,
+        uint128 startTimestamp
+    ) private returns (uint256 tokenId) {
         MembershipInfo storage membership = memberships[_membershipId];
         require(membership.membershipAddress != address(0), "Membership does not exist");
 
         //mint membership token to recipient
-        tokenId = ITronicMembership(membership.membershipAddress).mint(_recipient, _tierIndex);
+        tokenId = ITronicMembership(membership.membershipAddress).mint(
+            _recipient, _tierIndex, startTimestamp
+        );
         emit MembershipMinted(_membershipId, tokenId, _recipient);
     }
 
