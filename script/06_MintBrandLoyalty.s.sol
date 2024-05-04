@@ -20,7 +20,7 @@ contract MintBrandLoyalty is Script {
 
         //mint tronic membership erc721 to sample userAddress
         // which returns tokenbound account address for user's minted token id
-        (tba, tokenId) = tronicMainContract.mintBrandLoyaltyToken(userAddress, brandXId);
+        (tba, tokenId) = tronicMainContract.mintBrandLoyaltyToken(userAddress, 2);
 
         vm.stopBroadcast();
     }
