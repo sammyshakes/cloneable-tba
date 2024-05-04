@@ -100,14 +100,18 @@ contract TronicMembership is ITronicMembership, ERC721, Initializable {
     /// @return tokenId The ID of the token.
     /// @dev This function can only be called by an admin.
     /// @dev The tier must exist.
-    function mint(address to, uint8 tierIndex) external onlyAdmin returns (uint256 tokenId) {
+    function mint(address to, uint8 tierIndex, uint128 startTimestamp)
+        external
+        onlyAdmin
+        returns (uint256 tokenId)
+    {
         require(balanceOf(to) == 0, "Recipient already owns a membership token");
         require(tierIndex <= _numTiers, "Tier does not exist");
 
         tokenId = ++_totalMinted;
         require(tokenId <= maxMintable, "Max supply reached");
 
-        _membershipTokens[tokenId] = MembershipToken(tierIndex, uint128(block.timestamp));
+        _membershipTokens[tokenId] = MembershipToken(tierIndex, startTimestamp);
         _mint(to, tokenId);
     }
 

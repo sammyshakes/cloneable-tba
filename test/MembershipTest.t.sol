@@ -28,7 +28,7 @@ contract MembershipTest is TronicTestBase {
         assertEq(membershipZERC721.symbol(), "MEMZ");
 
         // mint token to user1, tier index 1
-        membershipZERC721.mint(user1, 1);
+        membershipZERC721.mint(user1, 1, uint128(block.timestamp));
 
         // get token membership tier
         membershipZERC721.getMembershipToken(1);
@@ -103,14 +103,14 @@ contract MembershipTest is TronicTestBase {
 
         // mint token to user1
         vm.prank(tronicAdmin);
-        membershipZERC721.mint(user1, 0);
+        membershipZERC721.mint(user1, 0, uint128(block.timestamp));
 
         // verify total supply
         assertEq(membershipZERC721.totalSupply(), 1);
 
         // mint token to user2
         vm.prank(tronicAdmin);
-        membershipZERC721.mint(user2, 0);
+        membershipZERC721.mint(user2, 0, uint128(block.timestamp));
 
         // verify total supply
         assertEq(membershipZERC721.totalSupply(), 2);
@@ -224,7 +224,7 @@ contract MembershipTest is TronicTestBase {
 
         //mint token to user3
         vm.prank(tronicAdmin);
-        brandXMembership.mint(user3, 0);
+        brandXMembership.mint(user3, 0, uint128(block.timestamp));
 
         //verify that only totalSupply has increased
         assertEq(brandXMembership.maxSupply(), maxSupply);
@@ -246,11 +246,11 @@ contract MembershipTest is TronicTestBase {
         brandXMembership.setMaxMintable(totalSupply + 1);
 
         // mint token to user3
-        brandXMembership.mint(user3, 1);
+        brandXMembership.mint(user3, 1, uint128(block.timestamp));
 
         // try mint token to user4
         vm.expectRevert("Max supply reached");
-        brandXMembership.mint(user4, 1);
+        brandXMembership.mint(user4, 1, uint128(block.timestamp));
 
         vm.stopPrank();
     }
