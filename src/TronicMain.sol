@@ -6,7 +6,8 @@ import {IERC6551Registry} from "./interfaces/IERC6551Registry.sol";
 import {ITronicMembership} from "./interfaces/ITronicMembership.sol";
 import {ITronicBrandLoyalty} from "./interfaces/ITronicBrandLoyalty.sol";
 import {ITronicToken} from "./interfaces/ITronicToken.sol";
-import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
+import {ITronicBeacon} from "./interfaces/ITronicBeacon.sol";
+import {BeaconProxy} from "@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol";
 import {UUPSUpgradeable} from "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 import {Initializable} from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 
@@ -147,10 +148,10 @@ contract TronicMain is Initializable, UUPSUpgradeable {
     uint64 public rewardsNFTTypeStartId;
 
     uint256 public brandCounter;
-    mapping(uint256 => BrandInfo) private brands;
+    mapping(uint256 => BrandInfo) private _brands;
 
     uint256 public membershipCounter;
-    mapping(uint256 => MembershipInfo) private memberships;
+    mapping(uint256 => MembershipInfo) private _memberships;
     mapping(address => bool) private _admins;
 
     // Deployments
@@ -159,6 +160,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
     ITronicMembership public tronicMembership;
     ITronicToken public tronicAchievement;
     ITronicToken public tronicRewards;
+    ITronicBeacon public tronicBeacon;
 
     //disable initializer for upgradeability in the constructor
     constructor() {
@@ -167,6 +169,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
 
     /// @notice Initializes the TronicMain contract.
     /// @param _admin The address of the Tronic admin.
+    /// @param _tronicBeacon The address of the Tronic Beacon contract.
     /// @param _brandLoyalty The address of the Tronic Brand Loyalty contract (ERC721 implementation).
     /// @param _tronicMembership The address of the Tronic Membership contract (ERC1155 implementation).
     /// @param _tronicAchievement The address of the Tronic Achievement contract (ERC1155 implementation).
@@ -179,6 +182,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
     /// @param _rewardsNftTypeStartId The starting ID for non-fungible token types.
     function initialize(
         address _admin,
+        address _tronicBeacon,
         address _brandLoyalty,
         address _tronicMembership,
         address _tronicAchievement,
@@ -192,6 +196,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
     ) public initializer {
         owner = msg.sender;
         tronicAdmin = _admin;
+        tronicBeacon = ITronicBeacon(_tronicBeacon);
         tronicBrandLoyalty = ITronicBrandLoyalty(_brandLoyalty);
         tronicAchievement = ITronicToken(_tronicAchievement);
         tronicRewards = ITronicToken(_tronicRewards);
@@ -221,7 +226,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
     /// @return The MembershipInfo struct for the given membership ID.
     /// @dev The membership ID is the index of the membership in the memberships mapping.
     function getMembershipInfo(uint256 membershipId) public view returns (MembershipInfo memory) {
-        return memberships[membershipId];
+        return _memberships[membershipId];
     }
 
     /// @notice Gets BrandInfo for a given membership ID.
@@ -229,7 +234,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
     /// @return The BrandInfo struct for the given membership ID.
     /// @dev The membership ID is the index of the membership in the memberships mapping.
     function getBrandInfo(uint256 brandId) public view returns (BrandInfo memory) {
-        return brands[brandId];
+        return _brands[brandId];
     }
 
     /// @notice Deploys a new membership's contracts.
@@ -252,7 +257,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         bool isElastic,
         ITronicMembership.MembershipTier[] calldata tiers
     ) external onlyAdmin returns (uint256 membershipId, address membershipAddress) {
-        require(brands[brandId].brandLoyaltyAddress != address(0), "Brand does not exist");
+        require(_brands[brandId].brandLoyaltyAddress != address(0), "Brand does not exist");
 
         membershipId = ++membershipCounter;
 
@@ -267,13 +272,13 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         );
 
         // Assign membership id and associate the deployed contracts with the membership
-        memberships[membershipId] = MembershipInfo({
+        _memberships[membershipId] = MembershipInfo({
             brandId: brandId,
             membershipAddress: membershipAddress,
             membershipName: membershipName
         });
 
-        brands[brandId].membershipIds.push(membershipId);
+        _brands[brandId].membershipIds.push(membershipId);
 
         // Deploy tiers
         if (tiers.length > 0) {
@@ -319,7 +324,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         rewardsAddress = _deployRewards();
 
         // Assign brand id and associate the loyalty contracts with the brand
-        brands[brandId] = BrandInfo({
+        _brands[brandId] = BrandInfo({
             brandLoyaltyAddress: brandLoyaltyAddress,
             brandName: brandName,
             achievementAddress: achievementAddress,
@@ -338,8 +343,9 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         string calldata brandBaseURI,
         bool isBound
     ) private onlyAdmin returns (address brandLoyaltyAddress) {
-        brandLoyaltyAddress = Clones.clone(address(tronicBrandLoyalty));
-        ITronicBrandLoyalty(brandLoyaltyAddress).initialize(
+        address implementation = tronicBeacon.getBrandLoyaltyImplementation();
+        bytes memory data = abi.encodeWithSelector(
+            ITronicBrandLoyalty(implementation).initialize.selector,
             tbaAccountImplementation,
             tbaProxyImplementation,
             address(registry),
@@ -349,6 +355,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
             isBound,
             tronicAdmin
         );
+        brandLoyaltyAddress = address(new BeaconProxy(address(tronicBeacon), data));
     }
 
     /// @notice Clones the Tronic Membership (ERC721) implementation and initializes it.
@@ -361,8 +368,9 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         uint256 maxMintable,
         bool isElastic
     ) private returns (address membershipAddress) {
-        membershipAddress = Clones.clone(address(tronicMembership));
-        ITronicMembership(membershipAddress).initialize(
+        address implementation = tronicBeacon.getMembershipImplementation();
+        bytes memory data = abi.encodeWithSelector(
+            ITronicMembership(implementation).initialize.selector,
             membershipId,
             name,
             symbol,
@@ -372,26 +380,33 @@ contract TronicMain is Initializable, UUPSUpgradeable {
             maxTiersPerMembership,
             tronicAdmin
         );
+        membershipAddress = address(new BeaconProxy(address(tronicBeacon), data));
     }
 
     /// @notice Clones the ERC1155 implementation and initializes it.
     /// @return achievementAddress The address of the newly cloned ERC1155 contract.
     function _deployAchievement() private returns (address achievementAddress) {
-        achievementAddress = Clones.clone(address(tronicAchievement));
-        ITronicToken(achievementAddress).initialize(tronicAdmin, achievementNFTTypeStartId);
+        address implementation = tronicBeacon.getAchievementImplementation();
+        bytes memory data = abi.encodeWithSelector(
+            ITronicToken(implementation).initialize.selector, tronicAdmin, achievementNFTTypeStartId
+        );
+        achievementAddress = address(new BeaconProxy(address(tronicBeacon), data));
     }
 
     /// @notice Clones the ERC1155 implementation and initializes it.
     /// @return rewardsAddress The address of the newly cloned ERC1155 contract.
     function _deployRewards() private returns (address rewardsAddress) {
-        rewardsAddress = Clones.clone(address(tronicRewards));
-        ITronicToken(rewardsAddress).initialize(tronicAdmin, rewardsNFTTypeStartId);
+        address implementation = tronicBeacon.getRewardsImplementation();
+        bytes memory data = abi.encodeWithSelector(
+            ITronicToken(implementation).initialize.selector, tronicAdmin, rewardsNFTTypeStartId
+        );
+        rewardsAddress = address(new BeaconProxy(address(tronicBeacon), data));
     }
 
     /// @notice Removes a membership from the contract.
     /// @param _membershipId The ID of the membership to remove.
     function removeMembership(uint256 _membershipId) external onlyAdmin {
-        delete memberships[_membershipId];
+        delete _memberships[_membershipId];
     }
 
     /// @notice Updates the membership token.
@@ -405,7 +420,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         uint8 _tierIndex,
         uint128 _timestamp
     ) external onlyAdmin {
-        MembershipInfo storage membership = memberships[_membershipId];
+        MembershipInfo storage membership = _memberships[_membershipId];
         require(membership.membershipAddress != address(0), "Membership does not exist");
 
         ITronicMembership(membership.membershipAddress).setMembershipToken(
@@ -428,7 +443,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         bool isReward
     ) external onlyAdmin returns (uint256 typeId) {
         address brandTokenAddress =
-            isReward ? brands[brandId].rewardsAddress : brands[brandId].achievementAddress;
+            isReward ? _brands[brandId].rewardsAddress : _brands[brandId].achievementAddress;
         require(brandTokenAddress != address(0), "Brand does not exist");
 
         typeId = ITronicToken(brandTokenAddress).createFungibleType(maxSupply, uri);
@@ -449,7 +464,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         bool isReward
     ) external onlyAdmin returns (uint256 nftTypeID) {
         address brandTokenAddress =
-            isReward ? brands[brandId].rewardsAddress : brands[brandId].achievementAddress;
+            isReward ? _brands[brandId].rewardsAddress : _brands[brandId].achievementAddress;
         require(brandTokenAddress != address(0), "Brand does not exist");
 
         nftTypeID = ITronicToken(brandTokenAddress).createNFTType(baseUri, maxMintable);
@@ -467,7 +482,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         onlyAdmin
         returns (address payable tbaAccount, uint256 brandTokenId)
     {
-        BrandInfo storage brand = brands[_brandId];
+        BrandInfo storage brand = _brands[_brandId];
         require(brand.brandLoyaltyAddress != address(0), "Brand does not exist");
 
         //mint brand loyalty token to recipient
@@ -513,7 +528,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         uint8 _tierIndex,
         uint128 startTimestamp
     ) private returns (uint256 tokenId) {
-        MembershipInfo storage membership = memberships[_membershipId];
+        MembershipInfo storage membership = _memberships[_membershipId];
         require(membership.membershipAddress != address(0), "Membership does not exist");
 
         //mint membership token to recipient
@@ -539,7 +554,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         bool _isOpen,
         string memory _tierURI
     ) external onlyAdmin returns (uint8 tierIndex) {
-        MembershipInfo storage membership = memberships[_membershipId];
+        MembershipInfo storage membership = _memberships[_membershipId];
         require(membership.membershipAddress != address(0), "Membership does not exist");
 
         return ITronicMembership(membership.membershipAddress).createMembershipTier(
@@ -565,7 +580,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         bool _isOpen,
         string memory _tierURI
     ) external onlyAdmin {
-        MembershipInfo storage membership = memberships[_membershipId];
+        MembershipInfo storage membership = _memberships[_membershipId];
         require(membership.membershipAddress != address(0), "Membership does not exist");
 
         ITronicMembership(membership.membershipAddress).setMembershipTier(
@@ -584,7 +599,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         view
         returns (ITronicMembership.MembershipTier memory)
     {
-        MembershipInfo storage membership = memberships[_membershipId];
+        MembershipInfo storage membership = _memberships[_membershipId];
         require(membership.membershipAddress != address(0), "Membership does not exist");
 
         return ITronicMembership(membership.membershipAddress).getMembershipTierDetails(_tierIndex);
@@ -599,7 +614,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         view
         returns (uint8)
     {
-        MembershipInfo storage membership = memberships[_membershipId];
+        MembershipInfo storage membership = _memberships[_membershipId];
         require(membership.membershipAddress != address(0), "Membership does not exist");
 
         return ITronicMembership(membership.membershipAddress).getTierIndexByTierId(tierId);
@@ -619,7 +634,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         bool _isReward
     ) external onlyAdmin {
         address brandTokenAddress =
-            _isReward ? brands[_brandId].rewardsAddress : brands[_brandId].achievementAddress;
+            _isReward ? _brands[_brandId].rewardsAddress : _brands[_brandId].achievementAddress;
         require(brandTokenAddress != address(0), "Brand does not exist");
 
         ITronicToken(brandTokenAddress).mintFungible(_recipient, _tokenId, _amount);
@@ -639,7 +654,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         bool _isReward
     ) external onlyAdmin {
         address brandTokenAddress =
-            _isReward ? brands[_brandId].rewardsAddress : brands[_brandId].achievementAddress;
+            _isReward ? _brands[_brandId].rewardsAddress : _brands[_brandId].achievementAddress;
         require(brandTokenAddress != address(0), "Brand does not exist");
 
         ITronicToken(brandTokenAddress).mintNFTs(_typeId, _recipient, _amount);
@@ -659,7 +674,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         bool _isReward
     ) external onlyAdmin {
         address brandTokenAddress =
-            _isReward ? brands[_brandId].rewardsAddress : brands[_brandId].achievementAddress;
+            _isReward ? _brands[_brandId].rewardsAddress : _brands[_brandId].achievementAddress;
         require(brandTokenAddress != address(0), "Token does not exist");
 
         ITronicToken(brandTokenAddress).burn(_account, _tokenId, _amount);
@@ -679,7 +694,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         address _to
     ) external {
         // get membership address from membership id
-        address membershipAddress = memberships[_membershipId].membershipAddress;
+        address membershipAddress = _memberships[_membershipId].membershipAddress;
         require(membershipAddress != address(0), "Membership does not exist");
 
         // get BrandLoaylty TBA
@@ -724,7 +739,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         bool _isReward
     ) external {
         // get brand info from brand id
-        BrandInfo storage brand = brands[_brandId];
+        BrandInfo storage brand = _brands[_brandId];
         require(brand.brandLoyaltyAddress != address(0), "Brand does not exist");
 
         // get BrandLoaylty TBA
@@ -773,7 +788,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         view
         returns (bool isValid)
     {
-        MembershipInfo storage membership = memberships[_membershipId];
+        MembershipInfo storage membership = _memberships[_membershipId];
         require(membership.membershipAddress != address(0), "Membership does not exist");
 
         return ITronicMembership(membership.membershipAddress).isValid(_tokenId);
@@ -789,7 +804,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         returns (address payable brandLoyaltyTbaAddress)
     {
         // get brand loyalty address from brand id
-        address brandLoyaltyAddress = brands[_brandId].brandLoyaltyAddress;
+        address brandLoyaltyAddress = _brands[_brandId].brandLoyaltyAddress;
         require(brandLoyaltyAddress != address(0), "Brand does not exist");
 
         // get brand loyalty TBA address from brand loyalty address
@@ -806,7 +821,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         returns (uint256 brandId)
     {
         for (uint256 i = 1; i <= brandCounter; i++) {
-            if (brands[i].brandLoyaltyAddress == _brandLoyaltyAddress) {
+            if (_brands[i].brandLoyaltyAddress == _brandLoyaltyAddress) {
                 return i;
             }
         }
@@ -820,37 +835,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         view
         returns (uint256 brandId)
     {
-        return memberships[_membershipId].brandId;
-    }
-
-    /// @notice Sets the Tronic Loyalty contract address, callable only by the owner.
-    /// @param newImplementation The address of the new Tronic Loyalty implementation.
-    function setLoyaltyTokenImplementation(address newImplementation) external onlyOwner {
-        tronicBrandLoyalty = ITronicBrandLoyalty(newImplementation);
-    }
-
-    /// @notice Sets the Membership implementation address, callable only by the owner.
-    /// @param newImplementation The address of the new Tronic Membership implementation.
-    function setMembershipImplementation(address newImplementation) external onlyOwner {
-        tronicMembership = ITronicMembership(newImplementation);
-    }
-
-    /// @notice Sets the Achievement Token implementation address, callable only by the owner.
-    /// @param newImplementation The address of the new Tronic Token implementation.
-    function setAchievementImplementation(address newImplementation) external onlyOwner {
-        tronicAchievement = ITronicToken(newImplementation);
-    }
-
-    /// @notice Sets the Rewards Token implementation address, callable only by the owner.
-    /// @param newImplementation The address of the new Tronic Token implementation.
-    function setRewardsImplementation(address newImplementation) external onlyOwner {
-        tronicRewards = ITronicToken(newImplementation);
-    }
-
-    /// @notice Sets the account implementation address, callable only by the owner.
-    /// @param newImplementation The address of the new account implementation.
-    function setAccountImplementation(address payable newImplementation) external onlyOwner {
-        tbaAccountImplementation = newImplementation;
+        return _memberships[_membershipId].brandId;
     }
 
     /// @notice Sets the registry address, callable only by the owner.
