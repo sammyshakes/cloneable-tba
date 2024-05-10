@@ -7,7 +7,7 @@ import "../src/TronicMain.sol";
 
 contract CreateFungibleTypes is Script {
     string public FungibleURI1X = vm.envString("MEMBERSHIP_X_FUNGIBLE_URI_1");
-    // string public FungibleURI2X = vm.envString("MEMBERSHIP_X_FUNGIBLE_URI_2");
+    string public FungibleURI2X = vm.envString("MEMBERSHIP_X_FUNGIBLE_URI_2");
     // string public FungibleURI3X = vm.envString("MEMBERSHIP_X_FUNGIBLE_URI_3");
 
     // string public FungibleURI1Y = vm.envString("MEMBERSHIP_Y_FUNGIBLE_URI_1");
@@ -29,6 +29,10 @@ contract CreateFungibleTypes is Script {
         //create fungible achievement token types for brand id
         bool isReward = false;
         tronicMainContract.createFungibleTokenType(brandId, 1_000_000, FungibleURI1X, isReward);
+
+        //create fungible reward token types for brand id
+        isReward = true;
+        tronicMainContract.createFungibleTokenType(brandId, 1_000_000, FungibleURI2X, isReward);
 
         vm.stopBroadcast();
     }
