@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.24;
 
 import "forge-std/Test.sol";
 import "../src/TronicMain.sol";
@@ -45,13 +45,13 @@ contract TronicTestBase is Test {
     TronicRewards public brandXRewards;
 
     //brand membership Y
-    TronicBrandLoyalty brandLoyaltyY;
-    TronicMembership brandYMembership;
-    TronicToken brandYToken;
-    TronicRewards brandYRewards;
+    TronicBrandLoyalty public brandLoyaltyY;
+    TronicMembership public brandYMembership;
+    TronicToken public brandYToken;
+    TronicRewards public brandYRewards;
 
-    TronicMain.MembershipInfo membershipX;
-    TronicMain.MembershipInfo membershipY;
+    TronicMain.MembershipInfo public membershipX;
+    TronicMain.MembershipInfo public membershipY;
 
     uint256 public membershipIDX;
     uint256 public membershipIDY;
@@ -288,7 +288,7 @@ contract TronicTestBase is Test {
     }
 
     // helper function to prepare data for batch minting
-    function prepareBatchProcessData(BatchMintOrder[] memory orders)
+    function _prepareBatchProcessData(BatchMintOrder[] memory orders)
         internal
         pure
         returns (
