@@ -4,11 +4,13 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
 import "../src/TronicMain.sol";
+import "../src/TronicBeacon.sol";
 import "../src/TronicBrandLoyalty.sol";
 import "../src/TronicMembership.sol";
 import "../src/TronicToken.sol";
 import "../src/TronicRewards.sol";
 import "../src/interfaces/IERC6551Account.sol";
+import "@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol";
 import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
 /// @dev Sets up the initial state for testing the TronicMain system
@@ -23,32 +25,24 @@ contract TronicTestBase is Test {
         TronicMain.TokenType[][] tokenTypes;
     }
 
-    //vars for tokenids
-    uint256 public constant tokenId1 = 1;
-    uint256 public constant tokenId2 = 2;
-    uint256 public constant tokenId3 = 3;
-    uint256 public constant tokenId4 = 4;
-
-    uint8 public constant TronicTier1Index = 1;
-    uint8 public constant TronicTier2Index = 2;
-
     ERC1967Proxy public tronicMainProxy;
 
     // Implementation Deployments
-    TronicMain tronicMainContractImplementation;
-    TronicMembership tronicMembership;
-    TronicToken tronicToken;
-    TronicBrandLoyalty tronicBrandLoyaltyImplementation;
-    TronicRewards tronicRewardsImplementation;
+    TronicMain public tronicMainContractImplementation;
+    TronicMembership public tronicMembership;
+    TronicToken public tronicToken;
+    TronicBrandLoyalty public tronicBrandLoyaltyImplementation;
+    TronicRewards public tronicRewardsImplementation;
+    TronicBeacon public tronicBeacon;
 
     // this variable represents TronicMain via proxy
-    TronicMain tronicMainContract;
+    TronicMain public tronicMainContract;
 
     //brand membership X
-    TronicBrandLoyalty brandLoyaltyX;
-    TronicMembership brandXMembership;
-    TronicToken brandXToken;
-    TronicRewards brandXRewards;
+    TronicBrandLoyalty public brandLoyaltyX;
+    TronicMembership public brandXMembership;
+    TronicToken public brandXToken;
+    TronicRewards public brandXRewards;
 
     //brand membership Y
     TronicBrandLoyalty brandLoyaltyY;
@@ -59,11 +53,11 @@ contract TronicTestBase is Test {
     TronicMain.MembershipInfo membershipX;
     TronicMain.MembershipInfo membershipY;
 
-    uint256 membershipIDX;
-    uint256 membershipIDY;
+    uint256 public membershipIDX;
+    uint256 public membershipIDY;
 
-    uint256 brandIDX;
-    uint256 brandIDY;
+    uint256 public brandIDX;
+    uint256 public brandIDY;
 
     // set users
     address public user1 = address(0x1);
@@ -111,15 +105,15 @@ contract TronicTestBase is Test {
     address public brandLoyaltyYTokenId2TBA;
 
     // achievement types
-    uint256 fungibleTypeIdX1;
-    uint256 fungibleTypeIdY1;
-    uint256 nonFungibleTypeIdX1;
-    uint256 nonFungibleTypeIdY1;
+    uint256 public fungibleTypeIdX1;
+    uint256 public fungibleTypeIdY1;
+    uint256 public nonFungibleTypeIdX1;
+    uint256 public nonFungibleTypeIdY1;
 
     TronicMembership.MembershipTier[] public membershipTiers;
 
-    string initialUriX = "http://setup-exampleX.com/token/";
-    string initialUriY = "http://setup-exampleY.com/token/";
+    string public initialUriX = "http://setup-exampleX.com/token/";
+    string public initialUriY = "http://setup-exampleY.com/token/";
 
     //create tier uris
     string public tier1XURI = "tier1XURI";
@@ -139,28 +133,32 @@ contract TronicTestBase is Test {
         tronicMainContractImplementation = new TronicMain();
         tronicRewardsImplementation = new TronicRewards();
 
+        // Deploy separate beacons for each contract type
+        TronicBeacon brandLoyaltyBeacon =
+            new TronicBeacon(address(tronicBrandLoyaltyImplementation));
+        TronicBeacon membershipBeacon = new TronicBeacon(address(tronicMembership));
+        TronicBeacon achievementBeacon = new TronicBeacon(address(tronicToken));
+        TronicBeacon rewardsBeacon = new TronicBeacon(address(tronicRewardsImplementation));
+
         //deploy tronicMainContract via proxy
         tronicMainProxy = new ERC1967Proxy(
             address(tronicMainContractImplementation),
             abi.encodeWithSignature(
-                "initialize(address,address,address,address,address,address,address,address,uint8,uint64,uint64)",
+                "initialize(address,address,address,address,address,address,address,address)",
                 tronicAdmin,
-                address(tronicBrandLoyaltyImplementation),
-                address(tronicMembership),
-                address(tronicToken),
-                address(tronicRewardsImplementation),
+                address(brandLoyaltyBeacon),
+                address(membershipBeacon),
+                address(achievementBeacon),
+                address(rewardsBeacon),
                 registryAddress,
                 defaultTBAImplementationAddress,
-                tbaProxyImplementationAddress,
-                10, //maxtiers
-                nftStartId, //start nft id for achievements
-                nftStartId //start nft id for rewards
+                tbaProxyImplementationAddress
             )
         );
 
         tronicMainContract = TronicMain(address(tronicMainProxy));
 
-        assertEq(tronicMainContract.maxTiersPerMembership(), 10);
+        assertEq(tronicMainContract.MAX_TIERS_PER_MEMBERSHIP(), 10);
 
         vm.stopPrank();
 
@@ -266,10 +264,10 @@ contract TronicTestBase is Test {
         brandLoyaltyY = TronicBrandLoyalty(brandLoyaltyAddressY);
 
         //verify that users have tronic membership nfts
-        assertEq(brandLoyaltyX.ownerOf(tokenId1), user1);
-        assertEq(brandLoyaltyX.ownerOf(tokenId2), user2);
-        assertEq(brandLoyaltyY.ownerOf(tokenId1), user3);
-        assertEq(brandLoyaltyY.ownerOf(tokenId2), user4);
+        assertEq(brandLoyaltyX.ownerOf(1), user1);
+        assertEq(brandLoyaltyX.ownerOf(2), user2);
+        assertEq(brandLoyaltyY.ownerOf(1), user3);
+        assertEq(brandLoyaltyY.ownerOf(2), user4);
     }
 
     // helper function to create instances of BatchMintOrder

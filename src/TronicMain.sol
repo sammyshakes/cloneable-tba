@@ -131,12 +131,6 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         bool isReward
     );
 
-    address public owner;
-    address public tronicAdmin;
-    address public tbaAccountImplementation;
-    address public tbaProxyImplementation;
-    uint8 public maxTiersPerMembership;
-
     /// @notice The starting ID for non-fungible token types of the Achievements and Rewards.
     /// @dev These are the starting IDs for non-fungible token types on newly deployed reward/token contracts.
     /// @dev It is provided as a parameter to the TronicMain contract when deploying the token contract.
@@ -144,8 +138,13 @@ contract TronicMain is Initializable, UUPSUpgradeable {
     /// @dev EX: If achievementNFTTypeStartId is 1000, the first non-fungible token type will have an ID of 1000.
     /// @dev This will give the brand the ability to create 999 fungible token types.
     /// @dev Future NFT types will start at previous type's starting id + maxMintable.
-    uint64 public achievementNFTTypeStartId;
-    uint64 public rewardsNFTTypeStartId;
+    uint64 public constant NFT_TYPE_START_ID = 100_000;
+    uint8 public constant MAX_TIERS_PER_MEMBERSHIP = 10;
+
+    address public owner;
+    address public tronicAdmin;
+    address public tbaAccountImplementation;
+    address public tbaProxyImplementation;
 
     uint256 public brandCounter;
     mapping(uint256 => BrandInfo) private _brands;
@@ -156,11 +155,12 @@ contract TronicMain is Initializable, UUPSUpgradeable {
 
     // Deployments
     IERC6551Registry public registry;
-    ITronicBrandLoyalty public tronicBrandLoyalty;
-    ITronicMembership public tronicMembership;
-    ITronicToken public tronicAchievement;
-    ITronicToken public tronicRewards;
-    ITronicBeacon public tronicBeacon;
+
+    //Beacons
+    ITronicBeacon public brandLoyaltyBeacon;
+    ITronicBeacon public membershipBeacon;
+    ITronicBeacon public achievementBeacon;
+    ITronicBeacon public rewardsBeacon;
 
     //disable initializer for upgradeability in the constructor
     constructor() {
@@ -169,44 +169,32 @@ contract TronicMain is Initializable, UUPSUpgradeable {
 
     /// @notice Initializes the TronicMain contract.
     /// @param _admin The address of the Tronic admin.
-    /// @param _tronicBeacon The address of the Tronic Beacon contract.
-    /// @param _brandLoyalty The address of the Tronic Brand Loyalty contract (ERC721 implementation).
-    /// @param _tronicMembership The address of the Tronic Membership contract (ERC1155 implementation).
-    /// @param _tronicAchievement The address of the Tronic Achievement contract (ERC1155 implementation).
-    /// @param _tronicRewards The address of the Tronic Rewards contract (ERC1155 implementation).
+    /// @param _brandLoyaltyBeaconAddress The address of the brand loyalty beacon.
+    /// @param _membershipBeaconAddress The address of the membership beacon.
+    /// @param _achievementBeaconAddress The address of the achievement beacon.
+    /// @param _rewardsBeaconAddress The address of the rewards beacon.
     /// @param _registry The address of the registry contract.
     /// @param _tbaImplementation The address of the tokenbound account implementation.
     /// @param _tbaProxyImplementation The address of the tokenbound account proxy implementation.
-    /// @param _maxTiersPerMembership The maximum number of tiers per membership.
-    /// @param _achievementNftTypeStartId The starting ID for non-fungible token types.
-    /// @param _rewardsNftTypeStartId The starting ID for non-fungible token types.
     function initialize(
         address _admin,
-        address _tronicBeacon,
-        address _brandLoyalty,
-        address _tronicMembership,
-        address _tronicAchievement,
-        address _tronicRewards,
+        address _brandLoyaltyBeaconAddress,
+        address _membershipBeaconAddress,
+        address _achievementBeaconAddress,
+        address _rewardsBeaconAddress,
         address _registry,
         address _tbaImplementation,
-        address _tbaProxyImplementation,
-        uint8 _maxTiersPerMembership,
-        uint64 _achievementNftTypeStartId,
-        uint64 _rewardsNftTypeStartId
+        address _tbaProxyImplementation
     ) public initializer {
         owner = msg.sender;
         tronicAdmin = _admin;
-        tronicBeacon = ITronicBeacon(_tronicBeacon);
-        tronicBrandLoyalty = ITronicBrandLoyalty(_brandLoyalty);
-        tronicAchievement = ITronicToken(_tronicAchievement);
-        tronicRewards = ITronicToken(_tronicRewards);
-        tronicMembership = ITronicMembership(_tronicMembership);
+        brandLoyaltyBeacon = ITronicBeacon(_brandLoyaltyBeaconAddress);
+        membershipBeacon = ITronicBeacon(_membershipBeaconAddress);
+        achievementBeacon = ITronicBeacon(_achievementBeaconAddress);
+        rewardsBeacon = ITronicBeacon(_rewardsBeaconAddress);
         registry = IERC6551Registry(_registry);
         tbaAccountImplementation = _tbaImplementation;
         tbaProxyImplementation = _tbaProxyImplementation;
-        maxTiersPerMembership = _maxTiersPerMembership;
-        achievementNFTTypeStartId = _achievementNftTypeStartId;
-        rewardsNFTTypeStartId = _rewardsNftTypeStartId;
     }
 
     /// @notice Checks if the caller is the owner.
@@ -343,7 +331,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         string calldata brandBaseURI,
         bool isBound
     ) private onlyAdmin returns (address brandLoyaltyAddress) {
-        address implementation = tronicBeacon.getBrandLoyaltyImplementation();
+        address implementation = brandLoyaltyBeacon.implementation();
         bytes memory data = abi.encodeWithSelector(
             ITronicBrandLoyalty(implementation).initialize.selector,
             tbaAccountImplementation,
@@ -355,7 +343,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
             isBound,
             tronicAdmin
         );
-        brandLoyaltyAddress = address(new BeaconProxy(address(tronicBeacon), data));
+        brandLoyaltyAddress = address(new BeaconProxy(address(brandLoyaltyBeacon), data));
     }
 
     /// @notice Clones the Tronic Membership (ERC721) implementation and initializes it.
@@ -368,7 +356,7 @@ contract TronicMain is Initializable, UUPSUpgradeable {
         uint256 maxMintable,
         bool isElastic
     ) private returns (address membershipAddress) {
-        address implementation = tronicBeacon.getMembershipImplementation();
+        address implementation = membershipBeacon.implementation();
         bytes memory data = abi.encodeWithSelector(
             ITronicMembership(implementation).initialize.selector,
             membershipId,
@@ -377,30 +365,30 @@ contract TronicMain is Initializable, UUPSUpgradeable {
             baseURI,
             maxMintable,
             isElastic,
-            maxTiersPerMembership,
+            MAX_TIERS_PER_MEMBERSHIP,
             tronicAdmin
         );
-        membershipAddress = address(new BeaconProxy(address(tronicBeacon), data));
+        membershipAddress = address(new BeaconProxy(address(membershipBeacon), data));
     }
 
     /// @notice Clones the ERC1155 implementation and initializes it.
     /// @return achievementAddress The address of the newly cloned ERC1155 contract.
     function _deployAchievement() private returns (address achievementAddress) {
-        address implementation = tronicBeacon.getAchievementImplementation();
+        address implementation = achievementBeacon.implementation();
         bytes memory data = abi.encodeWithSelector(
-            ITronicToken(implementation).initialize.selector, tronicAdmin, achievementNFTTypeStartId
+            ITronicToken(implementation).initialize.selector, tronicAdmin, NFT_TYPE_START_ID
         );
-        achievementAddress = address(new BeaconProxy(address(tronicBeacon), data));
+        achievementAddress = address(new BeaconProxy(address(achievementBeacon), data));
     }
 
     /// @notice Clones the ERC1155 implementation and initializes it.
     /// @return rewardsAddress The address of the newly cloned ERC1155 contract.
     function _deployRewards() private returns (address rewardsAddress) {
-        address implementation = tronicBeacon.getRewardsImplementation();
+        address implementation = rewardsBeacon.implementation();
         bytes memory data = abi.encodeWithSelector(
-            ITronicToken(implementation).initialize.selector, tronicAdmin, rewardsNFTTypeStartId
+            ITronicToken(implementation).initialize.selector, tronicAdmin, NFT_TYPE_START_ID
         );
-        rewardsAddress = address(new BeaconProxy(address(tronicBeacon), data));
+        rewardsAddress = address(new BeaconProxy(address(rewardsBeacon), data));
     }
 
     /// @notice Removes a membership from the contract.
