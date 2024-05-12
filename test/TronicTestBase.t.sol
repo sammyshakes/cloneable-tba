@@ -38,6 +38,12 @@ contract TronicTestBase is Test {
     // this variable represents TronicMain via proxy
     TronicMain public tronicMainContract;
 
+    //beacon proxies
+    TronicBeacon public brandLoyaltyBeacon;
+    TronicBeacon public membershipBeacon;
+    TronicBeacon public achievementBeacon;
+    TronicBeacon public rewardsBeacon;
+
     //brand membership X
     TronicBrandLoyalty public brandLoyaltyX;
     TronicMembership public brandXMembership;
@@ -134,11 +140,10 @@ contract TronicTestBase is Test {
         tronicRewardsImplementation = new TronicRewards();
 
         // Deploy separate beacons for each contract type
-        TronicBeacon brandLoyaltyBeacon =
-            new TronicBeacon(address(tronicBrandLoyaltyImplementation));
-        TronicBeacon membershipBeacon = new TronicBeacon(address(tronicMembership));
-        TronicBeacon achievementBeacon = new TronicBeacon(address(tronicToken));
-        TronicBeacon rewardsBeacon = new TronicBeacon(address(tronicRewardsImplementation));
+        brandLoyaltyBeacon = new TronicBeacon(address(tronicBrandLoyaltyImplementation));
+        membershipBeacon = new TronicBeacon(address(tronicMembership));
+        achievementBeacon = new TronicBeacon(address(tronicToken));
+        rewardsBeacon = new TronicBeacon(address(tronicRewardsImplementation));
 
         //deploy tronicMainContract via proxy
         tronicMainProxy = new ERC1967Proxy(
