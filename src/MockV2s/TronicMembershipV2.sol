@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import "./TronicRewards.sol";
+import "../TronicMembership.sol";
 
-contract TronicRewardsV2 is TronicRewards {
+contract TronicMembershipV2 is TronicMembership {
     //upraded variable
     string public constant VERSION = "v0.2.0";
 }
