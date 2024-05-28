@@ -9,7 +9,6 @@ contract UpgradeBrandLoyaltyTest is TronicTestBase {
         // Deploy the new version of the TronicBrandLoyalty contract
         TronicBrandLoyaltyV2 newBrandLoyalty = new TronicBrandLoyaltyV2();
 
-        // Start by impersonating the owner to upgrade the beacon
         vm.startPrank(tronicOwner);
 
         // Update the beacon to point to the new implementation
@@ -26,8 +25,8 @@ contract UpgradeBrandLoyaltyTest is TronicTestBase {
         assertEq(upgradedBrandLoyaltyY.VERSION(), "v0.2.0");
 
         // Verify other functionalities or state variables if necessary for each brand
-        assertEq(upgradedBrandLoyaltyX.owner(), tronicAdmin); // Assuming ownership should remain
-        assertEq(upgradedBrandLoyaltyY.owner(), tronicAdmin); // Assuming ownership should remain
+        assertEq(upgradedBrandLoyaltyX.owner(), tronicAdmin);
+        assertEq(upgradedBrandLoyaltyY.owner(), tronicAdmin);
 
         // Optionally, verify that new functionality works for each brand
         bool newFunctionResultX = upgradedBrandLoyaltyX.newFunction();
