@@ -5,7 +5,7 @@ pragma solidity ^0.8.24;
 import "forge-std/Script.sol";
 import "../src/TronicMain.sol";
 
-contract MintBrandLoyalty is Script {
+contract MintRewardToken is Script {
     address public tronicMainContractAddress = vm.envAddress("TRONIC_MAIN_PROXY_ADDRESS");
     address public userAddress = vm.envAddress("SAMPLE_USER1_ADDRESS");
 
@@ -18,9 +18,7 @@ contract MintBrandLoyalty is Script {
 
         vm.startBroadcast(adminPrivateKey);
 
-        //mint tronic membership erc721 to sample userAddress
-        // which returns tokenbound account address for user's minted token id
-        (tba, tokenId) = tronicMainContract.mintBrandLoyaltyToken(userAddress, brandXId);
+        tronicMainContract.mintFungibleToken(brandXId, userAddress, 0, 1, true);
 
         vm.stopBroadcast();
     }
