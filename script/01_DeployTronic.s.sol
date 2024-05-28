@@ -7,6 +7,7 @@ import "../src/TronicMain.sol";
 import "../src/TronicMembership.sol";
 import "../src/TronicToken.sol";
 import "../src/TronicBrandLoyalty.sol";
+import "../src/TronicBeacon.sol";
 import "../src/TronicRewards.sol";
 import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
@@ -21,9 +22,6 @@ contract DeployTronic is Script {
     //Proxy Deployments
     ERC1967Proxy public proxyMain;
     TronicMain public tronicMain;
-
-    uint8 public maxTiersPerMembership = 10;
-    uint64 public nftTypeStartId = 100_000;
 
     address public tronicAdminAddress = vm.envAddress("TRONIC_ADMIN_ADDRESS");
     address public registryAddress = vm.envAddress("ERC6551_REGISTRY_ADDRESS");
@@ -45,26 +43,33 @@ contract DeployTronic is Script {
         // deploy new Tronic Main Contract implementation
         tronicMainImpl = new TronicMain();
 
+        // Deploy separate beacons for each contract type
+        TronicBeacon brandLoyaltyBeacon = new TronicBeacon(address(tronicBrandLoyaltyImpl));
+        TronicBeacon membershipBeacon = new TronicBeacon(address(tronicMembershipImpl));
+        TronicBeacon achievementBeacon = new TronicBeacon(address(tronicTokenImpl));
+        TronicBeacon rewardsBeacon = new TronicBeacon(address(tronicRewardsImpl));
+
         // deploy proxy contract
-        proxyMain = new ERC1967Proxy(address(tronicMainImpl), "");
+        // proxyMain = new ERC1967Proxy(address(tronicMainImpl), "");
+
+        //deploy tronicMainContract via proxy
+        proxyMain = new ERC1967Proxy(
+            address(tronicMainImpl),
+            abi.encodeWithSignature(
+                "initialize(address,address,address,address,address,address,address,address)",
+                tronicAdminAddress,
+                address(brandLoyaltyBeacon),
+                address(membershipBeacon),
+                address(achievementBeacon),
+                address(rewardsBeacon),
+                registryAddress,
+                tbaAddress,
+                tbaProxyAddress
+            )
+        );
 
         // Wrap proxy in main contract abi
         tronicMain = TronicMain(address(proxyMain));
-
-        // initialize main contract
-        tronicMain.initialize(
-            tronicAdminAddress,
-            address(tronicBrandLoyaltyImpl),
-            address(tronicMembershipImpl),
-            address(tronicTokenImpl),
-            address(tronicRewardsImpl),
-            registryAddress,
-            tbaAddress,
-            tbaProxyAddress,
-            maxTiersPerMembership,
-            nftTypeStartId, // start id for nft type achievements
-            nftTypeStartId // start id for nft type rewards
-        );
 
         vm.stopBroadcast();
 

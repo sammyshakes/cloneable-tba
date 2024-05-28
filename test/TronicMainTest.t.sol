@@ -404,57 +404,6 @@ contract TronicMainTest is TronicTestBase {
         vm.stopPrank();
     }
 
-    function testUpdateERC721Implementation() public {
-        //update implementation address
-        vm.prank(tronicOwner);
-        tronicMainContract.setMembershipImplementation(payable(address(0xdeadbeef)));
-
-        //get new implementation address
-        address newImplementation = address(tronicMainContract.tronicMembership());
-
-        //verify that implementation address has changed
-        assertEq(newImplementation, address(0xdeadbeef));
-    }
-
-    // test setERC1155Implementation
-    function testUpdateERC1155Implementation() public {
-        //update implementation address
-        vm.prank(tronicOwner);
-        tronicMainContract.setAchievementImplementation(payable(address(0xdeadbeef)));
-
-        //get new implementation address
-        address newImplementation = address(tronicMainContract.tronicAchievement());
-
-        //verify that implementation address has changed
-        assertEq(newImplementation, address(0xdeadbeef));
-    }
-
-    //test update brand loyalty implementation
-    function testUpdateBrandLoyaltyImplementation() public {
-        //update implementation address
-        vm.prank(tronicOwner);
-        tronicMainContract.setLoyaltyTokenImplementation(payable(address(0xdeadbeef)));
-
-        //get new implementation address
-        address newImplementation = address(tronicMainContract.tronicBrandLoyalty());
-
-        //verify that implementation address has changed
-        assertEq(newImplementation, address(0xdeadbeef));
-    }
-
-    //test setAccountImplementation
-    function testUpdateAccountImplementation() public {
-        //update implementation address
-        vm.prank(tronicOwner);
-        tronicMainContract.setAccountImplementation(payable(address(0xdeadbeef)));
-
-        //get new implementation address
-        address newImplementation = tronicMainContract.tbaAccountImplementation();
-
-        //verify that implementation address has changed
-        assertEq(newImplementation, address(0xdeadbeef));
-    }
-
     //test setRegistry
     function testUpdateRegistry() public {
         //update implementation address

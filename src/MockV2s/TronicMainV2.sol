@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import "./TronicMain.sol";
+import "../TronicMain.sol";
 
 contract TronicMainV2 is TronicMain {
     //upraded variable

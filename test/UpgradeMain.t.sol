@@ -3,7 +3,7 @@
 pragma solidity ^0.8.13;
 
 import "./TronicTestBase.t.sol";
-import "../src/TronicMainV2.sol";
+import "../src/MockV2s/TronicMainV2.sol";
 
 contract UpgradeMainTest is TronicTestBase {
     // test upgrade main contract
